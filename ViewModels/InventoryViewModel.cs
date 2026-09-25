@@ -3,7 +3,6 @@ using AMANC_Inventory.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 
 namespace AMANC_Inventory.ViewModels
@@ -14,6 +13,9 @@ namespace AMANC_Inventory.ViewModels
         private bool _isLoading;
         private bool _isEditing;
         private string _searchText = "";
+
+        // Navegación de Pestañas (0 = Consultas, 1 = Registros)
+        private int _selectedTab = 0;
 
         // Campos para el Header y Perfil
         private string _nombreUsuario = "Usuario";
@@ -30,6 +32,9 @@ namespace AMANC_Inventory.ViewModels
             LoadItemsCommand = new RelayCommand(async _ => await CargarInventarioAsync());
             AddItemCommand = new RelayCommand(_ => AgregarItem());
             CancelEditCommand = new RelayCommand(_ => CancelarEdicion());
+            SelectTabCommand = new RelayCommand(p => SeleccionarPestana(p));
+            AbrirPerfilCommand = new RelayCommand(_ => AbrirPerfil());
+            CerrarPerfilCommand = new RelayCommand(_ => CerrarPerfil());
         }
 
         #region Propiedades
@@ -54,7 +59,25 @@ namespace AMANC_Inventory.ViewModels
             set => SetProperty(ref _searchText, value);
         }
 
-        // --- Propiedades agregadas para Header y Control de Perfil ---
+        // --- Control de Pestañas (Consultas / Registros) ---
+
+        public int SelectedTab
+        {
+            get => _selectedTab;
+            set
+            {
+                if (SetProperty(ref _selectedTab, value))
+                {
+                    OnPropertyChanged(nameof(IsTabConsultVisible));
+                    OnPropertyChanged(nameof(IsTabRegisterVisible));
+                }
+            }
+        }
+
+        public bool IsTabConsultVisible => SelectedTab == 0;
+        public bool IsTabRegisterVisible => SelectedTab == 1;
+
+        // --- Header y Perfil ---
 
         public string NombreUsuario
         {
@@ -93,10 +116,31 @@ namespace AMANC_Inventory.ViewModels
         public ICommand LoadItemsCommand { get; }
         public ICommand AddItemCommand { get; }
         public ICommand CancelEditCommand { get; }
+        public ICommand SelectTabCommand { get; }
+        public ICommand AbrirPerfilCommand { get; }
+        public ICommand CerrarPerfilCommand { get; }
 
         #endregion
 
         #region Métodos
+
+        public void SeleccionarPestana(object? parameter)
+        {
+            if (parameter != null && int.TryParse(parameter.ToString(), out int tabIndex))
+            {
+                SelectedTab = tabIndex;
+            }
+        }
+
+        public void AbrirPerfil()
+        {
+            IsProfileDetailsOpen = true;
+        }
+
+        public void CerrarPerfil()
+        {
+            IsProfileDetailsOpen = false;
+        }
 
         /// <summary>
         /// Inicializa los datos del usuario logueado y desencadena la carga del inventario.
@@ -107,20 +151,12 @@ namespace AMANC_Inventory.ViewModels
 
             if (usuario != null)
             {
-                // Si en tu UserModel la propiedad se llama Nombre/Apellido en lugar de Name, usa:
-                // NombreUsuario = $"{usuario.Nombre} {usuario.Apellido}".Trim();
                 NombreUsuario = !string.IsNullOrEmpty(usuario.Name) ? usuario.Name : "Usuario";
-
-                // Si UserInitials no existe en tu UserModel, asigna una cadena por defecto o calcúlala
                 UserInitials = !string.IsNullOrEmpty(usuario.UserInitials) ? usuario.UserInitials : "U";
-
-                // Cambia ProfilePictureBase64 según el nombre exacto de la propiedad en tu UserModel
-                // Ejemplos: usuario.ProfilePicturePath o usuario.FotoPerfil
                 HasProfilePicture = !string.IsNullOrEmpty(usuario.ProfilePictureBase64);
                 HasNoProfilePicture = !HasProfilePicture;
             }
 
-            // Ejecuta la carga de datos
             _ = CargarInventarioAsync();
         }
 

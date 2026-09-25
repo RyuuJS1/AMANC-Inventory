@@ -303,7 +303,7 @@ namespace AMANC_Inventory.ViewModels
                 await _userService.UpdateUserProfileAsync(usuarioActual);
 
                 // Abrir la ventana de Inventarios (sin pasar parámetros)
-                var inventoryWindow = new InventoryWindow();
+                var inventoryWindow = new InventoryWindow(usuarioActual);
                 inventoryWindow.Show();
 
                 // Cerrar la ventana actual de Login

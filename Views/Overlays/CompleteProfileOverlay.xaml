@@ -4,6 +4,190 @@
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+
+        <!-- ESTILO PARA TEXTBOX -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#183059"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2B487B"/>
+                    <Setter Property="BorderBrush" Value="#FFFFFF"/>
+                </Trigger>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="Background" Value="#2B487B"/>
+                    <Setter Property="BorderBrush" Value="#FFFFFF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ESTILO PARA COMBOBOX -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#183059"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="24"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="Border"
+                                    Grid.ColumnSpan="2"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"/>
+
+                            <ContentPresenter Grid.Column="0"
+                                              IsHitTestVisible="False"
+                                              Margin="{TemplateBinding Padding}"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Left"/>
+
+                            <ToggleButton Grid.ColumnSpan="2"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"/>
+
+                            <Path Grid.Column="1"
+                                  Data="M 0 0 L 4 4 L 8 0 Z"
+                                  Fill="White"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  IsHitTestVisible="False"/>
+
+                            <Popup x:Name="PART_Popup"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   Focusable="False"
+                                   AllowsTransparency="True"
+                                   PopupAnimation="Slide">
+                                <Border x:Name="DropDownBorder"
+                                        MinWidth="{Binding ActualWidth, ElementName=MainGrid}"
+                                        MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                        Background="#102240"
+                                        BorderBrush="White"
+                                        BorderThickness="1">
+                                    <ScrollViewer x:Name="DropDownScrollViewer">
+                                        <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#2B487B"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#2B487B"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO PARA ELEMENTOS DESPLEGABLES DEL COMBOBOX -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#102240"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2B487B"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#183059"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ESTILO PARA DATEPICKER -->
+        <Style TargetType="DatePicker">
+            <Setter Property="Background" Value="#183059"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid x:Name="PART_Root" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <DatePickerTextBox x:Name="PART_TextBox"
+                                                   Grid.Column="0"
+                                                   Foreground="{TemplateBinding Foreground}"
+                                                   Background="Transparent"
+                                                   BorderThickness="0"
+                                                   Padding="{TemplateBinding Padding}"
+                                                   VerticalContentAlignment="Center"
+                                                   Focusable="{TemplateBinding Focusable}"/>
+
+                                <Button x:Name="PART_Button"
+                                        Grid.Column="1"
+                                        Width="20"
+                                        Margin="0,0,4,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Focusable="False">
+                                    <Path Data="M 2 0 C 0.9 0 0 0.9 0 2 L 0 14 C 0 15.1 0.9 16 2 16 L 14 16 C 15.1 16 16 15.1 16 14 L 16 2 C 16 0.9 15.1 0 14 0 L 2 0 Z M 2 4 L 14 4 L 14 14 L 2 14 L 2 4 Z"
+                                          Fill="White"
+                                          Stretch="Uniform"
+                                          Width="12" Height="12"/>
+                                </Button>
+
+                                <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Bottom" PlacementTarget="{Binding ElementName=PART_TextBox}" StaysOpen="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#2B487B"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO PARA BOTONES -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#183059"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2B487B"/>
+                    <Setter Property="BorderBrush" Value="#FFFFFF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
     </UserControl.Resources>
 
     <Grid Background="#B3000000" Panel.ZIndex="99">
@@ -36,51 +220,43 @@
                             </Ellipse>
                         </Grid>
 
-                        <Button Content="Seleccionar Foto (Opcional)" Command="{Binding SelectPictureCommand}" Margin="0,8,0,0" Padding="10,4" Background="#183059" Foreground="White" FontSize="11" Cursor="Hand"/>
+                        <Button Content="Seleccionar Foto (Opcional)" Command="{Binding SelectPictureCommand}" Margin="0,8,0,0" Padding="10,4" FontSize="11" Cursor="Hand"/>
                     </StackPanel>
 
                     <!-- Teléfono -->
                     <TextBlock Text="Número de Teléfono *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" Padding="6" Margin="0,0,0,10"/>
+                    <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
 
                     <!-- Teléfono Emergencia -->
                     <TextBlock Text="Teléfono de Emergencia *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <TextBox Text="{Binding EmergencyPhone, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" Padding="6" Margin="0,0,0,10"/>
+                    <TextBox Text="{Binding EmergencyPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
 
-                    <!-- A quién pertenece el teléfono de emergencia -->
-                    <TextBlock Text="¿A quién corresponde el número de emergencia? *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <TextBox Text="{Binding EmergencyContactName, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" Padding="6" Margin="0,0,0,10"/>
+                    <!-- Nombre del Contacto de Emergencia -->
+                    <TextBlock Text="Nombre del Contacto de Emergencia *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding EmergencyContactName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+                    <!-- Parentesco / Relación del Contacto de Emergencia -->
+                    <TextBlock Text="Parentesco / Relación *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <ComboBox ItemsSource="{Binding Relationships}" SelectedItem="{Binding EmergencyRelationship, Mode=TwoWay}" Margin="0,0,0,10"/>
 
                     <!-- Municipio / Ciudad -->
                     <TextBlock Text="Municipio / Ciudad *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" Padding="6" Margin="0,0,0,10"/>
+                    <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
 
                     <!-- Fecha de Nacimiento -->
                     <TextBlock Text="Fecha de Nacimiento *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <DatePicker SelectedDate="{Binding BirthDate, Mode=TwoWay}" Padding="4" Margin="0,0,0,10"/>
+                    <DatePicker SelectedDate="{Binding BirthDate, Mode=TwoWay}" Margin="0,0,0,10"/>
 
                     <!-- Sede -->
                     <TextBlock Text="Sede / Sucursal *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <ComboBox ItemsSource="{Binding Branches}" SelectedItem="{Binding Branch, Mode=TwoWay}" Background="#183059" Foreground="White" Padding="6" Margin="0,0,0,10">
-                        <ComboBox.ItemContainerStyle>
-                            <Style TargetType="ComboBoxItem">
-                                <Setter Property="Foreground" Value="Black"/>
-                            </Style>
-                        </ComboBox.ItemContainerStyle>
-                    </ComboBox>
+                    <ComboBox ItemsSource="{Binding Branches}" SelectedItem="{Binding Branch, Mode=TwoWay}" Margin="0,0,0,10"/>
 
                     <!-- Departamento -->
                     <TextBlock Text="Departamento *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding Department, Mode=TwoWay}" Background="#183059" Foreground="White" Padding="6" Margin="0,0,0,20">
-                        <ComboBox.ItemContainerStyle>
-                            <Style TargetType="ComboBoxItem">
-                                <Setter Property="Foreground" Value="Black"/>
-                            </Style>
-                        </ComboBox.ItemContainerStyle>
-                    </ComboBox>
+                    <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding Department, Mode=TwoWay}" Margin="0,0,0,20"/>
 
                     <!-- Guardar -->
-                    <Button Content="Guardar Perfil y Continuar" Command="{Binding SaveProfileCommand}" Background="#183059" Foreground="White" FontWeight="Bold" Height="38" FontSize="13" Cursor="Hand"/>
+                    <Button Content="Guardar Perfil y Continuar" Command="{Binding SaveProfileCommand}" FontWeight="Bold" Height="38" FontSize="13" Cursor="Hand" Width="175"/>
                 </StackPanel>
             </Border>
         </ScrollViewer>

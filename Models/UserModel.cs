@@ -19,10 +19,16 @@ namespace AMANC_Inventory.Models
         public string Phone { get; set; } = string.Empty;
         public string EmergencyPhone { get; set; } = string.Empty;
         public string EmergencyContactName { get; set; } = string.Empty;
+        public string EmergencyContactRelationship { get; set; } = string.Empty; // <-- Agregado
         public string Branch { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
         public DateTime? BirthDate { get; set; }
+
+        // Logística y Preferencias
+        public string Availability { get; set; } = string.Empty; // <-- Agregado
+        public string Skills { get; set; } = string.Empty;       // <-- Agregado
+        public string ShirtSize { get; set; } = string.Empty;    // <-- Agregado
 
         public bool IsProfileComplete { get; set; } = false;
 

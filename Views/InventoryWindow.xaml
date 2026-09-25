@@ -57,7 +57,7 @@
             <Grid Grid.Row="1">
 
                 <!-- MÓDULO DE INVENTARIO (Pestañas + Consultas + Registros) -->
-                <!-- Este Grid completo SE OCULTA cuando el Perfil está Abierto -->
+                <!-- Se oculta por completo (incluyendo la barra blanca) cuando el Perfil está Abierto -->
                 <Grid>
                     <Grid.Style>
                         <Style TargetType="Grid">
@@ -132,9 +132,9 @@
                 </Grid>
 
                 <!-- MÓDULO DE PERFIL DE USUARIO -->
-                <!-- Aparece en el centro únicamente cuando IsProfileDetailsOpen es True -->
+                <!-- Usa RelativeSource para apuntar a IsProfileDetailsOpen del InventoryViewModel de la ventana -->
                 <views:UserProfileView x:Name="UserProfileViewControl" 
-                       Visibility="{Binding IsProfileDetailsOpen, Converter={StaticResource BoolToVisConverter}}" />
+                                       Visibility="{Binding DataContext.IsProfileDetailsOpen, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisConverter}}" />
 
             </Grid>
         </Grid>

@@ -16,15 +16,28 @@ namespace AMANC_Inventory.Views
             DataContext = _mainViewModel;
         }
 
+        public InventoryWindow(UserModel usuarioLogueado) : this()
+        {
+            InicializarPerfil(usuarioLogueado);
+        }
+
         public void InicializarPerfil(UserModel usuarioLogueado)
         {
             var userService = new UserService();
 
-            // 1. Inyectar la información del usuario al ViewModel Principal de la Ventana
+            // 1. Inyectar la información del usuario al ViewModel Principal
             _mainViewModel.InicializarUsuario(usuarioLogueado);
 
-            // 2. Asignar ViewModel específico para la vista interna del perfil
-            UserProfileViewControl.DataContext = new UserProfileViewModel(usuarioLogueado, userService);
+            // 2. Crear ViewModel del perfil
+            var profileVM = new UserProfileViewModel(usuarioLogueado, userService);
+
+            // Asignar acción para regresar al inventario
+            profileVM.OnReturnToInventoryRequested = () =>
+            {
+                _mainViewModel.CerrarPerfil();
+            };
+
+            UserProfileViewControl.DataContext = profileVM;
 
             // 3. Control del Overlay de Primera Vez / Perfil Incompleto
             if (usuarioLogueado.IsProfileComplete)
@@ -39,10 +52,12 @@ namespace AMANC_Inventory.Views
                 {
                     CompleteOverlayControl.Visibility = Visibility.Collapsed;
 
-                    // Actualizar estado del usuario en todos los ViewModels
                     usuarioLogueado.IsProfileComplete = true;
                     _mainViewModel.InicializarUsuario(usuarioLogueado);
-                    UserProfileViewControl.DataContext = new UserProfileViewModel(usuarioLogueado, userService);
+
+                    var newProfileVM = new UserProfileViewModel(usuarioLogueado, userService);
+                    newProfileVM.OnReturnToInventoryRequested = () => _mainViewModel.CerrarPerfil();
+                    UserProfileViewControl.DataContext = newProfileVM;
                 };
 
                 CompleteOverlayControl.DataContext = overlayVM;

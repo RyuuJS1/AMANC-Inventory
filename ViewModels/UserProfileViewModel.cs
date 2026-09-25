@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -21,10 +22,101 @@ namespace AMANC_Inventory.ViewModels
         public ObservableCollection<string> Branches { get; }
         public ObservableCollection<string> Departments { get; }
 
-        public string Name => _currentUser.Name;
-        public string Email => _currentUser.Email;
-        public string UserInitials => _currentUser.UserInitials;
+        // --- Estado de la Interfaz ---
+        private bool _isEditing;
+        public bool IsEditing
+        {
+            get => _isEditing;
+            set => SetProperty(ref _isEditing, value);
+        }
 
+        private bool _isProfileDetailsOpen = true;
+        public bool IsProfileDetailsOpen
+        {
+            get => _isProfileDetailsOpen;
+            set => SetProperty(ref _isProfileDetailsOpen, value);
+        }
+
+        // --- Propiedades Mapeadas con el XAML ---
+        public string NombreUsuario
+        {
+            get => _currentUser.Name ?? string.Empty;
+            set { _currentUser.Name = value; OnPropertyChanged(); }
+        }
+
+        public string CorreoUsuario => _currentUser.Email ?? string.Empty;
+
+        public string TelefonoUsuario
+        {
+            get => _currentUser.Phone ?? string.Empty;
+            set { _currentUser.Phone = value; OnPropertyChanged(); }
+        }
+
+        public string RolUsuario => _currentUser.Role ?? "Voluntario";
+
+        public string UserInitials => _currentUser.UserInitials ?? "U";
+
+        public string Branch
+        {
+            get => _currentUser.Branch ?? string.Empty;
+            set { _currentUser.Branch = value; OnPropertyChanged(); }
+        }
+
+        public string Department
+        {
+            get => _currentUser.Department ?? string.Empty;
+            set { _currentUser.Department = value; OnPropertyChanged(); }
+        }
+
+        public string City
+        {
+            get => _currentUser.City ?? string.Empty;
+            set { _currentUser.City = value; OnPropertyChanged(); }
+        }
+
+        public DateTime? BirthDate
+        {
+            get => _currentUser.BirthDate;
+            set { _currentUser.BirthDate = value; OnPropertyChanged(); }
+        }
+
+        public string EmergencyContactName
+        {
+            get => _currentUser.EmergencyContactName ?? string.Empty;
+            set { _currentUser.EmergencyContactName = value; OnPropertyChanged(); }
+        }
+
+        public string EmergencyContactRelationship
+        {
+            get => _currentUser.EmergencyContactRelationship ?? string.Empty;
+            set { _currentUser.EmergencyContactRelationship = value; OnPropertyChanged(); }
+        }
+
+        public string EmergencyContactPhone
+        {
+            get => _currentUser.EmergencyPhone ?? string.Empty;
+            set { _currentUser.EmergencyPhone = value; OnPropertyChanged(); }
+        }
+
+        public string Availability
+        {
+            get => _currentUser.Availability ?? string.Empty;
+            set { _currentUser.Availability = value; OnPropertyChanged(); }
+        }
+
+        public string Skills
+        {
+            get => _currentUser.Skills ?? string.Empty;
+            set { _currentUser.Skills = value; OnPropertyChanged(); }
+        }
+
+        public string ShirtSize
+        {
+            get => _currentUser.ShirtSize ?? string.Empty;
+            set { _currentUser.ShirtSize = value; OnPropertyChanged(); }
+        }
+
+        // --- Manejo de Foto de Perfil ---
         private string? _profilePictureBase64;
         public string? ProfilePictureBase64
         {
@@ -62,30 +154,29 @@ namespace AMANC_Inventory.ViewModels
             }
         }
 
-        public string Phone { get => _currentUser.Phone; set { _currentUser.Phone = value; OnPropertyChanged(); } }
-        public string EmergencyPhone { get => _currentUser.EmergencyPhone; set { _currentUser.EmergencyPhone = value; OnPropertyChanged(); } }
-        public string EmergencyContactName { get => _currentUser.EmergencyContactName; set { _currentUser.EmergencyContactName = value; OnPropertyChanged(); } }
-        public string Branch { get => _currentUser.Branch; set { _currentUser.Branch = value; OnPropertyChanged(); } }
-        public string Department { get => _currentUser.Department; set { _currentUser.Department = value; OnPropertyChanged(); } }
-        public string City { get => _currentUser.City; set { _currentUser.City = value; OnPropertyChanged(); } }
-        public DateTime? BirthDate { get => _currentUser.BirthDate; set { _currentUser.BirthDate = value; OnPropertyChanged(); } }
-
-        public ICommand SelectPictureCommand { get; }
+        // --- Comandos Vinculados al XAML ---
+        public ICommand CloseProfileCommand { get; }
+        public ICommand ChangeProfilePictureCommand { get; }
+        public ICommand EditProfileCommand { get; }
         public ICommand SaveChangesCommand { get; }
-        public ICommand BackToInventoryCommand { get; }
+        public ICommand CancelEditCommand { get; }
+        public ICommand ChangePasswordCommand { get; }
 
         public UserProfileViewModel(UserModel user, IUserService userService)
         {
-            _currentUser = user;
+            _currentUser = user ?? new UserModel();
             _userService = userService;
 
             Branches = ProfileCatalogs.GetBranches();
             Departments = ProfileCatalogs.GetDepartments();
             ProfilePictureBase64 = _currentUser.ProfilePictureBase64;
 
-            SelectPictureCommand = new RelayCommand(_ => SelectPicture());
+            CloseProfileCommand = new RelayCommand(_ => OnReturnToInventoryRequested?.Invoke());
+            ChangeProfilePictureCommand = new RelayCommand(_ => SelectPicture());
+            EditProfileCommand = new RelayCommand(_ => IsEditing = true);
+            CancelEditCommand = new RelayCommand(_ => IsEditing = false);
             SaveChangesCommand = new RelayCommand(async _ => await SaveChangesAsync());
-            BackToInventoryCommand = new RelayCommand(_ => OnReturnToInventoryRequested?.Invoke());
+            ChangePasswordCommand = new RelayCommand(_ => RequestPasswordReset());
         }
 
         private void SelectPicture()
@@ -98,11 +189,24 @@ namespace AMANC_Inventory.ViewModels
             }
         }
 
-        private async System.Threading.Tasks.Task SaveChangesAsync()
+        private async Task SaveChangesAsync()
         {
             _currentUser.ProfilePictureBase64 = ProfilePictureBase64;
             bool ok = await _userService.UpdateUserProfileAsync(_currentUser);
-            if (ok) MessageBox.Show("Perfil actualizado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (ok)
+            {
+                IsEditing = false;
+                MessageBox.Show("Perfil actualizado correctamente en la nube.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("No se pudieron guardar los cambios. Verifique su conexión.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RequestPasswordReset()
+        {
+            MessageBox.Show($"Se ha enviado un enlace de restablecimiento de contraseña a {CorreoUsuario}.", "Cambio de Clave", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }
 }

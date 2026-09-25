@@ -43,25 +43,39 @@ namespace AMANC_Inventory.Helpers
         {
             return new ObservableCollection<string>
             {
-                // --- Áreas Operativas / Almacén ---
-                "Almacén e Inventario de Insumos",
+                // --- Operaciones e Inventario ---
+                "Almacén y Control de Insumos",
                 "Logística y Transporte",
 
-                // --- Atención Psicosocial y Salud ---
-                "Trabajo Social y Estancia",
-                "Psicología y Acompañamiento",
-                "Nutrición y Comedor",
-                "Ludoteca y Actividades Recreativas",
+                // --- Atención a Familias y Albergue ---
+                "Trabajo Social y Hospedaje",
+                "Comedor y Nutrición",
 
-                // --- Procuración de Fondos y Comunicación ---
-                "Procuración de Fondos y Eventos",
-                "Reciclaje y Campañas (Taparroscas/PET)",
-                "Comunicación, Diseño y Redes Sociales",
+                // --- Procuración y Donaciones ---
+                "Procuración de Fondos y Donaciones",
+                "Comunicación y Campañas (Reciclaje / Eventos)",
 
-                // --- Administración y Servicios ---
-                "Administración y TI",
-                "Voluntariado General / Participación Comunitaria",
-                "Servicio Social / Prácticas"
+                // --- Gestión y Sistema ---
+                "Administración y Recursos Humanos",
+                "Sistemas y Tecnologías de la Información",
+
+                // --- Personal de Apoyo ---
+                "Servicio Social / Apoyo Operativo"
+            };
+        }
+
+        public static ObservableCollection<string> GetRelationships()
+        {
+            return new ObservableCollection<string>
+            {
+                "Padre / Madre",
+                "Cónyuge / Pareja",
+                "Hijo",
+                "Hermano",
+                "Familiar",
+                "Amigo",
+                "Tutor Legal",
+                "Otro"
             };
         }
     }

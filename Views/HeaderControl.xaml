@@ -13,7 +13,7 @@
             </StackPanel>
 
             <!-- Botón de Perfil Clickeable -->
-            <Button Command="{Binding OpenProfileCommand}" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Cursor="Hand">
+            <Button Command="{Binding AbrirPerfilCommand}" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Cursor="Hand">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="Transparent" Padding="5,2">
