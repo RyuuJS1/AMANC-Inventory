@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="AMANC_Inventory.Views.InventoryRegisterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="White" CornerRadius="8" Padding="25" BorderBrush="#E2E8F0" BorderThickness="1" HorizontalAlignment="Left" Width="600" VerticalAlignment="Top">
+        <StackPanel>
+            <TextBlock Text="Registrar Nuevo Artículo" FontSize="18" FontWeight="Bold" Foreground="#102240" Margin="0,0,0,15"/>
+
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <TextBlock Text="Código del Artículo" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding NewCode}" Padding="8,6" Background="#F8FAFC" BorderBrush="#CBD5E1"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                    <TextBlock Text="Nombre del Artículo" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding NewName}" Padding="8,6" Background="#F8FAFC" BorderBrush="#CBD5E1"/>
+                </StackPanel>
+            </Grid>
+
+            <Grid Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <TextBlock Text="Categoría" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <ComboBox ItemsSource="{Binding CategoriesList}" SelectedItem="{Binding NewCategory}" Padding="8,6" Background="#F8FAFC"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                    <TextBlock Text="Stock Inicial" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <TextBox Text="{Binding NewStock}" Padding="8,6" Background="#F8FAFC" BorderBrush="#CBD5E1"/>
+                </StackPanel>
+            </Grid>
+
+            <Button Content="Guardar Artículo" Command="{Binding SaveItemCommand}" Padding="15,9" Background="#102240" Foreground="White" FontWeight="Bold" BorderThickness="0" HorizontalAlignment="Right" Cursor="Hand"/>
+        </StackPanel>
+    </Border>
+</UserControl>

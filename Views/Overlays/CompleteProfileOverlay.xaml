@@ -1,0 +1,88 @@
+﻿<UserControl x:Class="AMANC_Inventory.Views.Overlays.CompleteProfileOverlay"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+    </UserControl.Resources>
+
+    <Grid Background="#B3000000" Panel.ZIndex="99">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <Border Background="#102240" CornerRadius="12" Padding="25" Width="420" Margin="0,30" HorizontalAlignment="Center" VerticalAlignment="Center" BorderBrush="White" BorderThickness="1">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="20" Opacity="0.7" Direction="270" ShadowDepth="5"/>
+                </Border.Effect>
+
+                <StackPanel>
+                    <!-- Logo y Encabezado -->
+                    <Image Source="pack://application:,,,/Assets/LogoAMANC.png" Width="70" Height="55" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock Text="¡Bienvenido!" FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Por favor completa tu información antes de continuar." FontSize="12" Foreground="#A0A0A0" TextWrapping="Wrap" TextAlignment="Center" Margin="0,5,0,15"/>
+
+                    <!-- Foto de Perfil / Iniciales -->
+                    <StackPanel HorizontalAlignment="Center" Margin="0,0,0,15">
+                        <Grid Width="85" Height="85">
+                            <!-- Opción 1: Círculo Gris con Iniciales por Defecto -->
+                            <Border CornerRadius="42.5" Background="#D1D5DB" BorderBrush="White" BorderThickness="2"
+                                    Visibility="{Binding HasNoProfilePicture, Converter={StaticResource BoolToVisConverter}}">
+                                <TextBlock Text="{Binding UserInitials}" Foreground="#374151" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <!-- Opción 2: Imagen seleccionada -->
+                            <Ellipse Stroke="White" StrokeThickness="2" Visibility="{Binding HasProfilePicture, Converter={StaticResource BoolToVisConverter}}">
+                                <Ellipse.Fill>
+                                    <ImageBrush ImageSource="{Binding ProfileImageSource}" Stretch="UniformToFill"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                        </Grid>
+
+                        <Button Content="Seleccionar Foto (Opcional)" Command="{Binding SelectPictureCommand}" Margin="0,8,0,0" Padding="10,4" Background="#183059" Foreground="White" FontSize="11" Cursor="Hand"/>
+                    </StackPanel>
+
+                    <!-- Teléfono -->
+                    <TextBlock Text="Número de Teléfono *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" Padding="6" Margin="0,0,0,10"/>
+
+                    <!-- Teléfono Emergencia -->
+                    <TextBlock Text="Teléfono de Emergencia *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding EmergencyPhone, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" Padding="6" Margin="0,0,0,10"/>
+
+                    <!-- A quién pertenece el teléfono de emergencia -->
+                    <TextBlock Text="¿A quién corresponde el número de emergencia? *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding EmergencyContactName, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" Padding="6" Margin="0,0,0,10"/>
+
+                    <!-- Municipio / Ciudad -->
+                    <TextBlock Text="Municipio / Ciudad *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" Padding="6" Margin="0,0,0,10"/>
+
+                    <!-- Fecha de Nacimiento -->
+                    <TextBlock Text="Fecha de Nacimiento *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <DatePicker SelectedDate="{Binding BirthDate, Mode=TwoWay}" Padding="4" Margin="0,0,0,10"/>
+
+                    <!-- Sede -->
+                    <TextBlock Text="Sede / Sucursal *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <ComboBox ItemsSource="{Binding Branches}" SelectedItem="{Binding Branch, Mode=TwoWay}" Background="#183059" Foreground="White" Padding="6" Margin="0,0,0,10">
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="ComboBoxItem">
+                                <Setter Property="Foreground" Value="Black"/>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+
+                    <!-- Departamento -->
+                    <TextBlock Text="Departamento *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding Department, Mode=TwoWay}" Background="#183059" Foreground="White" Padding="6" Margin="0,0,0,20">
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="ComboBoxItem">
+                                <Setter Property="Foreground" Value="Black"/>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+
+                    <!-- Guardar -->
+                    <Button Content="Guardar Perfil y Continuar" Command="{Binding SaveProfileCommand}" Background="#183059" Foreground="White" FontWeight="Bold" Height="38" FontSize="13" Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

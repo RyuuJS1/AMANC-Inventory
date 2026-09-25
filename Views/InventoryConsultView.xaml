@@ -1,0 +1,343 @@
+﻿<UserControl x:Class="AMANC_Inventory.Views.InventoryConsultView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+
+        <!-- Estilo para Convertir Botones en Tarjetas Interactivas -->
+        <Style x:Key="CardButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#2563EB"/>
+                    <Setter Property="Background" Value="#F8FAFC"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#102240"/>
+                    <Setter Property="BorderBrush" Value="#102240"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Botones / Selector de Tabla -->
+            <RowDefinition Height="Auto"/>
+            <!-- Filtros y Búsqueda -->
+            <RowDefinition Height="*"/>
+            <!-- DataGrids -->
+        </Grid.RowDefinitions>
+
+        <!-- Botones de Selección de Tabla (5 Tarjetas) -->
+        <UniformGrid Grid.Row="0" Columns="5" Margin="0,0,0,15">
+
+            <!-- 1. Stock y Productos -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsInventoryTabSelected, Mode=TwoWay}"
+                         Margin="0,0,4,0">
+                <StackPanel>
+                    <TextBlock Text="Inventario General" FontSize="10" FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#64748B"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="#93C5FD"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="Stock y Productos" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#102240"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </RadioButton>
+
+            <!-- 2. Donantes y Costos -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsDonationsTabSelected, Mode=TwoWay}"
+                         Margin="4,0,4,0">
+                <StackPanel>
+                    <TextBlock Text="Registro de Donaciones" FontSize="10" FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#64748B"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="#93C5FD"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="Donantes y Costos" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#102240"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </RadioButton>
+
+            <!-- 3. Niños y Responsables -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsPatientsTabSelected, Mode=TwoWay}"
+                         Margin="4,0,4,0">
+                <StackPanel>
+                    <TextBlock Text="Padrón Beneficiarios" FontSize="10" FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#64748B"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="#93C5FD"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="Niños y Responsables" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#102240"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </RadioButton>
+
+            <!-- 4. Viajes y Fechas -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsTripsTabSelected, Mode=TwoWay}"
+                         Margin="4,0,4,0">
+                <StackPanel>
+                    <TextBlock Text="Control de Traslados" FontSize="10" FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#64748B"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="#93C5FD"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="Viajes y Fechas" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#102240"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </RadioButton>
+
+            <!-- 5. Usuarios y Permisos -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsUsersTabSelected, Mode=TwoWay}"
+                         Margin="4,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="Administración" FontSize="10" FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#64748B"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="#93C5FD"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Text="Usuarios y Permisos" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#102240"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+            </RadioButton>
+
+        </UniformGrid>
+
+        <!-- Barra de Búsqueda y Filtros -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <TextBlock Text="Buscar registro..." FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
+                    <Border CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1" Background="#F8FAFC">
+                        <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" Background="Transparent" BorderThickness="0"/>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <Button Content="Limpiar Búsqueda" Command="{Binding ClearFilterCommand}" Padding="12,7" Margin="0,0,6,0" Background="#E2E8F0" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Contenedor de Tablas (DataGrids) -->
+        <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="10" BorderBrush="#E2E8F0" BorderThickness="1">
+            <Grid>
+                <Grid.Resources>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#F1F5F9"/>
+                        <Setter Property="Foreground" Value="#1E293B"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="FontSize" Value="12"/>
+                        <Setter Property="Padding" Value="10,8"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                        <Setter Property="BorderBrush" Value="#CBD5E1"/>
+                    </Style>
+                    <Style TargetType="DataGrid">
+                        <Setter Property="AutoGenerateColumns" Value="False"/>
+                        <Setter Property="CanUserAddRows" Value="False"/>
+                        <Setter Property="IsReadOnly" Value="True"/>
+                        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+                        <Setter Property="HorizontalGridLinesBrush" Value="#F1F5F9"/>
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="HeadersVisibility" Value="Column"/>
+                        <Setter Property="RowHeight" Value="36"/>
+                    </Style>
+                </Grid.Resources>
+
+                <!-- 1. TABLA STOCK Y PRODUCTOS -->
+                <DataGrid ItemsSource="{Binding FilteredInventoryList}"
+                          Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
+                        <DataGridTextColumn Header="Sede" Binding="{Binding Branch}" Width="110"/>
+                        <DataGridTextColumn Header="Código" Binding="{Binding Code}" Width="100"/>
+                        <DataGridTextColumn Header="Producto" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="130"/>
+                        <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="80"/>
+                        <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="90"/>
+                        <DataGridTextColumn Header="Ubicación" Binding="{Binding Location}" Width="120"/>
+                        <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 2. TABLA DONANTES Y COSTOS -->
+                <DataGrid ItemsSource="{Binding FilteredDonationsList}"
+                          Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                        <DataGridTextColumn Header="Empresa / Donante" Binding="{Binding CompanyName}" Width="180"/>
+                        <DataGridTextColumn Header="Fecha" Binding="{Binding DonationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="95"/>
+                        <DataGridTextColumn Header="Producto" Binding="{Binding ProductName}" Width="*"/>
+                        <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="110"/>
+                        <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="80"/>
+                        <DataGridTextColumn Header="P. Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="100"/>
+                        <DataGridTextColumn Header="Total Donante" Binding="{Binding TotalSpent, StringFormat=\{0:C\}}" Width="110"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 3. TABLA NIÑOS Y RESPONSABLES -->
+                <DataGrid ItemsSource="{Binding FilteredPatientsList}"
+                          Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                        <DataGridTextColumn Header="Nombre del Niño" Binding="{Binding ChildName}" Width="*"/>
+                        <DataGridTextColumn Header="Edad" Binding="{Binding Age}" Width="60"/>
+                        <DataGridTextColumn Header="Tipo Cáncer" Binding="{Binding CancerType}" Width="130"/>
+                        <DataGridTextColumn Header="Responsable(s)" Binding="{Binding Guardians}" Width="160"/>
+                        <DataGridTextColumn Header="Correo(s)" Binding="{Binding Emails}" Width="150"/>
+                        <DataGridTextColumn Header="Teléfono(s)" Binding="{Binding Phones}" Width="110"/>
+                        <DataGridTextColumn Header="Estado" Binding="{Binding State}" Width="100"/>
+                        <DataGridTextColumn Header="Ciudad" Binding="{Binding City}" Width="110"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 4. TABLA VIAJES Y FECHAS -->
+                <DataGrid ItemsSource="{Binding FilteredTripsList}"
+                          Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                        <DataGridTextColumn Header="Paciente / Niño" Binding="{Binding ChildName}" Width="*"/>
+                        <DataGridTextColumn Header="Responsable" Binding="{Binding GuardianName}" Width="150"/>
+                        <DataGridTextColumn Header="Origen" Binding="{Binding Origin}" Width="130"/>
+                        <DataGridTextColumn Header="Destino" Binding="{Binding Destination}" Width="130"/>
+                        <DataGridTextColumn Header="F. Salida" Binding="{Binding DepartureDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130"/>
+                        <DataGridTextColumn Header="F. Llegada Estimada" Binding="{Binding ArrivalDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130"/>
+                        <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="110"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- 5. TABLA USUARIOS Y PERMISOS -->
+                <DataGrid ItemsSource="{Binding FilteredUsersList}"
+                          Visibility="{Binding IsUsersTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID / UID" Binding="{Binding Id}" Width="100"/>
+                        <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Correo" Binding="{Binding Email}" Width="180"/>
+                        <DataGridTextColumn Header="Teléfono" Binding="{Binding Phone}" Width="110"/>
+                        <DataGridTextColumn Header="Sede" Binding="{Binding Branch}" Width="120"/>
+                        <DataGridTextColumn Header="Departamento" Binding="{Binding Department}" Width="130"/>
+                        <DataGridTextColumn Header="Rol / Permiso" Binding="{Binding Role}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
