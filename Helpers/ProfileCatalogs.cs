@@ -78,5 +78,45 @@ namespace AMANC_Inventory.Helpers
                 "Otro"
             };
         }
+
+        public static ObservableCollection<string> GetSize()
+        {
+            return new ObservableCollection<string>
+            {
+                "XXXCH",
+                "XXCH",
+                "XCH",
+                "S",
+                "M",
+                "G",
+                "XG",
+                "XXG",
+                "XXXG",
+            };
+        }
+
+        public static ObservableCollection<string> GetHours()
+        {
+            var hours = new ObservableCollection<string>();
+            for (int i = 1; i <= 24; i++)
+            {
+                hours.Add($"{i:D2}:00");
+            }
+            return hours;
+        }
+
+        public static ObservableCollection<string> GetAreasOfInterest()
+        {
+            return new ObservableCollection<string>
+            {
+                "Eventos y Logística",
+                "Administración y Oficina",
+                "Acompañamiento a Pacientes",
+                "Recreación y Terapia",
+                "Colectas y Procuración de Fondos",
+                "Difusión y Redes Sociales",
+                "Apoyo General"
+            };
+        }
     }
 }

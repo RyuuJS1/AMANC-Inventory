@@ -224,16 +224,16 @@
                     </StackPanel>
 
                     <!-- Teléfono -->
-                    <TextBlock Text="Número de Teléfono *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                    <TextBlock Text="Número de Teléfono (+XX XX XXXX XXXX) *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" MaxLength="18" Margin="0,0,0,10"/>
 
                     <!-- Teléfono Emergencia -->
-                    <TextBlock Text="Teléfono de Emergencia *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <TextBox Text="{Binding EmergencyPhone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                    <TextBlock Text="Teléfono de Emergencia (+XX XX XXXX XXXX) *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding EmergencyPhone, UpdateSourceTrigger=PropertyChanged}" MaxLength="18" Margin="0,0,0,10"/>
 
                     <!-- Nombre del Contacto de Emergencia -->
                     <TextBlock Text="Nombre del Contacto de Emergencia *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <TextBox Text="{Binding EmergencyContactName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                    <TextBox Text="{Binding EmergencyContactName, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Margin="0,0,0,10"/>
 
                     <!-- Parentesco / Relación del Contacto de Emergencia -->
                     <TextBlock Text="Parentesco / Relación *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
@@ -241,7 +241,7 @@
 
                     <!-- Municipio / Ciudad -->
                     <TextBlock Text="Municipio / Ciudad *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>
-                    <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                    <TextBox Text="{Binding City, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Margin="0,0,0,10"/>
 
                     <!-- Fecha de Nacimiento -->
                     <TextBlock Text="Fecha de Nacimiento *" FontSize="11" Foreground="White" Margin="0,0,0,3"/>

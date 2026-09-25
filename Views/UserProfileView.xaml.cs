@@ -11,9 +11,10 @@ namespace AMANC_Inventory.Views
         {
             InitializeComponent();
         }
+
         public UserProfileView(UserModel usuarioActual) : this()
         {
-            DataContext = new UserProfileViewModel(usuarioActual, new UserService());
+            DataContext = new UserProfileViewModel(usuarioActual, new UserService(), new EmailService());
         }
     }
 }

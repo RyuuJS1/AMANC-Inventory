@@ -24,12 +24,13 @@ namespace AMANC_Inventory.Views
         public void InicializarPerfil(UserModel usuarioLogueado)
         {
             var userService = new UserService();
+            var emailService = new EmailService();
 
             // 1. Inyectar la información del usuario al ViewModel Principal
             _mainViewModel.InicializarUsuario(usuarioLogueado);
 
             // 2. Crear ViewModel del perfil
-            var profileVM = new UserProfileViewModel(usuarioLogueado, userService);
+            var profileVM = new UserProfileViewModel(usuarioLogueado, userService, emailService);
 
             // Asignar acción para regresar al inventario
             profileVM.OnReturnToInventoryRequested = () =>
@@ -55,7 +56,7 @@ namespace AMANC_Inventory.Views
                     usuarioLogueado.IsProfileComplete = true;
                     _mainViewModel.InicializarUsuario(usuarioLogueado);
 
-                    var newProfileVM = new UserProfileViewModel(usuarioLogueado, userService);
+                    var newProfileVM = new UserProfileViewModel(usuarioLogueado, userService, emailService);
                     newProfileVM.OnReturnToInventoryRequested = () => _mainViewModel.CerrarPerfil();
                     UserProfileViewControl.DataContext = newProfileVM;
                 };
