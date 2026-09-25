@@ -17,8 +17,35 @@ namespace AMANC_Inventory
             // Asignamos la acción para que el ViewModel solicite cerrar esta ventana
             _viewModel.RequestCloseAction = () => this.Close();
 
+            // Suscripción para limpiar las PasswordBox al cambiar de pestaña
+            _viewModel.OnTabChanged = LimpiarCamposPassword;
+
             DataContext = _viewModel;
         }
+
+        // =========================================================
+        // VALIDACIÓN DE CORREO (SIN ESPACIOS)
+        // =========================================================
+
+        private void TxtEmail_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Space)
+            {
+                e.Handled = true; // Cancela el pulso de la tecla Espacio
+            }
+        }
+
+        private void TxtEmail_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (e.Text.Contains(" "))
+            {
+                e.Handled = true; // Cancela si se intenta pegar/escribir un espacio
+            }
+        }
+
+        // =========================================================
+        // MANEJO DE CONTRASEÑAS
+        // =========================================================
 
         private void TxtPassword_PasswordChanged(object sender, RoutedEventArgs e)
         {
@@ -35,6 +62,16 @@ namespace AMANC_Inventory
                 _viewModel.ConfirmPassword = passwordBox.Password;
             }
         }
+
+        public void LimpiarCamposPassword()
+        {
+            TxtPassword.Password = string.Empty;
+            TxtConfirmPassword.Password = string.Empty;
+        }
+
+        // =========================================================
+        // NAVEGACIÓN Y CÓDIGO DE VERIFICACIÓN
+        // =========================================================
 
         private void TxtDigito_PreviewKeyDown(object sender, KeyEventArgs e)
         {

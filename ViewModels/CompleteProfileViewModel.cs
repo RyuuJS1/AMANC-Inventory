@@ -18,8 +18,10 @@ namespace AMANC_Inventory.ViewModels
 
         public Action? OnProfileCompleted { get; set; }
 
+       
         public ObservableCollection<string> Branches { get; }
         public ObservableCollection<string> Departments { get; }
+        public ObservableCollection<string> Relationships { get; }
 
         public string UserInitials => _currentUser.UserInitials;
 
@@ -60,9 +62,18 @@ namespace AMANC_Inventory.ViewModels
             }
         }
 
+        
         public string Phone { get => _currentUser.Phone; set { _currentUser.Phone = value; OnPropertyChanged(); } }
         public string EmergencyPhone { get => _currentUser.EmergencyPhone; set { _currentUser.EmergencyPhone = value; OnPropertyChanged(); } }
         public string EmergencyContactName { get => _currentUser.EmergencyContactName; set { _currentUser.EmergencyContactName = value; OnPropertyChanged(); } }
+
+        
+        public string EmergencyRelationship
+        {
+            get => _currentUser.EmergencyContactRelationship;
+            set { _currentUser.EmergencyContactRelationship = value; OnPropertyChanged(); }
+        }
+
         public string Branch { get => _currentUser.Branch; set { _currentUser.Branch = value; OnPropertyChanged(); } }
         public string Department { get => _currentUser.Department; set { _currentUser.Department = value; OnPropertyChanged(); } }
         public string City { get => _currentUser.City; set { _currentUser.City = value; OnPropertyChanged(); } }
@@ -76,8 +87,10 @@ namespace AMANC_Inventory.ViewModels
             _currentUser = user;
             _userService = userService;
 
+            // Inicialización de las colecciones para las listas desplegables
             Branches = ProfileCatalogs.GetBranches();
             Departments = ProfileCatalogs.GetDepartments();
+            Relationships = ProfileCatalogs.GetRelationships();
 
             ProfilePictureBase64 = _currentUser.ProfilePictureBase64;
 
@@ -104,6 +117,7 @@ namespace AMANC_Inventory.ViewModels
             if (string.IsNullOrWhiteSpace(Phone) ||
                 string.IsNullOrWhiteSpace(EmergencyPhone) ||
                 string.IsNullOrWhiteSpace(EmergencyContactName) ||
+                string.IsNullOrWhiteSpace(EmergencyRelationship) ||
                 string.IsNullOrWhiteSpace(Branch) ||
                 string.IsNullOrWhiteSpace(Department) ||
                 string.IsNullOrWhiteSpace(City) ||
@@ -120,7 +134,6 @@ namespace AMANC_Inventory.ViewModels
 
             if (success)
             {
-                MessageBox.Show("¡Perfil completado exitosamente!", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 OnProfileCompleted?.Invoke();
             }
             else

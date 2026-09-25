@@ -93,10 +93,14 @@
                             <TextBox Name="TxtNombre" Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="6" CaretBrush="White"/>
                         </StackPanel>
 
-                        <!-- Campo Correo Electrónico -->
+                        <!-- Campo Correo Electrónico (Sin Espacios y Minúsculas) -->
                         <StackPanel Margin="0,0,0,12">
                             <TextBlock Text="Correo Electrónico" FontSize="11" Foreground="White" Margin="0,0,0,4"/>
-                            <TextBox Name="TxtEmail" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="6" CaretBrush="White"/>
+                            <TextBox Name="TxtEmail" 
+                                     Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" 
+                                     Background="#183059" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="6" CaretBrush="White"
+                                     PreviewKeyDown="TxtEmail_PreviewKeyDown"
+                                     PreviewTextInput="TxtEmail_PreviewTextInput"/>
                         </StackPanel>
 
                         <!-- Campo Contraseña -->
@@ -144,9 +148,7 @@
             </Grid>
         </Viewbox>
 
-        <!-- ========================================================= -->
-        <!-- PANEL FLOTANTE DE CÓDIGO (UBICADO FUERA DEL VIEWBOX)       -->
-        <!-- ========================================================= -->
+        <!-- PANEL FLOTANTE DE CÓDIGO -->
         <Border Name="PanelNotificacion" Background="#151515" Width="250" Height="125" 
                 HorizontalAlignment="Right" VerticalAlignment="Bottom" 
                 Margin="0,0,25,25" CornerRadius="8" 
@@ -165,7 +167,6 @@
                     <RowDefinition Height="3"/>
                 </Grid.RowDefinitions>
 
-                <!-- Header: Título Centrado y Botón Cerrar -->
                 <Grid Grid.Row="0" Margin="10,8,10,0">
                     <TextBlock Text="Introduce Código" Foreground="White" FontWeight="Bold" FontSize="12" 
                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -183,7 +184,6 @@
                     </Button>
                 </Grid>
 
-                <!-- Inputs de Código (6 dígitos) -->
                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,2,0,4">
                     <TextBox Name="TxtDigito1" Text="{Binding Digito1, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
                     <TextBox Name="TxtDigito2" Text="{Binding Digito2, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
@@ -193,12 +193,10 @@
                     <TextBox Name="TxtDigito6" Text="{Binding Digito6, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
                 </StackPanel>
 
-                <!-- MINUTOS Y SEGUNDOS RESTANTES -->
                 <TextBlock Name="TxtTiempoRestante" Grid.Row="2" Text="{Binding TiempoRestanteTexto}" 
                            Foreground="#AAAAAA" FontSize="10" FontWeight="SemiBold" 
                            HorizontalAlignment="Center" Margin="0,0,0,4"/>
 
-                <!-- Barra de Tiempo -->
                 <ProgressBar Name="BarraTiempo" Grid.Row="3" Minimum="0" Maximum="{Binding BarraTiempoMaximo}" Value="{Binding BarraTiempoValor}" Foreground="White" Background="#333333" BorderThickness="0"/>
             </Grid>
         </Border>

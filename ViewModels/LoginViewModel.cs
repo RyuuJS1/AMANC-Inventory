@@ -24,8 +24,11 @@ namespace AMANC_Inventory.ViewModels
         private string _codigoEsperado = "";
         private string _emailARestablecer = "";
 
-        // Acción opcional para cerrar la ventana actual de Login
+        // Acción para cerrar la ventana actual de Login
         public Action? RequestCloseAction { get; set; }
+
+        // Acción para notificar a la vista que limpie los PasswordBox visuales
+        public Action? OnTabChanged { get; set; }
 
         public LoginViewModel()
         {
@@ -50,7 +53,11 @@ namespace AMANC_Inventory.ViewModels
         public string Nombre { get => _nombre; set => SetProperty(ref _nombre, value?.ToUpper() ?? ""); }
 
         private string _email = "";
-        public string Email { get => _email; set => SetProperty(ref _email, value); }
+        public string Email
+        {
+            get => _email;
+            set => SetProperty(ref _email, value?.ToLower().Replace(" ", "") ?? "");
+        }
 
         private string _password = "";
         public string Password
@@ -171,7 +178,22 @@ namespace AMANC_Inventory.ViewModels
         {
             EsModoRestablecer = false;
             EsModoLogin = tab == "Login";
+
+            // Limpia todos los campos para no preservar datos entre pestañas
+            LimpiarCamposFormulario();
+
             OcultarPanelCodigo();
+        }
+
+        public void LimpiarCamposFormulario()
+        {
+            Nombre = "";
+            Email = "";
+            Password = "";
+            ConfirmPassword = "";
+
+            // Invoca la limpieza de los controles visuales PasswordBox
+            OnTabChanged?.Invoke();
         }
 
         private void ActualizarEstadoPestañas()
@@ -302,7 +324,7 @@ namespace AMANC_Inventory.ViewModels
                 usuarioActual.LastLogin = DateTime.UtcNow;
                 await _userService.UpdateUserProfileAsync(usuarioActual);
 
-                // Abrir la ventana de Inventarios (sin pasar parámetros)
+                // Abrir la ventana de Inventarios
                 var inventoryWindow = new InventoryWindow(usuarioActual);
                 inventoryWindow.Show();
 
@@ -404,12 +426,12 @@ namespace AMANC_Inventory.ViewModels
                 return;
             }
 
-            // MODO REGISTRO: Cambiamos 'Pending' por 'Active' temporalmente para pruebas
+            // MODO REGISTRO
             var nuevoUsuario = new UserModel
             {
                 Name = Nombre.Trim(),
                 Email = Email.Trim().ToLower(),
-                Status = "Active", // <--- CAMBIO AQUÍ (Antes decía "Pending")
+                Status = "Active",
                 Role = "Volunteer",
                 IsProfileComplete = false
             };
@@ -418,8 +440,10 @@ namespace AMANC_Inventory.ViewModels
 
             if (registrado)
             {
-                MessageBox.Show($"¡Cuenta de {nuevoUsuario.Name} registrada y activada con éxito!\n\nYa puedes iniciar sesión directamente.", "Registro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
-                Nombre = ""; Email = ""; Password = ""; ConfirmPassword = "";
+                MessageBox.Show($"¡Cuenta de {nuevoUsuario.Name} registrada con éxito!\n\nActualmente se encuentra pendiente de activación por un administrador antes de poder iniciar sesión.", "Registro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                // Limpia completamente el formulario (ViewModel + Controles PasswordBox visuales)
+                LimpiarCamposFormulario();
                 EsModoLogin = true;
             }
             else
