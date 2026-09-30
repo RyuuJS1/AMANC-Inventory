@@ -294,27 +294,14 @@ namespace AMANC_Inventory.ViewModels
 
         private async Task RemovePictureAsync()
         {
-            // 1. Limpiar en memoria local
             ProfilePictureBase64 = null;
             _currentUser.ProfilePictureBase64 = null;
 
-            // 2. Notificar a la interfaz de usuario
             OnPropertyChanged(nameof(ProfileImageSource));
             OnPropertyChanged(nameof(HasProfilePicture));
             OnPropertyChanged(nameof(HasNoProfilePicture));
 
-            // 3. Persistir el cambio en la base de datos
-            bool actualizado = await _userService.UpdateUserProfileAsync(_currentUser);
-
-            if (!actualizado)
-            {
-                // Solo mostrar MessageBox si se está ejecutando en una aplicación con ventana activa
-                if (Application.Current?.MainWindow != null)
-                {
-                    MessageBox.Show("No se pudo eliminar la foto de perfil en el servidor. Verifique su conexión.",
-                                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
+            await _userService.UpdateUserProfileAsync(_currentUser);
         }
 
         private void Logout()

@@ -32,7 +32,7 @@ namespace AMANC_Inventory.Views
             // Función local para manejar el cierre de sesión
             void CerrarSesion()
             {
-                var loginWindow = new AMANC_Inventory.MainWindow();
+                var loginWindow = new MainWindow();
                 loginWindow.Show();
                 this.Close();
             }
