@@ -1,45 +1,583 @@
 ﻿<UserControl x:Class="AMANC_Inventory.Views.InventoryRegisterView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border Background="White" CornerRadius="8" Padding="25" BorderBrush="#E2E8F0" BorderThickness="1" HorizontalAlignment="Left" Width="600" VerticalAlignment="Top">
-        <StackPanel>
-            <TextBlock Text="Registrar Nuevo Artículo" FontSize="18" FontWeight="Bold" Foreground="#102240" Margin="0,0,0,15"/>
 
-            <Grid Margin="0,0,0,10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
-                <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                    <TextBlock Text="Código del Artículo" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding NewCode}" Padding="8,6" Background="#F8FAFC" BorderBrush="#CBD5E1"/>
-                </StackPanel>
+        <!-- Estilo para Convertir RadioButtons en Tarjetas Interactivas -->
+        <Style x:Key="CardButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="#102240"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="cardBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#2563EB"/>
+                    <Setter Property="Background" Value="#F8FAFC"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#102240"/>
+                    <Setter Property="BorderBrush" Value="#102240"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
-                <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                    <TextBlock Text="Nombre del Artículo" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding NewName}" Padding="8,6" Background="#F8FAFC" BorderBrush="#CBD5E1"/>
-                </StackPanel>
-            </Grid>
+        <!-- Estilos Base para Inputs -->
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
 
-            <Grid Margin="0,0,0,15">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
 
-                <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                    <TextBlock Text="Categoría" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
-                    <ComboBox ItemsSource="{Binding CategoriesList}" SelectedItem="{Binding NewCategory}" Padding="8,6" Background="#F8FAFC"/>
-                </StackPanel>
+        <Style TargetType="DatePicker">
+            <Setter Property="Padding" Value="6,5"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Resources>
 
-                <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                    <TextBlock Text="Stock Inicial" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
-                    <TextBox Text="{Binding NewStock}" Padding="8,6" Background="#F8FAFC" BorderBrush="#CBD5E1"/>
-                </StackPanel>
-            </Grid>
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Selector de Módulo (4 Tarjetas) -->
+            <RowDefinition Height="*"/>
+            <!-- Contenedor Completo de Formularios -->
+        </Grid.RowDefinitions>
 
-            <Button Content="Guardar Artículo" Command="{Binding SaveItemCommand}" Padding="15,9" Background="#102240" Foreground="White" FontWeight="Bold" BorderThickness="0" HorizontalAlignment="Right" Cursor="Hand"/>
-        </StackPanel>
-    </Border>
+        <!-- 1. SELECTOR DE MÓDULOS DE REGISTRO (4 Tarjetas Abarcando Todo el Ancho) -->
+        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,15">
+
+            <!-- 1. Registro Producto (Se marca IsChecked="True" por defecto) -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+             IsChecked="{Binding IsInventoryTabSelected, Mode=TwoWay, FallbackValue=True}"
+             Margin="0,0,6,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Registrar Entrada" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Producto / Stock" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </RadioButton>
+
+            <!-- 2. Registro Donación -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsDonationsTabSelected, Mode=TwoWay}"
+                         Margin="6,0,6,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE8A1;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Registrar Entrante" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Nueva Donación" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </RadioButton>
+
+            <!-- 3. Registro Paciente -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsPatientsTabSelected, Mode=TwoWay}"
+                         Margin="6,0,6,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Alta de Beneficiario" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Niño y Familia" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </RadioButton>
+
+            <!-- 4. Registro Traslado -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsTripsTabSelected, Mode=TwoWay}"
+                         Margin="6,0,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Programación" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Control de Traslado" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </RadioButton>
+
+        </UniformGrid>
+
+        <!-- 2. CONTENEDOR PRINCIPAL DE FORMULARIOS (ANCHO COMPLETO Y SCROLLBAR CORREGIDO) -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" BorderBrush="#E2E8F0" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <!-- El Padding se aplica al ScrollViewer para dejar libre la barra a la derecha -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="30,25,35,25">
+                <Grid>
+
+                    <!-- ============================================================== -->
+                    <!-- FORMULARIO 1: PRODUCTO / STOCK -->
+                    <!-- ============================================================== -->
+                    <StackPanel Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#102240" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Alta de Nuevo Artículo en Inventario" FontSize="18" FontWeight="Bold" Foreground="#102240" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Fila 1 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Código del Artículo *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewCode, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Nombre del Artículo *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Categoría" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding CategoriesList}" SelectedItem="{Binding NewCategory}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 2 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Stock Inicial *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewStock, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Stock Mínimo (Alerta)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewMinStock, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Unidad de Medida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding UnitsList}" SelectedItem="{Binding NewUnit}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 3 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Ubicación en Almacén" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewLocation, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Sede Asignada" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding BranchesList}" SelectedItem="{Binding NewBranch}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Estatus Inicial" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding StatusList}" SelectedItem="{Binding NewStatus}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 4: Descripción Completa -->
+                        <StackPanel Margin="0,0,0,25">
+                            <TextBlock Text="Descripción / Notas Adicionales" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding NewDescription, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Height="80" VerticalContentAlignment="Top"/>
+                        </StackPanel>
+
+                        <!-- Acciones -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Command="{Binding ResetFormCommand}" Content="Limpiar Campos" Padding="18,10" Background="#F1F5F9" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Margin="0,0,12,0" Cursor="Hand"/>
+                            <Button Command="{Binding SaveItemCommand}" Padding="22,10" Background="#102240" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Guardar en Inventario" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ============================================================== -->
+                    <!-- FORMULARIO 2: DONACIONES -->
+                    <!-- ============================================================== -->
+                    <StackPanel Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <TextBlock Text="&#xE8A1;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#102240" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Registro de Entrada por Donación" FontSize="18" FontWeight="Bold" Foreground="#102240" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Fila 1 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Empresa / Donante *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewDonorCompany, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Tipo de Donante" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding DonorTypesList}" SelectedItem="{Binding NewDonorType}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Fecha de Donación" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <DatePicker SelectedDate="{Binding NewDonationDate}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 2 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Producto Donado *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewDonatedProduct, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Presentación / Empaque" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewPresentation, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Cantidad Recibida *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewDonationQuantity, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 3 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Valor Unitario Estimado ($)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewUnitPrice, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Folio de Comprobante / Recibo" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewReceiptFolio, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Sede Destino" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding BranchesList}" SelectedItem="{Binding NewBranch}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 4 -->
+                        <StackPanel Margin="0,0,0,25">
+                            <TextBlock Text="Observaciones / Destino Específico" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding NewDonationNotes, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Height="80" VerticalContentAlignment="Top"/>
+                        </StackPanel>
+
+                        <!-- Acciones -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Command="{Binding ResetFormCommand}" Content="Limpiar Campos" Padding="18,10" Background="#F1F5F9" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Margin="0,0,12,0" Cursor="Hand"/>
+                            <Button Command="{Binding SaveDonationCommand}" Padding="22,10" Background="#102240" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Guardar Donación" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ============================================================== -->
+                    <!-- FORMULARIO 3: BENEFICIARIOS / NIÑOS -->
+                    <!-- ============================================================== -->
+                    <StackPanel Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#102240" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Alta de Beneficiario al Padrón" FontSize="18" FontWeight="Bold" Foreground="#102240" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Fila 1 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Nombre Completo del Niño(a) *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewChildName, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Edad" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewAge, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="CURP / Expediente" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewCurp, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 2 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Diagnóstico / Tipo de Cáncer *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewCancerType, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Padre / Madre / Tutor Responsable *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewGuardians, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Parentesco" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewRelationship, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 3 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Teléfono de Contacto *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewPhones, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Correo Electrónico" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewEmails, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Sede Asignada" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding BranchesList}" SelectedItem="{Binding NewBranch}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 4 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Ciudad / Municipio *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewCity, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Estado *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewState, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Estatus del Paciente" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding PatientStatusList}" SelectedItem="{Binding NewPatientStatus}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 5 -->
+                        <StackPanel Margin="0,0,0,25">
+                            <TextBlock Text="Notas Médicas / Observaciones Generales" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding NewPatientNotes, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Height="70" VerticalContentAlignment="Top"/>
+                        </StackPanel>
+
+                        <!-- Acciones -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Command="{Binding ResetFormCommand}" Content="Limpiar Campos" Padding="18,10" Background="#F1F5F9" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Margin="0,0,12,0" Cursor="Hand"/>
+                            <Button Command="{Binding SavePatientCommand}" Padding="22,10" Background="#102240" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Guardar Beneficiario" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- ============================================================== -->
+                    <!-- FORMULARIO 4: CONTROL TRASLADOS -->
+                    <!-- ============================================================== -->
+                    <StackPanel Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#102240" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Text="Programación de Traslado de Beneficiario" FontSize="18" FontWeight="Bold" Foreground="#102240" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Fila 1 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Paciente / Niño *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewTripChild, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Tutor / Acompañante *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewTripGuardian, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Sede Gestora" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding BranchesList}" SelectedItem="{Binding NewBranch}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 2 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Lugar de Origen *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewOrigin, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Lugar de Destino (Hospital/Albergue) *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <TextBox Text="{Binding NewDestination, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Tipo de Transporte" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding TransportTypesList}" SelectedItem="{Binding NewTransportType}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 3 -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Fecha y Hora de Salida *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <DatePicker SelectedDate="{Binding NewDepartureDate}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                <TextBlock Text="Fecha Est. de Regreso" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <DatePicker SelectedDate="{Binding NewReturnDate}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                <TextBlock Text="Estatus del Viaje" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                <ComboBox ItemsSource="{Binding TripStatusList}" SelectedItem="{Binding NewTripStatus}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Fila 4 -->
+                        <StackPanel Margin="0,0,0,25">
+                            <TextBlock Text="Requerimientos Especiales / Observaciones de Traslado" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding NewTripNotes, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Height="80" VerticalContentAlignment="Top"/>
+                        </StackPanel>
+
+                        <!-- Acciones -->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Command="{Binding ResetFormCommand}" Content="Limpiar Campos" Padding="18,10" Background="#F1F5F9" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Margin="0,0,12,0" Cursor="Hand"/>
+                            <Button Command="{Binding SaveTripCommand}" Padding="22,10" Background="#102240" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Programar Traslado" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+
+                </Grid>
+            </ScrollViewer>
+        </Border>
+    </Grid>
 </UserControl>

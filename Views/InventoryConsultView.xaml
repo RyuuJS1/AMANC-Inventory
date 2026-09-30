@@ -5,17 +5,36 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
-        <!-- Estilo para Convertir Botones en Tarjetas Interactivas -->
+        <!-- Estilos de Alineación para Columnas de DataGrid -->
+        <Style x:Key="CenterTextColumn" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="RightTextColumn" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+        </Style>
+
+        <Style x:Key="LeftTextColumn" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="6,0,0,0"/>
+        </Style>
+
+        <!-- Estilo para Convertir RadioButtons en Tarjetas Interactivas -->
         <Style x:Key="CardButtonStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#E2E8F0"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="#102240"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border Background="{TemplateBinding Background}"
+                        <Border x:Name="cardBorder"
+                                Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="8"
@@ -34,220 +53,180 @@
                 <Trigger Property="IsChecked" Value="True">
                     <Setter Property="Background" Value="#102240"/>
                     <Setter Property="BorderBrush" Value="#102240"/>
+                    <Setter Property="Foreground" Value="White"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid Margin="15">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Botones / Selector de Tabla -->
+            <!-- Selector de Tabla / Tarjetas -->
             <RowDefinition Height="Auto"/>
             <!-- Filtros y Búsqueda -->
             <RowDefinition Height="*"/>
             <!-- DataGrids -->
         </Grid.RowDefinitions>
 
-        <!-- Botones de Selección de Tabla (5 Tarjetas) -->
+        <!-- 1. SELECTOR DE TABLAS (5 Tarjetas Interactivas) -->
         <UniformGrid Grid.Row="0" Columns="5" Margin="0,0,0,15">
 
             <!-- 1. Stock y Productos -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsInventoryTabSelected, Mode=TwoWay}"
                          Margin="0,0,4,0">
-                <StackPanel>
-                    <TextBlock Text="Inventario General" FontSize="10" FontWeight="SemiBold">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#64748B"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="#93C5FD"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBlock Text="Stock y Productos" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#102240"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Inventario General" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Stock y Productos" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
             </RadioButton>
 
             <!-- 2. Donantes y Costos -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsDonationsTabSelected, Mode=TwoWay}"
                          Margin="4,0,4,0">
-                <StackPanel>
-                    <TextBlock Text="Registro de Donaciones" FontSize="10" FontWeight="SemiBold">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#64748B"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="#93C5FD"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBlock Text="Donantes y Costos" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#102240"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE8A1;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Donaciones" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Donantes y Costos" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
             </RadioButton>
 
             <!-- 3. Niños y Responsables -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsPatientsTabSelected, Mode=TwoWay}"
                          Margin="4,0,4,0">
-                <StackPanel>
-                    <TextBlock Text="Padrón Beneficiarios" FontSize="10" FontWeight="SemiBold">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#64748B"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="#93C5FD"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBlock Text="Niños y Responsables" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#102240"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Padrón Beneficiarios" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Niños y Familias" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
             </RadioButton>
 
             <!-- 4. Viajes y Fechas -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsTripsTabSelected, Mode=TwoWay}"
                          Margin="4,0,4,0">
-                <StackPanel>
-                    <TextBlock Text="Control de Traslados" FontSize="10" FontWeight="SemiBold">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#64748B"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="#93C5FD"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBlock Text="Viajes y Fechas" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#102240"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Control Traslados" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Viajes y Fechas" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
             </RadioButton>
 
             <!-- 5. Usuarios y Permisos -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsUsersTabSelected, Mode=TwoWay}"
                          Margin="4,0,0,0">
-                <StackPanel>
-                    <TextBlock Text="Administración" FontSize="10" FontWeight="SemiBold">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#64748B"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="#93C5FD"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                    <TextBlock Text="Usuarios y Permisos" FontSize="14" FontWeight="Bold" Margin="0,4,0,0">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="Foreground" Value="#102240"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsChecked, RelativeSource={RelativeSource AncestorType=RadioButton}}" Value="True">
-                                        <Setter Property="Foreground" Value="White"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE748;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Administración" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Usuarios y Permisos" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </Grid>
             </RadioButton>
 
         </UniformGrid>
 
-        <!-- Barra de Búsqueda y Filtros -->
-        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="15" Margin="0,0,0,15" BorderBrush="#E2E8F0" BorderThickness="1">
+        <!-- 2. BARRA DE BÚSQUEDA Y FILTROS -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="12,10" Margin="0,0,0,12" BorderBrush="#E2E8F0" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                    <TextBlock Text="Buscar registro..." FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,4"/>
-                    <Border CornerRadius="4" BorderBrush="#CBD5E1" BorderThickness="1" Background="#F8FAFC">
-                        <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" Padding="8,6" Background="Transparent" BorderThickness="0"/>
+                <!-- Caja de Búsqueda -->
+                <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                    <TextBlock Text="Filtrar registros en tiempo real" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                    <Border CornerRadius="6" BorderBrush="#CBD5E1" BorderThickness="1" Background="#F8FAFC" Padding="6,2">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="#94A3B8" VerticalAlignment="Center" Margin="4,0,6,0" FontSize="14"/>
+                            <TextBox Grid.Column="1" 
+                                     Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" 
+                                     Padding="4,6" 
+                                     Background="Transparent" 
+                                     BorderThickness="0" 
+                                     VerticalAlignment="Center"
+                                     FontSize="13"/>
+                        </Grid>
                     </Border>
                 </StackPanel>
 
+                <!-- Botones y Acciones Secundarias -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                    <Button Content="Limpiar Búsqueda" Command="{Binding ClearFilterCommand}" Padding="12,7" Margin="0,0,6,0" Background="#E2E8F0" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand"/>
+                    <Button Command="{Binding ClearFilterCommand}" 
+                            Padding="12,8" 
+                            Background="#F1F5F9" 
+                            Foreground="#334155" 
+                            FontWeight="SemiBold" 
+                            BorderThickness="0" 
+                            Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="6"/>
+                            </Style>
+                        </Button.Resources>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="&#xE894;" FontFamily="Segoe MDL2 Assets" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="Limpiar Búsqueda" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <!-- Contenedor de Tablas (DataGrids) -->
-        <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="10" BorderBrush="#E2E8F0" BorderThickness="1">
+        <!-- 3. CONTENEDOR DE TABLAS (DataGrids) -->
+        <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="2" BorderBrush="#E2E8F0" BorderThickness="1">
             <Grid>
                 <Grid.Resources>
+                    <!-- Estilo de Encabezado -->
                     <Style TargetType="DataGridColumnHeader">
-                        <Setter Property="Background" Value="#F1F5F9"/>
+                        <Setter Property="Background" Value="#F8FAFC"/>
                         <Setter Property="Foreground" Value="#1E293B"/>
                         <Setter Property="FontWeight" Value="Bold"/>
                         <Setter Property="FontSize" Value="12"/>
-                        <Setter Property="Padding" Value="10,8"/>
+                        <Setter Property="Padding" Value="10,10"/>
                         <Setter Property="BorderThickness" Value="0,0,0,1"/>
-                        <Setter Property="BorderBrush" Value="#CBD5E1"/>
+                        <Setter Property="BorderBrush" Value="#E2E8F0"/>
                     </Style>
+
+                    <!-- Estilo General de DataGrid -->
                     <Style TargetType="DataGrid">
                         <Setter Property="AutoGenerateColumns" Value="False"/>
                         <Setter Property="CanUserAddRows" Value="False"/>
@@ -257,7 +236,10 @@
                         <Setter Property="Background" Value="White"/>
                         <Setter Property="BorderThickness" Value="0"/>
                         <Setter Property="HeadersVisibility" Value="Column"/>
-                        <Setter Property="RowHeight" Value="36"/>
+                        <Setter Property="RowHeight" Value="38"/>
+                        <Setter Property="AlternatingRowBackground" Value="#F8FAFC"/>
+                        <Setter Property="SelectionMode" Value="Single"/>
+                        <Setter Property="CanUserSortColumns" Value="True"/>
                     </Style>
                 </Grid.Resources>
 
@@ -265,15 +247,15 @@
                 <DataGrid ItemsSource="{Binding FilteredInventoryList}"
                           Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
-                        <DataGridTextColumn Header="Sede" Binding="{Binding Branch}" Width="110"/>
-                        <DataGridTextColumn Header="Código" Binding="{Binding Code}" Width="100"/>
-                        <DataGridTextColumn Header="Producto" Binding="{Binding Name}" Width="*"/>
-                        <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="130"/>
-                        <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="80"/>
-                        <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="90"/>
-                        <DataGridTextColumn Header="Ubicación" Binding="{Binding Location}" Width="120"/>
-                        <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="100"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Sede" Binding="{Binding Branch}" Width="110" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Código" Binding="{Binding Code}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Producto" Binding="{Binding Name}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="80" ElementStyle="{StaticResource RightTextColumn}"/>
+                        <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="90" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Ubicación" Binding="{Binding Location}" Width="120" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="100" ElementStyle="{StaticResource CenterTextColumn}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -281,14 +263,14 @@
                 <DataGrid ItemsSource="{Binding FilteredDonationsList}"
                           Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                        <DataGridTextColumn Header="Empresa / Donante" Binding="{Binding CompanyName}" Width="180"/>
-                        <DataGridTextColumn Header="Fecha" Binding="{Binding DonationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="95"/>
-                        <DataGridTextColumn Header="Producto" Binding="{Binding ProductName}" Width="*"/>
-                        <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="110"/>
-                        <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="80"/>
-                        <DataGridTextColumn Header="P. Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="100"/>
-                        <DataGridTextColumn Header="Total Donante" Binding="{Binding TotalSpent, StringFormat=\{0:C\}}" Width="110"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Empresa / Donante" Binding="{Binding CompanyName}" Width="180" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Fecha" Binding="{Binding DonationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="100" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Producto" Binding="{Binding ProductName}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="120" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="85" ElementStyle="{StaticResource RightTextColumn}"/>
+                        <DataGridTextColumn Header="P. Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="100" ElementStyle="{StaticResource RightTextColumn}"/>
+                        <DataGridTextColumn Header="Total Donante" Binding="{Binding TotalSpent, StringFormat=\{0:C\}}" Width="115" ElementStyle="{StaticResource RightTextColumn}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -296,15 +278,15 @@
                 <DataGrid ItemsSource="{Binding FilteredPatientsList}"
                           Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                        <DataGridTextColumn Header="Nombre del Niño" Binding="{Binding ChildName}" Width="*"/>
-                        <DataGridTextColumn Header="Edad" Binding="{Binding Age}" Width="60"/>
-                        <DataGridTextColumn Header="Tipo Cáncer" Binding="{Binding CancerType}" Width="130"/>
-                        <DataGridTextColumn Header="Responsable(s)" Binding="{Binding Guardians}" Width="160"/>
-                        <DataGridTextColumn Header="Correo(s)" Binding="{Binding Emails}" Width="150"/>
-                        <DataGridTextColumn Header="Teléfono(s)" Binding="{Binding Phones}" Width="110"/>
-                        <DataGridTextColumn Header="Estado" Binding="{Binding State}" Width="100"/>
-                        <DataGridTextColumn Header="Ciudad" Binding="{Binding City}" Width="110"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Nombre del Niño" Binding="{Binding ChildName}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Edad" Binding="{Binding Age}" Width="65" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Tipo Cáncer" Binding="{Binding CancerType}" Width="140" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Responsable(s)" Binding="{Binding Guardians}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Correo(s)" Binding="{Binding Emails}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Teléfono(s)" Binding="{Binding Phones}" Width="115" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Estado" Binding="{Binding State}" Width="110" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Ciudad" Binding="{Binding City}" Width="110" ElementStyle="{StaticResource LeftTextColumn}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -312,14 +294,14 @@
                 <DataGrid ItemsSource="{Binding FilteredTripsList}"
                           Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                        <DataGridTextColumn Header="Paciente / Niño" Binding="{Binding ChildName}" Width="*"/>
-                        <DataGridTextColumn Header="Responsable" Binding="{Binding GuardianName}" Width="150"/>
-                        <DataGridTextColumn Header="Origen" Binding="{Binding Origin}" Width="130"/>
-                        <DataGridTextColumn Header="Destino" Binding="{Binding Destination}" Width="130"/>
-                        <DataGridTextColumn Header="F. Salida" Binding="{Binding DepartureDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130"/>
-                        <DataGridTextColumn Header="F. Llegada Estimada" Binding="{Binding ArrivalDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130"/>
-                        <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="110"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Paciente / Niño" Binding="{Binding ChildName}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Responsable" Binding="{Binding GuardianName}" Width="150" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Origen" Binding="{Binding Origin}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Destino" Binding="{Binding Destination}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="F. Salida" Binding="{Binding DepartureDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="135" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="F. Llegada Est." Binding="{Binding ArrivalDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="135" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -327,13 +309,13 @@
                 <DataGrid ItemsSource="{Binding FilteredUsersList}"
                           Visibility="{Binding IsUsersTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID / UID" Binding="{Binding Id}" Width="100"/>
-                        <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*"/>
-                        <DataGridTextColumn Header="Correo" Binding="{Binding Email}" Width="180"/>
-                        <DataGridTextColumn Header="Teléfono" Binding="{Binding Phone}" Width="110"/>
-                        <DataGridTextColumn Header="Sede" Binding="{Binding Branch}" Width="120"/>
-                        <DataGridTextColumn Header="Departamento" Binding="{Binding Department}" Width="130"/>
-                        <DataGridTextColumn Header="Rol / Permiso" Binding="{Binding Role}" Width="120"/>
+                        <DataGridTextColumn Header="ID / UID" Binding="{Binding Id}" Width="100" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Correo" Binding="{Binding Email}" Width="180" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Teléfono" Binding="{Binding Phone}" Width="115" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Sede" Binding="{Binding Branch}" Width="120" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Departamento" Binding="{Binding Department}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Rol / Permiso" Binding="{Binding Role}" Width="120" ElementStyle="{StaticResource CenterTextColumn}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

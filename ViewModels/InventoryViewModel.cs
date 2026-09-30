@@ -1,49 +1,32 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using AMANC_Inventory.Helpers;
+﻿using AMANC_Inventory.Helpers;
 using AMANC_Inventory.Interfaces;
 using AMANC_Inventory.Models;
+using AMANC_Inventory.Services;
+using System;
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace AMANC_Inventory.ViewModels
 {
     public class InventoryViewModel : ViewModelBase
     {
-        private readonly IProductService? _productService;
-        private UserModel? _usuarioActual;
-        private bool _isLoading;
-        private bool _isEditing;
-        private string _searchText = "";
 
-        // Navegación de Pestañas (0 = Consultas, 1 = Registros)
+        private UserModel? _usuarioActual;
+
+        // Navegación de Pestañas Principales (0 = Consultas, 1 = Registros)
         private int _selectedTab = 0;
 
-        // Pestañas individuales para RadioButtons y Visibilidad de DataGrids
-        private bool _isInventoryTabSelected = true;
-        private bool _isDonationsTabSelected;
-        private bool _isPatientsTabSelected;
-        private bool _isTripsTabSelected;
-        private bool _isUsersTabSelected;
+        // Sub-ViewModels
+        public InventoryConsultViewModel ConsultViewModel { get; }
+        public InventoryRegisterViewModel RegisterViewModel { get; }
 
-        // Filtro de búsqueda global
-        private string _filterText = string.Empty;
-
-        // Campos para Formulario de Alta / Registro
-        private string _newCode = string.Empty;
-        private string _newName = string.Empty;
-        private string _newCategory = string.Empty;
-        private int _newStock;
-
-        // Campos para el Header y Perfil Básicos
+        // Campos para el Header y Perfil de Usuario
         private string _nombreUsuario = "Usuario";
         private string _userInitials = "U";
         private bool _hasProfilePicture;
         private bool _hasNoProfilePicture = true;
         private bool _isProfileDetailsOpen;
 
-        // --- CAMPOS DE DETALLE DE PERFIL (Resuelven los Data Error: 40) ---
         private object? _profileImageSource;
         private string _phone = string.Empty;
         private string _emergencyPhone = string.Empty;
@@ -54,45 +37,30 @@ namespace AMANC_Inventory.ViewModels
         private string _branch = string.Empty;
         private string _department = string.Empty;
 
-        // Constructor predeterminado (compatibilidad sin DI)
         public InventoryViewModel() : this(null)
         {
         }
 
-        // Constructor con Inyección de Dependencias
         public InventoryViewModel(IProductService? productService)
         {
-            _productService = productService;
+            // Instanciación de Sub-ViewModels delegados
+            ConsultViewModel = new InventoryConsultViewModel(productService);
+            RegisterViewModel = new InventoryRegisterViewModel();
 
-            Items = new ObservableCollection<string>();
-            InventoryItems = new ObservableCollection<InventoryItemModel>();
-
-            // Inicialización de colecciones filtradas para vistas
-            FilteredInventoryList = new ObservableCollection<InventoryItemModel>();
-            FilteredDonationsList = new ObservableCollection<object>();
-            FilteredPatientsList = new ObservableCollection<object>();
-            FilteredTripsList = new ObservableCollection<object>();
-            FilteredUsersList = new ObservableCollection<UserModel>();
-            CategoriesList = new ObservableCollection<string> { "General", "Medicamento", "Alimento", "Ropa", "Insumo Médico" };
-
-            // Inicialización de listas desplegables del Perfil
+            // Colecciones para el modal de Perfil
             Relationships = new ObservableCollection<string> { "Padre/Madre", "Cónyuge", "Hermano/a", "Hijo/a", "Tutor", "Otro" };
             Branches = new ObservableCollection<string> { "Sede Central", "Veracruz", "Xalapa", "Córdoba" };
             Departments = new ObservableCollection<string> { "Administración", "Inventario", "Trabajo Social", "Logística", "Sistemas" };
 
-            // Inicialización de comandos
-            LoadItemsCommand = new RelayCommand(async _ => await LoadProductsAsync());
-            AddItemCommand = new RelayCommand(_ => AgregarItem());
-            CancelEditCommand = new RelayCommand(_ => CancelarEdicion());
-            SaveItemCommand = new RelayCommand(_ => GuardarElemento());
-            SelectTabCommand = new RelayCommand(p => SeleccionarPestana(p));
-            ClearFilterCommand = new RelayCommand(_ => FilterText = string.Empty);
+            // Comandos de navegación principal
+            SelectMainTabCommand = new RelayCommand(p => SeleccionarPestanaPrincipal(p));
+
+            // Comandos del Perfil de Usuario
             AbrirPerfilCommand = new RelayCommand(_ => AbrirPerfil());
             CerrarPerfilCommand = new RelayCommand(_ => CerrarPerfil());
-
-            // Comandos para la gestión del Perfil
             SelectPictureCommand = new RelayCommand(_ => SeleccionarFotoPerfil());
             SaveProfileCommand = new RelayCommand(_ => GuardarPerfil());
+            SelectTabCommand = new RelayCommand(p => SeleccionarPestanaPrincipal(p));
         }
 
         #region Propiedades
@@ -102,48 +70,6 @@ namespace AMANC_Inventory.ViewModels
             get => _usuarioActual;
             set => SetProperty(ref _usuarioActual, value);
         }
-
-        public ObservableCollection<string> Items { get; }
-        public ObservableCollection<InventoryItemModel> InventoryItems { get; }
-
-        // --- Listas Filtradas para DataGrids ---
-        public ObservableCollection<InventoryItemModel> FilteredInventoryList { get; }
-        public ObservableCollection<object> FilteredDonationsList { get; }
-        public ObservableCollection<object> FilteredPatientsList { get; }
-        public ObservableCollection<object> FilteredTripsList { get; }
-        public ObservableCollection<UserModel> FilteredUsersList { get; }
-
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        public bool IsEditing
-        {
-            get => _isEditing;
-            set => SetProperty(ref _isEditing, value);
-        }
-
-        public string SearchText
-        {
-            get => _searchText;
-            set => SetProperty(ref _searchText, value);
-        }
-
-        public string FilterText
-        {
-            get => _filterText;
-            set
-            {
-                if (SetProperty(ref _filterText, value))
-                {
-                    AplicarFiltros();
-                }
-            }
-        }
-
-        // --- Pestañas y Navegación ---
 
         public int SelectedTab
         {
@@ -160,64 +86,6 @@ namespace AMANC_Inventory.ViewModels
 
         public bool IsTabConsultVisible => SelectedTab == 0;
         public bool IsTabRegisterVisible => SelectedTab == 1;
-
-        public bool IsInventoryTabSelected
-        {
-            get => _isInventoryTabSelected;
-            set => SetProperty(ref _isInventoryTabSelected, value);
-        }
-
-        public bool IsDonationsTabSelected
-        {
-            get => _isDonationsTabSelected;
-            set => SetProperty(ref _isDonationsTabSelected, value);
-        }
-
-        public bool IsPatientsTabSelected
-        {
-            get => _isPatientsTabSelected;
-            set => SetProperty(ref _isPatientsTabSelected, value);
-        }
-
-        public bool IsTripsTabSelected
-        {
-            get => _isTripsTabSelected;
-            set => SetProperty(ref _isTripsTabSelected, value);
-        }
-
-        public bool IsUsersTabSelected
-        {
-            get => _isUsersTabSelected;
-            set => SetProperty(ref _isUsersTabSelected, value);
-        }
-
-        // --- Formulario de Registro / Edición ---
-
-        public string NewCode
-        {
-            get => _newCode;
-            set => SetProperty(ref _newCode, value);
-        }
-
-        public string NewName
-        {
-            get => _newName;
-            set => SetProperty(ref _newName, value);
-        }
-
-        public string NewCategory
-        {
-            get => _newCategory;
-            set => SetProperty(ref _newCategory, value);
-        }
-
-        public int NewStock
-        {
-            get => _newStock;
-            set => SetProperty(ref _newStock, value);
-        }
-
-        public ObservableCollection<string> CategoriesList { get; }
 
         // --- Header y Perfil ---
 
@@ -250,8 +118,6 @@ namespace AMANC_Inventory.ViewModels
             get => _isProfileDetailsOpen;
             set => SetProperty(ref _isProfileDetailsOpen, value);
         }
-
-        // --- Propiedades Faltantes del Perfil de Usuario ---
 
         public object? ProfileImageSource
         {
@@ -315,50 +181,23 @@ namespace AMANC_Inventory.ViewModels
 
         #region Comandos
 
-        public ICommand LoadItemsCommand { get; }
-        public ICommand AddItemCommand { get; }
-        public ICommand SaveItemCommand { get; }
-        public ICommand CancelEditCommand { get; }
-        public ICommand SelectTabCommand { get; }
-        public ICommand ClearFilterCommand { get; }
+        public ICommand SelectMainTabCommand { get; }
         public ICommand AbrirPerfilCommand { get; }
         public ICommand CerrarPerfilCommand { get; }
-
-        // Comandos adicionales del Perfil
         public ICommand SelectPictureCommand { get; }
         public ICommand SaveProfileCommand { get; }
+        public ICommand SelectTabCommand { get; }
 
         #endregion
 
         #region Métodos
 
-        public void SeleccionarPestana(object? parameter)
+        public void SeleccionarPestanaPrincipal(object? parameter)
         {
             if (parameter != null && int.TryParse(parameter.ToString(), out int tabIndex))
             {
                 SelectedTab = tabIndex;
             }
-        }
-
-        public void AbrirPerfil()
-        {
-            IsProfileDetailsOpen = true;
-        }
-
-        public void CerrarPerfil()
-        {
-            IsProfileDetailsOpen = false;
-        }
-
-        private void SeleccionarFotoPerfil()
-        {
-            // Lógica para abrir OpenFileDialog y seleccionar la foto de perfil
-        }
-
-        private void GuardarPerfil()
-        {
-            // Lógica para guardar las modificaciones del perfil
-            IsProfileDetailsOpen = false;
         }
 
         public void InicializarUsuario(UserModel usuario)
@@ -379,69 +218,20 @@ namespace AMANC_Inventory.ViewModels
                 HasProfilePicture = false;
                 HasNoProfilePicture = true;
             }
-
-            _ = LoadProductsAsync();
         }
 
-        public async Task LoadProductsAsync()
+        public void AbrirPerfil() => IsProfileDetailsOpen = true;
+
+        public void CerrarPerfil() => IsProfileDetailsOpen = false;
+
+        private void SeleccionarFotoPerfil()
         {
-            IsLoading = true;
-            InventoryItems.Clear();
-
-            if (_productService != null)
-            {
-                var products = await _productService.GetAllProductsAsync();
-                if (products != null)
-                {
-                    foreach (var item in products)
-                    {
-                        InventoryItems.Add(item);
-                    }
-                }
-            }
-            else
-            {
-                await Task.Delay(300);
-            }
-
-            AplicarFiltros();
-            IsLoading = false;
+            // Lógica para abrir OpenFileDialog y cargar la foto
         }
 
-        private void AplicarFiltros()
+        private void GuardarPerfil()
         {
-            FilteredInventoryList.Clear();
-
-            var query = InventoryItems.AsEnumerable();
-
-            if (!string.IsNullOrWhiteSpace(FilterText))
-            {
-                query = query.Where(i =>
-                    (i.Name != null && i.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                    (i.Code != null && i.Code.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                    (i.Category != null && i.Category.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
-                );
-            }
-
-            foreach (var item in query)
-            {
-                FilteredInventoryList.Add(item);
-            }
-        }
-
-        private void AgregarItem()
-        {
-            IsEditing = true;
-        }
-
-        private void GuardarElemento()
-        {
-            IsEditing = false;
-        }
-
-        private void CancelarEdicion()
-        {
-            IsEditing = false;
+            IsProfileDetailsOpen = false;
         }
 
         #endregion

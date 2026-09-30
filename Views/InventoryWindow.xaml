@@ -57,7 +57,6 @@
             <Grid Grid.Row="1">
 
                 <!-- MÓDULO DE INVENTARIO (Pestañas + Consultas + Registros) -->
-                <!-- Se oculta por completo (incluyendo la barra blanca) cuando el Perfil está Abierto -->
                 <Grid>
                     <Grid.Style>
                         <Style TargetType="Grid">
@@ -78,11 +77,11 @@
                         <!-- Vistas del Inventario -->
                     </Grid.RowDefinitions>
 
-                    <!-- Barra de Pestañas de Navegación -->
+                    <!-- Barra de Pestañas de Navegación Principal -->
                     <Border Grid.Row="0" Background="White" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="20,0">
                         <StackPanel Orientation="Horizontal">
 
-                            <!-- Pestaña: Consultar Inventario -->
+                            <!-- Pestaña 0: Consultar Inventario -->
                             <Button Content="📦 Consultas" 
                                     Command="{Binding SelectTabCommand}" 
                                     CommandParameter="0">
@@ -99,7 +98,7 @@
                                 </Button.Style>
                             </Button>
 
-                            <!-- Pestaña: Registrar Artículo -->
+                            <!-- Pestaña 1: Registrar Artículo -->
                             <Button Content="➕ Registros" 
                                     Command="{Binding SelectTabCommand}" 
                                     CommandParameter="1">
@@ -121,25 +120,26 @@
 
                     <!-- Vistas Internas de Inventario -->
                     <Grid Grid.Row="1" Margin="20">
-                        <!-- Vista 1: Consultar Inventario -->
+                        <!-- Vista 1: Consultar Inventario (Enlazada a ConsultViewModel) -->
                         <views:InventoryConsultView 
-                            Visibility="{Binding IsTabConsultVisible, Converter={StaticResource BoolToVisConverter}}"/>
+                            DataContext="{Binding ConsultViewModel}"
+                            Visibility="{Binding DataContext.IsTabConsultVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisConverter}}"/>
 
-                        <!-- Vista 2: Registrar Nuevo Artículo -->
+                        <!-- Vista 2: Registrar Nuevo Artículo (Enlazada a RegisterViewModel) -->
                         <views:InventoryRegisterView 
-                            Visibility="{Binding IsTabRegisterVisible, Converter={StaticResource BoolToVisConverter}}"/>
+                            DataContext="{Binding RegisterViewModel}"
+                            Visibility="{Binding DataContext.IsTabRegisterVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisConverter}}"/>
                     </Grid>
                 </Grid>
 
                 <!-- MÓDULO DE PERFIL DE USUARIO -->
-                <!-- Usa RelativeSource para apuntar a IsProfileDetailsOpen del InventoryViewModel de la ventana -->
                 <views:UserProfileView x:Name="UserProfileViewControl" 
                                        Visibility="{Binding DataContext.IsProfileDetailsOpen, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisConverter}}" />
 
             </Grid>
         </Grid>
 
-        <!-- 3. OVERLAY SUPERPUESTO (Completar Perfil si está incompleto) -->
+        <!-- 3. OVERLAY SUPERPUESTO -->
         <overlays:CompleteProfileOverlay x:Name="CompleteOverlayControl" Visibility="Collapsed" />
 
     </Grid>
