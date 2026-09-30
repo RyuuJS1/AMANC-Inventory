@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="../AMANC.Inventory.Test/AMANC.Inventory.Test.csproj" Id="ed0574b2-d32e-4a22-8bad-e2c862a779b9" />
+  <Project Path="AMANC.Inventory.Test/AMANC.Inventory.Test.csproj" Id="ed0574b2-d32e-4a22-8bad-e2c862a779b9" />
   <Project Path="AMANC Inventory.csproj" />
 </Solution>
