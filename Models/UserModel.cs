@@ -2,6 +2,7 @@
 using AMANC_Inventory.ViewModels;
 using System;
 using System.IO;
+using System.Text.Json.Serialization; // O using Newtonsoft.Json; según tu librería
 using System.Windows.Media.Imaging;
 
 namespace AMANC_Inventory.Models
@@ -63,10 +64,18 @@ namespace AMANC_Inventory.Models
 
         public bool IsProfileComplete { get; set; } = false;
 
-        // --- Propiedades para vinculación en XAML (Header / Perfil) ---
+        // --- Propiedades ignoradas para la serialización JSON (Solo para UI) ---
+
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public bool HasProfilePicture => !string.IsNullOrWhiteSpace(ProfilePictureBase64);
+
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public bool HasNoProfilePicture => !HasProfilePicture;
 
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public BitmapImage? ProfileImageSource
         {
             get
@@ -97,6 +106,8 @@ namespace AMANC_Inventory.Models
             }
         }
 
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
         public string UserInitials
         {
             get

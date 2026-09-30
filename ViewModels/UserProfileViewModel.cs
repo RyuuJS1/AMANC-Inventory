@@ -30,7 +30,6 @@ namespace AMANC_Inventory.ViewModels
         public Action? OnReturnToInventoryRequested { get; set; }
         public Action? OnLogoutRequested { get; set; }
 
-
         // --- Colecciones para los ComboBox ---
         public ObservableCollection<string> Branches { get; }
         public ObservableCollection<string> Departments { get; }
@@ -197,6 +196,7 @@ namespace AMANC_Inventory.ViewModels
             {
                 if (SetProperty(ref _profilePictureBase64, value))
                 {
+                    _currentUser.ProfilePictureBase64 = value; // Sincroniza inmediatamente con el UserModel que usa el Header
                     OnPropertyChanged(nameof(HasProfilePicture));
                     OnPropertyChanged(nameof(HasNoProfilePicture));
                     OnPropertyChanged(nameof(ProfileImageSource));
@@ -290,7 +290,85 @@ namespace AMANC_Inventory.ViewModels
         {
         }
 
-        // --- Métodos de Acción ---
+        // --- Métodos de Acción y Auxiliares ---
+
+        /// <summary>
+        /// Redimensiona la imagen a un ancho máximo de 256px y la comprime en JPEG a Base64.
+        /// Esto evita que el string sea demasiado pesado y falle al guardarse en Firebase.
+        /// </summary>
+        private string CompressAndResizeImageToBase64(string filePath, int targetWidth = 256)
+        {
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(filePath);
+            bitmap.DecodePixelWidth = targetWidth; // Redimensionar manteniendo proporción
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze();
+
+            JpegBitmapEncoder encoder = new JpegBitmapEncoder { QualityLevel = 80 };
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                encoder.Save(ms);
+                return Convert.ToBase64String(ms.ToArray());
+            }
+        }
+
+        private async void SelectPicture()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog { Filter = "Imágenes (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg" };
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    // 1. Redimensionar y comprimir
+                    string base64Compressed = CompressAndResizeImageToBase64(openFileDialog.FileName);
+
+                    // 2. Asignar localmente
+                    ProfilePictureBase64 = base64Compressed;
+
+                    // 3. GUARDAR INMEDIATAMENTE EN BASE DE DATOS
+                    bool guardado = await _userService.UpdateUserProfileAsync(_currentUser);
+
+                    if (guardado)
+                    {
+                        MessageBox.Show("Foto de perfil actualizada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show("La foto se cargó en pantalla pero no se pudo sincronizar con la base de datos.", "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al procesar la imagen: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async Task SaveChangesAsync()
+        {
+            _currentUser.ProfilePictureBase64 = ProfilePictureBase64;
+
+            bool ok = await _userService.UpdateUserProfileAsync(_currentUser);
+            if (ok)
+            {
+                IsEditing = false;
+                _userBackup = null;
+
+                OnPropertyChanged(nameof(ProfileImageSource));
+                OnPropertyChanged(nameof(HasProfilePicture));
+                OnPropertyChanged(nameof(HasNoProfilePicture));
+
+                MessageBox.Show("Perfil y foto de perfil guardados con éxito.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show("No se pudieron guardar los cambios. Verifique su conexión a internet.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         private async Task RemovePictureAsync()
         {
@@ -314,7 +392,6 @@ namespace AMANC_Inventory.ViewModels
 
             if (result == MessageBoxResult.Yes)
             {
-                // Dispara la acción para que MainWindow o la vista principal se encargue de la navegación
                 OnLogoutRequested?.Invoke();
             }
         }
@@ -405,36 +482,6 @@ namespace AMANC_Inventory.ViewModels
                     _entryTime = parts[0].Trim();
                     _exitTime = parts[1].Trim();
                 }
-            }
-        }
-
-        private void SelectPicture()
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog { Filter = "Imágenes (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg" };
-            if (openFileDialog.ShowDialog() == true)
-            {
-                byte[] bytes = File.ReadAllBytes(openFileDialog.FileName);
-                ProfilePictureBase64 = Convert.ToBase64String(bytes);
-            }
-        }
-
-        private async Task SaveChangesAsync()
-        {
-            _currentUser.ProfilePictureBase64 = ProfilePictureBase64;
-
-            bool ok = await _userService.UpdateUserProfileAsync(_currentUser);
-            if (ok)
-            {
-                IsEditing = false;
-                _userBackup = null;
-
-                OnPropertyChanged(nameof(ProfileImageSource));
-                OnPropertyChanged(nameof(HasProfilePicture));
-                OnPropertyChanged(nameof(HasNoProfilePicture));
-            }
-            else
-            {
-                MessageBox.Show("No se pudieron guardar los cambios. Verifique su conexión.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
