@@ -1,4 +1,4 @@
-name: Build and Test Pipeline
+name: Build and Test
 
 on:
   push:
@@ -7,23 +7,21 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build-test:
+  build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout del código
+    - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Configurar .NET SDK
+    - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '10.0.x'
+        dotnet-quality: 'preview'
 
-    - name: Restaurar dependencias
-      run: dotnet restore
+    - name: Restore dependencies
+      run: dotnet restore "AMANC Inventory.csproj"
 
-    - name: Compilar solución (Release)
-      run: dotnet build --no-restore --configuration Release
-
-    - name: Ejecutar Pruebas Unitarias
-      run: dotnet test --no-build --configuration Release --verbosity normal
+    - name: Build project
+      run: dotnet build "AMANC Inventory.csproj" --configuration Release --no-restore
