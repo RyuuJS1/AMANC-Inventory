@@ -30,6 +30,7 @@ namespace AMANC_Inventory.ViewModels
         public Action? OnReturnToInventoryRequested { get; set; }
         public Action? OnLogoutRequested { get; set; }
 
+
         // --- Colecciones para los ComboBox ---
         public ObservableCollection<string> Branches { get; }
         public ObservableCollection<string> Departments { get; }
@@ -302,13 +303,17 @@ namespace AMANC_Inventory.ViewModels
             OnPropertyChanged(nameof(HasProfilePicture));
             OnPropertyChanged(nameof(HasNoProfilePicture));
 
-            // 3. Persistir el cambio inmediatamente en la base de datos
+            // 3. Persistir el cambio en la base de datos
             bool actualizado = await _userService.UpdateUserProfileAsync(_currentUser);
 
             if (!actualizado)
             {
-                MessageBox.Show("No se pudo eliminar la foto de perfil en el servidor. Verifique su conexión.",
-                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Solo mostrar MessageBox si se está ejecutando en una aplicación con ventana activa
+                if (Application.Current?.MainWindow != null)
+                {
+                    MessageBox.Show("No se pudo eliminar la foto de perfil en el servidor. Verifique su conexión.",
+                                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
