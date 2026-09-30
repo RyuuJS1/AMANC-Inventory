@@ -29,14 +29,23 @@ namespace AMANC_Inventory.Views
             // 1. Inyectar la información del usuario al ViewModel Principal
             _mainViewModel.InicializarUsuario(usuarioLogueado);
 
+            // Función local para manejar el cierre de sesión
+            void CerrarSesion()
+            {
+                var loginWindow = new AMANC_Inventory.MainWindow();
+                loginWindow.Show();
+                this.Close();
+            }
+
             // 2. Crear ViewModel del perfil
             var profileVM = new UserProfileViewModel(usuarioLogueado, userService, emailService);
 
-            // Asignar acción para regresar al inventario
+            // Asignar acciones
             profileVM.OnReturnToInventoryRequested = () =>
             {
                 _mainViewModel.CerrarPerfil();
             };
+            profileVM.OnLogoutRequested = CerrarSesion;
 
             UserProfileViewControl.DataContext = profileVM;
 
@@ -58,6 +67,8 @@ namespace AMANC_Inventory.Views
 
                     var newProfileVM = new UserProfileViewModel(usuarioLogueado, userService, emailService);
                     newProfileVM.OnReturnToInventoryRequested = () => _mainViewModel.CerrarPerfil();
+                    newProfileVM.OnLogoutRequested = CerrarSesion;
+
                     UserProfileViewControl.DataContext = newProfileVM;
                 };
 

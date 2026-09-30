@@ -216,6 +216,15 @@ namespace AMANC_Inventory.ViewModels
         {
             if (EsModoLogin || string.IsNullOrEmpty(Password)) { NivelSeguridadVisible = false; return; }
             NivelSeguridadVisible = true;
+
+            // Validación de longitud mínima (mayor a 6 caracteres)
+            if (Password.Length <= 6)
+            {
+                NivelSeguridadTexto = "La contraseña debe tener más de 6 dígitos";
+                NivelSeguridadColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF6B6B"));
+                return;
+            }
+
             int puntos = 0;
             if (Password.Length >= 8) puntos++;
             if (Regex.IsMatch(Password, @"[A-Z]")) puntos++;
@@ -337,6 +346,12 @@ namespace AMANC_Inventory.ViewModels
                 if (string.IsNullOrWhiteSpace(Nombre))
                 {
                     MessageBox.Show("Por favor, ingresa tu nombre completo.", "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (Password.Length <= 6)
+                {
+                    MessageBox.Show("La contraseña debe tener más de 6 dígitos.", "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 

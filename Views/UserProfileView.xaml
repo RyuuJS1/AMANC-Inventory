@@ -43,8 +43,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="379*"/>
-                    <RowDefinition Height="23*"/>
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
@@ -66,17 +65,17 @@
                 </Grid>
 
                 <!-- 2. Separador -->
-                <Separator Background="#E2E8F0" Margin="0,44,0,20" Grid.RowSpan="2"/>
+                <Separator Grid.Row="1" Background="#E2E8F0" Margin="0,0,0,20"/>
 
                 <!-- 3. Contenedor Principal Con Scroll -->
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0" Margin="0,21,0,0" Grid.RowSpan="3">
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,10,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- LATERAL IZQUIERDA: Foto + Accesos Directos -->
+                        <!-- LATERAL IZQUIERDA: Foto + Accesos Directos + Cerrar Sesión -->
                         <StackPanel Grid.Column="0" Margin="0,0,25,0" VerticalAlignment="Top">
                             <!-- Foto de Perfil -->
                             <Grid Width="140" Height="140" HorizontalAlignment="Center">
@@ -90,18 +89,32 @@
                                 </Ellipse>
                             </Grid>
 
-                            <!-- Botón Cambiar Foto -->
-                            <Button Content="Cambiar Foto" 
-                                    Command="{Binding ChangeProfilePictureCommand}" 
-                                    Margin="0,12,0,0" 
-                                    Padding="8,7" 
-                                    Background="#F1F5F9" 
-                                    Foreground="#1E293B" 
-                                    FontWeight="SemiBold" 
-                                    FontSize="12" 
-                                    BorderBrush="#CBD5E1" 
-                                    BorderThickness="1" 
-                                    Cursor="Hand" Width="95"/>
+                            <!-- Acciones de Foto (Cambiar / Quitar) -->
+                            <UniformGrid Columns="2" Margin="0,12,0,0">
+                                <Button Content="Cambiar" 
+                                        Command="{Binding ChangeProfilePictureCommand}" 
+                                        Padding="4,6" 
+                                        Background="#F1F5F9" 
+                                        Foreground="#1E293B" 
+                                        FontWeight="SemiBold" 
+                                        FontSize="11" 
+                                        BorderBrush="#CBD5E1" 
+                                        BorderThickness="1" 
+                                        Margin="0,0,3,0"
+                                        Cursor="Hand"/>
+
+                                <Button Content="Quitar" 
+                                        Command="{Binding RemoveProfilePictureCommand}" 
+                                        Padding="4,6" 
+                                        Background="#FEF2F2" 
+                                        Foreground="#DC2626" 
+                                        FontWeight="SemiBold" 
+                                        FontSize="11" 
+                                        BorderBrush="#FCA5A5" 
+                                        BorderThickness="1" 
+                                        Margin="3,0,0,0"
+                                        Cursor="Hand"/>
+                            </UniformGrid>
 
                             <!-- Medalla de Rol/Sede -->
                             <Border Margin="0,20,0,0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="12">
@@ -113,17 +126,33 @@
 
                             <!-- Botón Cambiar Contraseña -->
                             <Button Content="Cambiar Contraseña"
-                                Command="{Binding ChangePasswordCommand}" 
-                                Margin="0,12,0,0" 
-                                Padding="12,6" 
-                                Background="#FFFFFF" 
-                                Foreground="#C2410C" 
-                                FontWeight="SemiBold" 
-                                FontSize="12" 
-                                BorderBrush="#CBD5E1" 
-                                BorderThickness="1" 
-                                Cursor="Hand" 
-                                HorizontalAlignment="Center" Width="138"/>
+                                    Command="{Binding ChangePasswordCommand}" 
+                                    Margin="0,12,0,0" 
+                                    Padding="8,7" 
+                                    Background="#FFFFFF" 
+                                    Foreground="#C2410C" 
+                                    FontWeight="SemiBold" 
+                                    FontSize="11" 
+                                    BorderBrush="#CBD5E1" 
+                                    BorderThickness="1" 
+                                    Cursor="Hand" 
+                                    HorizontalAlignment="Stretch"/>
+
+                            <!-- Separador visual -->
+                            <Separator Background="#E2E8F0" Margin="0,20,0,15"/>
+
+                            <!-- BOTÓN CERRAR SESIÓN -->
+                            <Button Content="Cerrar Sesión"
+                                    Command="{Binding LogoutCommand}" 
+                                    Padding="10,8" 
+                                    Background="#FEF2F2" 
+                                    Foreground="#DC2626" 
+                                    FontWeight="Bold" 
+                                    FontSize="12" 
+                                    BorderBrush="#FCA5A5" 
+                                    BorderThickness="1" 
+                                    Cursor="Hand" 
+                                    HorizontalAlignment="Stretch"/>
                         </StackPanel>
 
                         <!-- COLUMNA DERECHA: Datos del Perfil -->
@@ -193,57 +222,48 @@
                             </Border>
 
                             <!-- SECCIÓN 3: Contacto de Emergencia -->
-                            <Border Background="#FFFFFF" 
-                                BorderBrush="#E2E8F0" 
-                                BorderThickness="1" 
-                                CornerRadius="8" 
-                                Padding="15" 
-                                Margin="0,0,0,15">
+                            <Border Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="8" Padding="15" Margin="0,0,0,15">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <!-- Acento visual lateral -->
                                         <ColumnDefinition Width="4"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Barra de acento sutil para destacar "Emergencia" -->
                                     <Border Grid.Column="0" Background="#DC2626" CornerRadius="2" Margin="0,0,12,0"/>
 
                                     <StackPanel Grid.Column="1">
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                            <TextBlock Text="CONTACTO DE EMERGENCIA" FontSize="11" FontWeight="Bold" Foreground="#991B1B"/>
-                                        </StackPanel>
+                                        <TextBlock Text="CONTACTO DE EMERGENCIA" FontSize="11" FontWeight="Bold" Foreground="#991B1B" Margin="0,0,0,10"/>
 
                                         <UniformGrid Columns="3">
                                             <StackPanel Margin="0,0,10,0">
                                                 <TextBlock Text="Nombre del Contacto" FontSize="11" Foreground="#64748B"/>
                                                 <TextBlock Text="{Binding EmergencyContactName, FallbackValue='María Gómez'}" 
-                                                    Style="{StaticResource ReadOnlyViewStyle}"
-                                                    FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                                           Style="{StaticResource ReadOnlyViewStyle}"
+                                                           FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
                                                 <TextBox Text="{Binding EmergencyContactName, UpdateSourceTrigger=PropertyChanged}" 
-                                                    Style="{StaticResource EditViewStyle}"
-                                                    FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
+                                                         Style="{StaticResource EditViewStyle}"
+                                                         FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
                                             </StackPanel>
 
                                             <StackPanel Margin="0,0,10,0">
                                                 <TextBlock Text="Parentesco" FontSize="11" Foreground="#64748B"/>
-                                                <TextBlock Text="{Binding EmergencyContactRelationship, FallbackValue='Madre'}" 
-                                                    Style="{StaticResource ReadOnlyViewStyle}"
-                                                    FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
-                                                <ComboBox SelectedItem="{Binding EmergencyContactRelationship, UpdateSourceTrigger=PropertyChanged}" 
-                                                    ItemsSource="{Binding Relationships}"
-                                                    Style="{StaticResource EditViewStyle}"
-                                                    FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
+                                                <TextBlock Text="{Binding EmergencyRelationship, FallbackValue='Madre'}" 
+                                                           Style="{StaticResource ReadOnlyViewStyle}"
+                                                           FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                                <ComboBox SelectedItem="{Binding EmergencyRelationship, UpdateSourceTrigger=PropertyChanged}" 
+                                                          ItemsSource="{Binding Relationships}"
+                                                          Style="{StaticResource EditViewStyle}"
+                                                          FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
                                             </StackPanel>
 
                                             <StackPanel Margin="0,0,0,0">
                                                 <TextBlock Text="Teléfono de Emergencia" FontSize="11" Foreground="#64748B"/>
-                                                <TextBlock Text="{Binding EmergencyContactPhone, FallbackValue='+52 (229) 000 0000'}" 
-                                                    Style="{StaticResource ReadOnlyViewStyle}"
-                                                    FontSize="13" FontWeight="Bold" Foreground="#1E293B" Margin="0,2,0,0"/>
-                                                <TextBox Text="{Binding EmergencyContactPhone, UpdateSourceTrigger=PropertyChanged}" 
-                                                    Style="{StaticResource EditViewStyle}"
-                                                    FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
+                                                <TextBlock Text="{Binding EmergencyPhone, FallbackValue='+52 (229) 000 0000'}" 
+                                                           Style="{StaticResource ReadOnlyViewStyle}"
+                                                           FontSize="13" FontWeight="Bold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                                <TextBox Text="{Binding EmergencyPhone, UpdateSourceTrigger=PropertyChanged}" 
+                                                         Style="{StaticResource EditViewStyle}"
+                                                         FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
                                             </StackPanel>
                                         </UniformGrid>
                                     </StackPanel>
@@ -255,52 +275,48 @@
                                 <StackPanel>
                                     <TextBlock Text="LOGÍSTICA Y PREFERENCIAS DE VOLUNTARIADO" FontSize="11" FontWeight="Bold" Foreground="#065F46" Margin="0,0,0,10"/>
                                     <UniformGrid Columns="4">
-                                        <!-- Hora Entrada -->
                                         <StackPanel Margin="0,0,10,8">
                                             <TextBlock Text="Hora Entrada" FontSize="11" Foreground="#64748B"/>
                                             <TextBlock Text="{Binding EntryTime, FallbackValue='09:00'}" 
-                                               Style="{StaticResource ReadOnlyViewStyle}"
-                                               FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                                       Style="{StaticResource ReadOnlyViewStyle}"
+                                                       FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
                                             <ComboBox SelectedItem="{Binding EntryTime, UpdateSourceTrigger=PropertyChanged}" 
-                                              ItemsSource="{Binding Hours}"
-                                              Style="{StaticResource EditViewStyle}"
-                                              FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
+                                                      ItemsSource="{Binding Hours}"
+                                                      Style="{StaticResource EditViewStyle}"
+                                                      FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
                                         </StackPanel>
 
-                                        <!-- Hora Salida -->
                                         <StackPanel Margin="0,0,10,8">
                                             <TextBlock Text="Hora Salida" FontSize="11" Foreground="#64748B"/>
                                             <TextBlock Text="{Binding ExitTime, FallbackValue='18:00'}" 
-                                               Style="{StaticResource ReadOnlyViewStyle}"
-                                               FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                                       Style="{StaticResource ReadOnlyViewStyle}"
+                                                       FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
                                             <ComboBox SelectedItem="{Binding ExitTime, UpdateSourceTrigger=PropertyChanged}" 
-                                              ItemsSource="{Binding Hours}"
-                                              Style="{StaticResource EditViewStyle}"
-                                              FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
+                                                      ItemsSource="{Binding Hours}"
+                                                      Style="{StaticResource EditViewStyle}"
+                                                      FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
                                         </StackPanel>
 
-                                        <!-- Áreas de Interés -->
                                         <StackPanel Margin="0,0,10,8">
                                             <TextBlock Text="Áreas de Interés" FontSize="11" Foreground="#64748B"/>
                                             <TextBlock Text="{Binding Skills, FallbackValue='Eventos y Logística'}" 
-                                               Style="{StaticResource ReadOnlyViewStyle}"
-                                               FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                                       Style="{StaticResource ReadOnlyViewStyle}"
+                                                       FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
                                             <ComboBox SelectedItem="{Binding Skills, UpdateSourceTrigger=PropertyChanged}" 
-                                              ItemsSource="{Binding AreasOfInterest}"
-                                              Style="{StaticResource EditViewStyle}"
-                                              FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
+                                                      ItemsSource="{Binding AreasOfInterest}"
+                                                      Style="{StaticResource EditViewStyle}"
+                                                      FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
                                         </StackPanel>
 
-                                        <!-- Talla de Playera -->
                                         <StackPanel Margin="0,0,0,8">
                                             <TextBlock Text="Talla de Playera" FontSize="11" Foreground="#64748B"/>
                                             <TextBlock Text="{Binding ShirtSize, FallbackValue='M'}" 
-                                               Style="{StaticResource ReadOnlyViewStyle}"
-                                               FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
+                                                       Style="{StaticResource ReadOnlyViewStyle}"
+                                                       FontSize="13" FontWeight="SemiBold" Foreground="#1E293B" Margin="0,2,0,0"/>
                                             <ComboBox SelectedItem="{Binding ShirtSize, UpdateSourceTrigger=PropertyChanged}" 
-                                              ItemsSource="{Binding ShirtSizes}"
-                                              Style="{StaticResource EditViewStyle}"
-                                              FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
+                                                      ItemsSource="{Binding ShirtSizes}"
+                                                      Style="{StaticResource EditViewStyle}"
+                                                      FontSize="13" Foreground="#1E293B" Margin="0,2,0,0" Padding="5,3"/>
                                         </StackPanel>
                                     </UniformGrid>
                                 </StackPanel>
@@ -311,7 +327,7 @@
                 </ScrollViewer>
 
                 <!-- 4. Botones de Acción Principales -->
-                <Grid Grid.Row="4" Margin="0,15,0,0">
+                <Grid Grid.Row="3" Margin="0,15,0,0">
                     <Button Content="Editar Perfil" 
                             Command="{Binding EditProfileCommand}"
                             Style="{StaticResource ReadOnlyViewStyle}"

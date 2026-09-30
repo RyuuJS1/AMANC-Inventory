@@ -86,7 +86,7 @@ namespace AMANC_Inventory.Helpers
                 "XXXCH",
                 "XXCH",
                 "XCH",
-                "S",
+                "CH",
                 "M",
                 "G",
                 "XG",

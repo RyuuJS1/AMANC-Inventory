@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using AMANC_Inventory.Config;
+using AMANC_Inventory.Helpers;
 using AMANC_Inventory.Interfaces;
 using Firebase.Auth;
 using Firebase.Auth.Providers;
@@ -33,38 +34,47 @@ namespace AMANC_Inventory.Services
 
         public async Task<string> CreateUserAsync(string email, string password)
         {
-            var userCredential = await _authClient.CreateUserWithEmailAndPasswordAsync(email, password);
-            return userCredential.User.Uid;
+            return await PerformanceTracker.MeasureAsync(async () =>
+            {
+                var userCredential = await _authClient.CreateUserWithEmailAndPasswordAsync(email, password);
+                return userCredential.User.Uid;
+            }, "Registro de Usuario");
         }
 
         public async Task<string> SignInAsync(string email, string password)
         {
-            var userCredential = await _authClient.SignInWithEmailAndPasswordAsync(email, password);
-            return userCredential.User.Uid;
+            return await PerformanceTracker.MeasureAsync(async () =>
+            {
+                var userCredential = await _authClient.SignInWithEmailAndPasswordAsync(email, password);
+                return userCredential.User.Uid;
+            }, "Inicio de Sesión");
         }
 
         public async Task<bool> SendPasswordResetEmailAsync(string email)
         {
-            try
+            return await PerformanceTracker.MeasureAsync(async () =>
             {
-                var payload = new
+                try
                 {
-                    requestType = "PASSWORD_RESET",
-                    email = email
-                };
+                    var payload = new
+                    {
+                        requestType = "PASSWORD_RESET",
+                        email = email
+                    };
 
-                string json = JsonConvert.SerializeObject(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                    string json = JsonConvert.SerializeObject(payload);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                string url = $"{FirebaseRestApiUrl}{FirebaseConfig.ApiKey}";
-                var response = await _httpClient.PostAsync(url, content);
+                    string url = $"{FirebaseRestApiUrl}{FirebaseConfig.ApiKey}";
+                    var response = await _httpClient.PostAsync(url, content);
 
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+                    return response.IsSuccessStatusCode;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }, "Restablecimiento de Contraseña");
         }
     }
 }

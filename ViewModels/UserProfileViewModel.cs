@@ -2,10 +2,12 @@
 using AMANC_Inventory.Interfaces;
 using AMANC_Inventory.Models;
 using AMANC_Inventory.Services;
+using AMANC_Inventory.Views;
 using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,7 +20,7 @@ namespace AMANC_Inventory.ViewModels
     {
         private readonly UserModel _currentUser;
         private readonly IUserService _userService;
-        private readonly IAuthService _authService; // Reemplazado IEmailService por IAuthService (Firebase)
+        private readonly IAuthService _authService;
 
         // --- Respaldo para Cancelar Edición ---
         private UserModel? _userBackup;
@@ -26,6 +28,7 @@ namespace AMANC_Inventory.ViewModels
         private string _exitTimeBackup = "00:00";
 
         public Action? OnReturnToInventoryRequested { get; set; }
+        public Action? OnLogoutRequested { get; set; }
 
         // --- Colecciones para los ComboBox ---
         public ObservableCollection<string> Branches { get; }
@@ -71,6 +74,18 @@ namespace AMANC_Inventory.ViewModels
                     OnPropertyChanged();
                 }
             }
+        }
+
+        public string EmergencyRelationship
+        {
+            get => EmergencyContactRelationship;
+            set => EmergencyContactRelationship = value;
+        }
+
+        public string EmergencyPhone
+        {
+            get => EmergencyContactPhone;
+            set => EmergencyContactPhone = value;
         }
 
         public string RolUsuario => _currentUser.Role ?? "Voluntario";
@@ -188,37 +203,52 @@ namespace AMANC_Inventory.ViewModels
             }
         }
 
-        public bool HasProfilePicture => !string.IsNullOrEmpty(ProfilePictureBase64);
+        public bool HasProfilePicture => ProfileImageSource != null;
         public bool HasNoProfilePicture => !HasProfilePicture;
 
         public BitmapImage? ProfileImageSource
         {
             get
             {
-                if (string.IsNullOrEmpty(ProfilePictureBase64)) return null;
+                if (string.IsNullOrWhiteSpace(ProfilePictureBase64)) return null;
+
                 try
                 {
-                    byte[] binaryData = Convert.FromBase64String(ProfilePictureBase64);
-                    BitmapImage bi = new BitmapImage();
-                    bi.BeginInit();
-                    bi.StreamSource = new MemoryStream(binaryData);
-                    bi.CacheOption = BitmapCacheOption.OnLoad;
-                    bi.EndInit();
-                    return bi;
+                    string base64Data = ProfilePictureBase64.Contains(",")
+                        ? ProfilePictureBase64.Split(',')[1]
+                        : ProfilePictureBase64;
+
+                    byte[] binaryData = Convert.FromBase64String(base64Data);
+
+                    using (MemoryStream ms = new MemoryStream(binaryData))
+                    {
+                        BitmapImage bi = new BitmapImage();
+                        bi.BeginInit();
+                        bi.CacheOption = BitmapCacheOption.OnLoad;
+                        bi.StreamSource = ms;
+                        bi.EndInit();
+                        bi.Freeze();
+                        return bi;
+                    }
                 }
-                catch { return null; }
+                catch
+                {
+                    return null;
+                }
             }
         }
 
         // --- Comandos Vinculados al XAML ---
         public ICommand CloseProfileCommand { get; }
         public ICommand ChangeProfilePictureCommand { get; }
+        public ICommand RemoveProfilePictureCommand { get; }
         public ICommand EditProfileCommand { get; }
         public ICommand SaveChangesCommand { get; }
         public ICommand CancelEditCommand { get; }
         public ICommand ChangePasswordCommand { get; }
+        public ICommand LogoutCommand { get; }
 
-        // Constructor principal que recibe IAuthService
+        // Constructor principal
         public UserProfileViewModel(UserModel user, IUserService userService, IAuthService authService)
         {
             _currentUser = user ?? new UserModel();
@@ -237,15 +267,18 @@ namespace AMANC_Inventory.ViewModels
 
             ParseInitialAvailability();
 
+            // Comandos
             CloseProfileCommand = new RelayCommand(_ => OnReturnToInventoryRequested?.Invoke());
             ChangeProfilePictureCommand = new RelayCommand(_ => SelectPicture());
+            RemoveProfilePictureCommand = new RelayCommand(async _ => await RemovePictureAsync());
             EditProfileCommand = new RelayCommand(_ => StartEditing());
             CancelEditCommand = new RelayCommand(_ => CancelEditing());
             SaveChangesCommand = new RelayCommand(async _ => await SaveChangesAsync());
             ChangePasswordCommand = new RelayCommand(async _ => await RequestPasswordResetAsync());
+            LogoutCommand = new RelayCommand(_ => Logout());
         }
 
-        // Sobrecarga de compatibilidad en caso de que alguna vista siga pasando IEmailService o solo 2 parámetros
+        // Sobrecargas de compatibilidad
         public UserProfileViewModel(UserModel user, IUserService userService, IEmailService emailService)
             : this(user, userService, new AuthService())
         {
@@ -256,7 +289,44 @@ namespace AMANC_Inventory.ViewModels
         {
         }
 
-        // --- Métodos de Edición / Cancelación ---
+        // --- Métodos de Acción ---
+
+        private async Task RemovePictureAsync()
+        {
+            // 1. Limpiar en memoria local
+            ProfilePictureBase64 = null;
+            _currentUser.ProfilePictureBase64 = null;
+
+            // 2. Notificar a la interfaz de usuario
+            OnPropertyChanged(nameof(ProfileImageSource));
+            OnPropertyChanged(nameof(HasProfilePicture));
+            OnPropertyChanged(nameof(HasNoProfilePicture));
+
+            // 3. Persistir el cambio inmediatamente en la base de datos
+            bool actualizado = await _userService.UpdateUserProfileAsync(_currentUser);
+
+            if (!actualizado)
+            {
+                MessageBox.Show("No se pudo eliminar la foto de perfil en el servidor. Verifique su conexión.",
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void Logout()
+        {
+            MessageBoxResult result = MessageBox.Show(
+                "¿Estás seguro de que deseas cerrar sesión?",
+                "Cerrar Sesión",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                // Dispara la acción para que MainWindow o la vista principal se encargue de la navegación
+                OnLogoutRequested?.Invoke();
+            }
+        }
+
         private void StartEditing()
         {
             _userBackup = new UserModel
@@ -359,11 +429,16 @@ namespace AMANC_Inventory.ViewModels
         private async Task SaveChangesAsync()
         {
             _currentUser.ProfilePictureBase64 = ProfilePictureBase64;
+
             bool ok = await _userService.UpdateUserProfileAsync(_currentUser);
             if (ok)
             {
                 IsEditing = false;
                 _userBackup = null;
+
+                OnPropertyChanged(nameof(ProfileImageSource));
+                OnPropertyChanged(nameof(HasProfilePicture));
+                OnPropertyChanged(nameof(HasNoProfilePicture));
             }
             else
             {
@@ -381,7 +456,6 @@ namespace AMANC_Inventory.ViewModels
                 return;
             }
 
-            // Llamada directa a Firebase AuthService
             bool enviado = await _authService.SendPasswordResetEmailAsync(correo);
 
             if (enviado)
