@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AMANC_Inventory.Core.Config;
 using AMANC_Inventory.Core.Utilities;
@@ -14,6 +16,8 @@ namespace AMANC_Inventory.Inventory.Services
     public class ProductService : IProductService
     {
         private readonly FirebaseClient _firebaseClient;
+        private const string NodeName = "Productos";
+        private const string IdPrefix = "PROD-";
 
         public ProductService()
         {
@@ -26,24 +30,23 @@ namespace AMANC_Inventory.Inventory.Services
             {
                 try
                 {
-                    if (string.IsNullOrEmpty(product.Id) || product.Id == "0")
+                    if (product == null) return false;
+
+                    if (string.IsNullOrWhiteSpace(product.Id) || product.Id == "0")
                     {
-                        await _firebaseClient
-                            .Child("Products")
-                            .PostAsync(product);
+                        product.Id = await GetNextCustomIdAsync();
                     }
-                    else
-                    {
-                        await _firebaseClient
-                            .Child("Products")
-                            .Child(product.Id.ToString())
-                            .PutAsync(product);
-                    }
+
+                    await _firebaseClient
+                        .Child(NodeName)
+                        .Child(product.Id)
+                        .PutAsync(product);
+
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[Error al guardar producto]: {ex.Message}");
+                    Debug.WriteLine($"[Error al guardar producto]: {ex.Message}");
                     return false;
                 }
             }, "Guardar Producto en Firebase");
@@ -56,17 +59,61 @@ namespace AMANC_Inventory.Inventory.Services
                 try
                 {
                     var items = await _firebaseClient
-                        .Child("Products")
+                        .Child(NodeName)
                         .OnceAsync<InventoryItemModel>();
 
-                    return items.Select(item => item.Object).ToList();
+                    return items
+                        .Where(item => item.Object != null)
+                        .Select(item =>
+                        {
+                            var prod = item.Object;
+
+                            prod.Id = string.IsNullOrEmpty(prod.Id) ? item.Key : prod.Id;
+                            return prod;
+                        })
+                        .ToList();
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[Error al consultar productos]: {ex.Message}");
+                    Debug.WriteLine($"[Error al consultar productos]: {ex.Message}");
                     return new List<InventoryItemModel>();
                 }
             }, "Consultar Productos desde Firebase");
+        }
+
+        /// <summary>
+        /// Genera el siguiente ID consecutivo dinámico (ej. PROD-000001).
+        /// Admite más de 999,999 registros ya que se expande automáticamente si el número crece.
+        /// </summary>
+        private async Task<string> GetNextCustomIdAsync()
+        {
+            try
+            {
+                var items = await _firebaseClient
+                    .Child(NodeName)
+                    .OnceAsync<InventoryItemModel>();
+
+                if (!items.Any()) return $"{IdPrefix}000001";
+
+                int maxId = items
+                    .Select(i =>
+                    {
+                        string key = i.Key;
+                        string numericPart = Regex.Match(key, @"\d+").Value;
+                        return int.TryParse(numericPart, out int num) ? num : 0;
+                    })
+                    .DefaultIfEmpty(0)
+                    .Max();
+
+                int nextNumericId = maxId + 1;
+
+                return $"{IdPrefix}{nextNumericId:D6}";
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Error al calcular el consecutivo del producto]: {ex.Message}");
+                return $"{IdPrefix}000001";
+            }
         }
     }
 }
