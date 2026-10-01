@@ -1,0 +1,80 @@
+﻿using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using AMANC_Inventory.Core.Config;
+using AMANC_Inventory.Core.Utilities;
+using AMANC_Inventory.Modules.Auth.Interfaces;
+using Firebase.Auth;
+using Firebase.Auth.Providers;
+using Newtonsoft.Json;
+
+namespace AMANC_Inventory.Modules.Auth.Services
+{
+    public class AuthService : IAuthService
+    {
+        private readonly FirebaseAuthClient _authClient;
+        private static readonly HttpClient _httpClient = new HttpClient();
+        private const string FirebaseRestApiUrl = "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=";
+
+        public AuthService()
+        {
+            var config = new FirebaseAuthConfig
+            {
+                ApiKey = FirebaseConfig.ApiKey,
+                AuthDomain = FirebaseConfig.AuthDomain,
+                Providers = new FirebaseAuthProvider[]
+                {
+                    new EmailProvider()
+                }
+            };
+
+            _authClient = new FirebaseAuthClient(config);
+        }
+
+        public async Task<string> CreateUserAsync(string email, string password)
+        {
+            return await PerformanceTracker.MeasureAsync(async () =>
+            {
+                var userCredential = await _authClient.CreateUserWithEmailAndPasswordAsync(email, password);
+                return userCredential.User.Uid;
+            }, "Registro de Usuario");
+        }
+
+        public async Task<string> SignInAsync(string email, string password)
+        {
+            return await PerformanceTracker.MeasureAsync(async () =>
+            {
+                var userCredential = await _authClient.SignInWithEmailAndPasswordAsync(email, password);
+                return userCredential.User.Uid;
+            }, "Inicio de Sesión");
+        }
+
+        public async Task<bool> SendPasswordResetEmailAsync(string email)
+        {
+            return await PerformanceTracker.MeasureAsync(async () =>
+            {
+                try
+                {
+                    var payload = new
+                    {
+                        requestType = "PASSWORD_RESET",
+                        email = email
+                    };
+
+                    string json = JsonConvert.SerializeObject(payload);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    string url = $"{FirebaseRestApiUrl}{FirebaseConfig.ApiKey}";
+                    var response = await _httpClient.PostAsync(url, content);
+
+                    return response.IsSuccessStatusCode;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }, "Restablecimiento de Contraseña");
+        }
+    }
+}

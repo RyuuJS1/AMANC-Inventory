@@ -1,9 +1,17 @@
 ﻿using System;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using AMANC_Inventory.Interfaces;
-using AMANC_Inventory.Services;
-using AMANC_Inventory.ViewModels;
+using AMANC_Inventory.Shared.Interfaces;
+using AMANC_Inventory.Shared.Services;
+using AMANC_Inventory.Modules.Auth.Interfaces;
+using AMANC_Inventory.Modules.Auth.Services;
+using AMANC_Inventory.Modules.Auth.ViewModels;
+using AMANC_Inventory.Inventory.Interfaces;
+using AMANC_Inventory.Inventory.Services;
+using AMANC_Inventory.Inventory.ViewModels;
+using AMANC_Inventory.Users.Interfaces;
+using AMANC_Inventory.Users.Services;
+using AMANC_Inventory.Users.ViewModels;
 
 namespace AMANC_Inventory
 {
