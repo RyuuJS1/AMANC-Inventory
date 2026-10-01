@@ -1,57 +1,73 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using AMANC_Inventory.Core.Architecture;
+﻿using AMANC_Inventory.Core.Architecture;
+using AMANC_Inventory.Donations.Interfaces;
+using AMANC_Inventory.Donations.Models;
+using AMANC_Inventory.Donations.Services;
 using AMANC_Inventory.Inventory.Interfaces;
 using AMANC_Inventory.Inventory.Models;
+using AMANC_Inventory.Inventory.Services;
 using AMANC_Inventory.Users.Models;
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 
 namespace AMANC_Inventory.Inventory.ViewModels
 {
     public class InventoryConsultViewModel : ViewModelBase
     {
-        private readonly IProductService? _productService;
+        private readonly IProductService _productService;
+        private readonly IDonationService _donationService;
+
         private bool _isLoading;
         private string _searchText = string.Empty;
         private string _filterText = string.Empty;
 
-        // Pestañas de Consulta
         private bool _isInventoryTabSelected = true;
         private bool _isDonationsTabSelected;
         private bool _isPatientsTabSelected;
         private bool _isTripsTabSelected;
         private bool _isUsersTabSelected;
 
-        public InventoryConsultViewModel() : this(null)
+        public InventoryConsultViewModel(IProductService? productService = null, IDonationService? donationService = null)
         {
-        }
-
-        public InventoryConsultViewModel(IProductService? productService)
-        {
-            _productService = productService;
+            _productService = productService ?? new ProductService();
+            _donationService = donationService ?? new DonationService();
 
             InventoryItems = new ObservableCollection<InventoryItemModel>();
             FilteredInventoryList = new ObservableCollection<InventoryItemModel>();
-            FilteredDonationsList = new ObservableCollection<object>();
+
+            DonationItems = new ObservableCollection<DonationModel>();
+            FilteredDonationsList = new ObservableCollection<DonationModel>();
+
             FilteredPatientsList = new ObservableCollection<object>();
             FilteredTripsList = new ObservableCollection<object>();
             FilteredUsersList = new ObservableCollection<UserModel>();
 
-            // Comandos
-            LoadItemsCommand = new RelayCommand(async _ => await LoadProductsAsync());
+            LoadItemsCommand = new RelayCommand(async _ => await LoadAllDataAsync());
             SelectTabCommand = new RelayCommand(p => SeleccionarPestana(p));
             ClearFilterCommand = new RelayCommand(_ => FilterText = string.Empty);
 
-            _ = LoadProductsAsync();
+            if (DesignerProperties.GetIsInDesignMode(new DependencyObject()))
+            {
+                CargarDatosDiseno();
+            }
+            else
+            {
+                _ = LoadAllDataAsync();
+            }
         }
 
         #region Propiedades
 
         public ObservableCollection<InventoryItemModel> InventoryItems { get; }
         public ObservableCollection<InventoryItemModel> FilteredInventoryList { get; }
-        public ObservableCollection<object> FilteredDonationsList { get; }
+
+        public ObservableCollection<DonationModel> DonationItems { get; }
+        public ObservableCollection<DonationModel> FilteredDonationsList { get; }
+
         public ObservableCollection<object> FilteredPatientsList { get; }
         public ObservableCollection<object> FilteredTripsList { get; }
         public ObservableCollection<UserModel> FilteredUsersList { get; }
@@ -79,8 +95,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 }
             }
         }
-
-        // --- Estados de las Pestañas ---
 
         public bool IsInventoryTabSelected
         {
@@ -135,52 +149,127 @@ namespace AMANC_Inventory.Inventory.ViewModels
             IsPatientsTabSelected = tab == "2" || tab.Equals("Patients", StringComparison.OrdinalIgnoreCase);
             IsTripsTabSelected = tab == "3" || tab.Equals("Trips", StringComparison.OrdinalIgnoreCase);
             IsUsersTabSelected = tab == "4" || tab.Equals("Users", StringComparison.OrdinalIgnoreCase);
-        }
-
-        public async Task LoadProductsAsync()
-        {
-            IsLoading = true;
-            InventoryItems.Clear();
-
-            if (_productService != null)
-            {
-                var products = await _productService.GetAllProductsAsync();
-                if (products != null)
-                {
-                    foreach (var item in products)
-                    {
-                        InventoryItems.Add(item);
-                    }
-                }
-            }
-            else
-            {
-                await Task.Delay(300);
-            }
 
             AplicarFiltros();
-            IsLoading = false;
+        }
+
+        public async Task LoadAllDataAsync()
+        {
+            IsLoading = true;
+            try
+            {
+                var products = await _productService.GetAllProductsAsync();
+                var donations = await _donationService.GetAllDonationsAsync();
+
+                // Asegurar la actualización en el hilo principal de la interfaz
+                ExecuteOnUIThread(() =>
+                {
+                    InventoryItems.Clear();
+                    if (products != null)
+                    {
+                        foreach (var p in products) InventoryItems.Add(p);
+                    }
+
+                    DonationItems.Clear();
+                    if (donations != null)
+                    {
+                        foreach (var d in donations) DonationItems.Add(d);
+                    }
+
+                    AplicarFiltros();
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Error al cargar datos]: {ex.Message}");
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private void AplicarFiltros()
         {
-            FilteredInventoryList.Clear();
-
-            var query = InventoryItems.AsEnumerable();
-
-            if (!string.IsNullOrWhiteSpace(FilterText))
+            ExecuteOnUIThread(() =>
             {
-                query = query.Where(i =>
-                    (i.Name != null && i.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                    (i.Code != null && i.Code.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                    (i.Category != null && i.Category.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
-                );
-            }
+                // 1. Filtrar Productos
+                FilteredInventoryList.Clear();
+                var inventoryQuery = InventoryItems.AsEnumerable();
 
-            foreach (var item in query)
+                if (!string.IsNullOrWhiteSpace(FilterText))
+                {
+                    inventoryQuery = inventoryQuery.Where(i =>
+                        (i.Name != null && i.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (i.Code != null && i.Code.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (i.Category != null && i.Category.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (i.Branch != null && i.Branch.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (i.Location != null && i.Location.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (i.Status != null && i.Status.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
+                    );
+                }
+
+                foreach (var item in inventoryQuery)
+                {
+                    FilteredInventoryList.Add(item);
+                }
+
+                // 2. Filtrar Donaciones (Actualizado con las propiedades reales del DonationModel)
+                FilteredDonationsList.Clear();
+                var donationsQuery = DonationItems.AsEnumerable();
+
+                if (!string.IsNullOrWhiteSpace(FilterText))
+                {
+                    donationsQuery = donationsQuery.Where(d =>
+                        (d.CompanyName != null && d.CompanyName.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (d.ProductName != null && d.ProductName.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (d.Presentation != null && d.Presentation.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (d.Branch != null && d.Branch.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
+                    );
+                }
+
+                foreach (var item in donationsQuery)
+                {
+                    FilteredDonationsList.Add(item);
+                }
+            });
+        }
+
+        private void ExecuteOnUIThread(Action action)
+        {
+            if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
             {
-                FilteredInventoryList.Add(item);
+                Application.Current.Dispatcher.Invoke(action);
             }
+            else
+            {
+                action();
+            }
+        }
+
+        private void CargarDatosDiseno()
+        {
+            InventoryItems.Add(new InventoryItemModel
+            {
+                Code = "MED-101",
+                Name = "Amoxicilina 250mg",
+                Category = "Medicamento",
+                Stock = 45,
+                Unit = "Cajas",
+                Branch = "Sede Veracruz",
+                Status = "Disponible"
+            });
+
+            DonationItems.Add(new DonationModel
+            {
+                CompanyName = "Farmacia San Jerónimo",
+                ProductName = "Paquetes de Gasas",
+                Quantity = 100,
+                Presentation = "Material Médico",
+                Branch = "Sede Veracruz",
+            });
+
+            AplicarFiltros();
         }
 
         #endregion
