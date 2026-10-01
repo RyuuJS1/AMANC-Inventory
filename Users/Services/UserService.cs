@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,34 +26,96 @@ namespace AMANC_Inventory.Users.Services
             _authService = authService;
         }
 
-        public async Task<bool> RegisterUserAsync(UserModel userProfile, string password)
+        /// <summary>
+        /// Genera el siguiente ID numérico consecutivo para el nodo especificado.
+        /// </summary>
+        private async Task<string> GetNextCustomIdAsync(string nodeName, string prefix = "USR-")
         {
             try
             {
-                if (userProfile == null || string.IsNullOrWhiteSpace(userProfile.Email))
-                {
-                    return false;
-                }
+                var items = await _dbClient
+                    .Child(nodeName)
+                    .OnceAsync<UserModel>();
 
-                userProfile.Email = userProfile.Email.Trim().ToLower();
+                if (!items.Any()) return $"{prefix}0001";
 
-                string uid = await _authService.CreateUserAsync(userProfile.Email, password);
+                int maxId = items
+                    .Select(i =>
+                    {
+                        string key = i.Key.Replace(prefix, "");
+                        return int.TryParse(key, out int num) ? num : 0;
+                    })
+                    .DefaultIfEmpty(0)
+                    .Max();
 
-                userProfile.Id = uid;
-                userProfile.CreatedAt = DateTime.UtcNow;
-
-                await _dbClient
-                    .Child("Usuarios")
-                    .Child(uid)
-                    .PutAsync(userProfile);
-
-                return true;
+                return $"{prefix}{(maxId + 1):D4}";
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error durante el registro: {ex.Message}", ex);
+                Debug.WriteLine($"Error al calcular siguiente ID: {ex.Message}");
+                return $"{prefix}0001";
             }
         }
+
+        public async Task<List<UserModel>> GetAllUsersAsync()
+        {
+            try
+            {
+                var items = await _dbClient
+                    .Child("Usuarios")
+                    .OnceAsync<UserModel>();
+
+                return items
+                    .Where(item => item.Object != null)
+                    .Select(item =>
+                    {
+                        var user = item.Object;
+                        user.Id = string.IsNullOrEmpty(user.Id) ? item.Key : user.Id;
+                        return user;
+                    })
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error crítico en GetAllUsersAsync: {ex.Message}");
+                return new List<UserModel>();
+            }
+        }
+
+        public async Task<bool> RegisterUserAsync(UserModel userProfile, string password)
+{
+    try
+    {
+        if (userProfile == null || string.IsNullOrWhiteSpace(userProfile.Email))
+        {
+            return false;
+        }
+
+        userProfile.Email = userProfile.Email.Trim().ToLower();
+
+        // 1. Crear en Firebase Auth
+        string uid = await _authService.CreateUserAsync(userProfile.Email, password);
+
+        // 2. Generar ID con prefijo (ej: "USR-0001")
+        string customId = await GetNextCustomIdAsync("Usuarios", "USR-");
+
+        userProfile.Id = customId;
+        userProfile.AuthUid = uid;
+        userProfile.CreatedAt = DateTime.UtcNow;
+
+        // 3. Guardar en Realtime Database
+        await _dbClient
+            .Child("Usuarios")
+            .Child(customId)
+            .PutAsync(userProfile);
+
+        return true;
+    }
+    catch (Exception ex)
+    {
+        throw new Exception($"Error durante el registro: {ex.Message}", ex);
+    }
+}
 
         public async Task<bool> ValidateCredentialsAsync(string email, string password)
         {
@@ -64,12 +127,9 @@ namespace AMANC_Inventory.Users.Services
 
                 if (string.IsNullOrEmpty(uid)) return false;
 
-                var userProfile = await _dbClient
-                    .Child("Usuarios")
-                    .Child(uid)
-                    .OnceSingleAsync<UserModel>();
+                // Consulta al usuario por correo para ubicarlo sin importar el ID de clave del nodo
+                var userProfile = await GetUserByEmailAsync(email);
 
-                // Devuelve true solo si el usuario existe y está activo
                 return userProfile != null && userProfile.Status == "Active";
             }
             catch (Exception ex)

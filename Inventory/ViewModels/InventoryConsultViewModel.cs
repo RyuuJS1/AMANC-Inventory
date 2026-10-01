@@ -5,7 +5,13 @@ using AMANC_Inventory.Donations.Services;
 using AMANC_Inventory.Inventory.Interfaces;
 using AMANC_Inventory.Inventory.Models;
 using AMANC_Inventory.Inventory.Services;
+using AMANC_Inventory.Patients.Models;
+using AMANC_Inventory.Patients.Services;
+using AMANC_Inventory.Trips.Models;
+using AMANC_Inventory.Trips.Services;
+using AMANC_Inventory.Users.Interfaces;
 using AMANC_Inventory.Users.Models;
+using AMANC_Inventory.Users.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -20,9 +26,11 @@ namespace AMANC_Inventory.Inventory.ViewModels
     {
         private readonly IProductService _productService;
         private readonly IDonationService _donationService;
+        private readonly IPatientService _patientService;
+        private readonly ITripService _tripService;
+        private readonly IUserService _userService;
 
         private bool _isLoading;
-        private string _searchText = string.Empty;
         private string _filterText = string.Empty;
 
         private bool _isInventoryTabSelected = true;
@@ -31,10 +39,18 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private bool _isTripsTabSelected;
         private bool _isUsersTabSelected;
 
-        public InventoryConsultViewModel(IProductService? productService = null, IDonationService? donationService = null)
+        public InventoryConsultViewModel(
+            IProductService? productService = null,
+            IDonationService? donationService = null,
+            IPatientService? patientService = null,
+            ITripService? tripService = null,
+            IUserService? userService = null)
         {
             _productService = productService ?? new ProductService();
             _donationService = donationService ?? new DonationService();
+            _patientService = patientService ?? new PatientService();
+            _tripService = tripService ?? new TripService();
+            _userService = userService ?? new UserService();
 
             InventoryItems = new ObservableCollection<InventoryItemModel>();
             FilteredInventoryList = new ObservableCollection<InventoryItemModel>();
@@ -42,25 +58,26 @@ namespace AMANC_Inventory.Inventory.ViewModels
             DonationItems = new ObservableCollection<DonationModel>();
             FilteredDonationsList = new ObservableCollection<DonationModel>();
 
-            FilteredPatientsList = new ObservableCollection<object>();
-            FilteredTripsList = new ObservableCollection<object>();
+            PatientItems = new ObservableCollection<PatientModel>();
+            FilteredPatientsList = new ObservableCollection<PatientModel>();
+
+            TripItems = new ObservableCollection<TripModel>();
+            FilteredTripsList = new ObservableCollection<TripModel>();
+
+            UserItems = new ObservableCollection<UserModel>();
             FilteredUsersList = new ObservableCollection<UserModel>();
 
             LoadItemsCommand = new RelayCommand(async _ => await LoadAllDataAsync());
             SelectTabCommand = new RelayCommand(p => SeleccionarPestana(p));
             ClearFilterCommand = new RelayCommand(_ => FilterText = string.Empty);
 
-            if (DesignerProperties.GetIsInDesignMode(new DependencyObject()))
-            {
-                CargarDatosDiseno();
-            }
-            else
+            if (!DesignerProperties.GetIsInDesignMode(new DependencyObject()))
             {
                 _ = LoadAllDataAsync();
             }
         }
 
-        #region Propiedades
+        #region Colecciones
 
         public ObservableCollection<InventoryItemModel> InventoryItems { get; }
         public ObservableCollection<InventoryItemModel> FilteredInventoryList { get; }
@@ -68,20 +85,23 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public ObservableCollection<DonationModel> DonationItems { get; }
         public ObservableCollection<DonationModel> FilteredDonationsList { get; }
 
-        public ObservableCollection<object> FilteredPatientsList { get; }
-        public ObservableCollection<object> FilteredTripsList { get; }
+        public ObservableCollection<PatientModel> PatientItems { get; }
+        public ObservableCollection<PatientModel> FilteredPatientsList { get; }
+
+        public ObservableCollection<TripModel> TripItems { get; }
+        public ObservableCollection<TripModel> FilteredTripsList { get; }
+
+        public ObservableCollection<UserModel> UserItems { get; }
         public ObservableCollection<UserModel> FilteredUsersList { get; }
+
+        #endregion
+
+        #region Propiedades de Estado y Pestañas
 
         public bool IsLoading
         {
             get => _isLoading;
             set => SetProperty(ref _isLoading, value);
-        }
-
-        public string SearchText
-        {
-            get => _searchText;
-            set => SetProperty(ref _searchText, value);
         }
 
         public string FilterText
@@ -136,12 +156,11 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         #endregion
 
-        #region Métodos
+        #region Métodos de Carga y Filtrado
 
         public void SeleccionarPestana(object? parameter)
         {
             if (parameter == null) return;
-
             string tab = parameter.ToString() ?? string.Empty;
 
             IsInventoryTabSelected = tab == "0" || tab.Equals("Inventory", StringComparison.OrdinalIgnoreCase);
@@ -158,30 +177,43 @@ namespace AMANC_Inventory.Inventory.ViewModels
             IsLoading = true;
             try
             {
-                var products = await _productService.GetAllProductsAsync();
-                var donations = await _donationService.GetAllDonationsAsync();
+                // Carga simultánea de los 5 nodos de Firebase
+                var productsTask = _productService.GetAllProductsAsync();
+                var donationsTask = _donationService.GetAllDonationsAsync();
+                var patientsTask = _patientService.GetAllPatientsAsync();
+                var tripsTask = _tripService.GetAllTripsAsync();
+                var usersTask = _userService.GetAllUsersAsync();
 
-                // Asegurar la actualización en el hilo principal de la interfaz
+                await Task.WhenAll(productsTask, donationsTask, patientsTask, tripsTask, usersTask);
+
                 ExecuteOnUIThread(() =>
                 {
                     InventoryItems.Clear();
-                    if (products != null)
-                    {
-                        foreach (var p in products) InventoryItems.Add(p);
-                    }
+                    foreach (var p in productsTask.Result ?? Enumerable.Empty<InventoryItemModel>())
+                        InventoryItems.Add(p);
 
                     DonationItems.Clear();
-                    if (donations != null)
-                    {
-                        foreach (var d in donations) DonationItems.Add(d);
-                    }
+                    foreach (var d in donationsTask.Result ?? Enumerable.Empty<DonationModel>())
+                        DonationItems.Add(d);
+
+                    PatientItems.Clear();
+                    foreach (var pa in patientsTask.Result ?? Enumerable.Empty<PatientModel>())
+                        PatientItems.Add(pa);
+
+                    TripItems.Clear();
+                    foreach (var t in tripsTask.Result ?? Enumerable.Empty<TripModel>())
+                        TripItems.Add(t);
+
+                    UserItems.Clear();
+                    foreach (var u in usersTask.Result ?? Enumerable.Empty<UserModel>())
+                        UserItems.Add(u);
 
                     AplicarFiltros();
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[Error al cargar datos]: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Error al cargar datos globales]: {ex.Message}");
             }
             finally
             {
@@ -193,45 +225,74 @@ namespace AMANC_Inventory.Inventory.ViewModels
         {
             ExecuteOnUIThread(() =>
             {
-                // 1. Filtrar Productos
+                // 1. Productos
                 FilteredInventoryList.Clear();
-                var inventoryQuery = InventoryItems.AsEnumerable();
-
+                var invQuery = InventoryItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
                 {
-                    inventoryQuery = inventoryQuery.Where(i =>
-                        (i.Name != null && i.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                        (i.Code != null && i.Code.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                        (i.Category != null && i.Category.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                        (i.Branch != null && i.Branch.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                        (i.Location != null && i.Location.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                        (i.Status != null && i.Status.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
+                    invQuery = invQuery.Where(i =>
+                        (i.Name?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (i.Code?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (i.Category?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (i.Branch?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
                     );
                 }
+                foreach (var item in invQuery) FilteredInventoryList.Add(item);
 
-                foreach (var item in inventoryQuery)
-                {
-                    FilteredInventoryList.Add(item);
-                }
-
-                // 2. Filtrar Donaciones (Actualizado con las propiedades reales del DonationModel)
+                // 2. Donaciones
                 FilteredDonationsList.Clear();
-                var donationsQuery = DonationItems.AsEnumerable();
-
+                var donQuery = DonationItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
                 {
-                    donationsQuery = donationsQuery.Where(d =>
-                        (d.CompanyName != null && d.CompanyName.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                        (d.ProductName != null && d.ProductName.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                        (d.Presentation != null && d.Presentation.Contains(FilterText, StringComparison.OrdinalIgnoreCase)) ||
-                        (d.Branch != null && d.Branch.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
+                    donQuery = donQuery.Where(d =>
+                        (d.CompanyName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (d.ProductName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (d.Branch?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
                     );
                 }
+                foreach (var item in donQuery) FilteredDonationsList.Add(item);
 
-                foreach (var item in donationsQuery)
+                // 3. Niños / Beneficiarios
+                FilteredPatientsList.Clear();
+                var patQuery = PatientItems.AsEnumerable();
+                if (!string.IsNullOrWhiteSpace(FilterText))
                 {
-                    FilteredDonationsList.Add(item);
+                    patQuery = patQuery.Where(p =>
+                        (p.ChildName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (p.Guardians?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (p.CancerType?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (p.City?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                    );
                 }
+                foreach (var item in patQuery) FilteredPatientsList.Add(item);
+
+                // 4. Traslados / Viajes
+                FilteredTripsList.Clear();
+                var tripQuery = TripItems.AsEnumerable();
+                if (!string.IsNullOrWhiteSpace(FilterText))
+                {
+                    tripQuery = tripQuery.Where(t =>
+                        (t.ChildName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (t.GuardianName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (t.Origin?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (t.Destination?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                    );
+                }
+                foreach (var item in tripQuery) FilteredTripsList.Add(item);
+
+                // 5. Usuarios
+                FilteredUsersList.Clear();
+                var usrQuery = UserItems.AsEnumerable();
+                if (!string.IsNullOrWhiteSpace(FilterText))
+                {
+                    usrQuery = usrQuery.Where(u =>
+                        (u.Name?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (u.Email?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (u.Branch?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                        (u.Department?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                    );
+                }
+                foreach (var item in usrQuery) FilteredUsersList.Add(item);
             });
         }
 
@@ -245,31 +306,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
             {
                 action();
             }
-        }
-
-        private void CargarDatosDiseno()
-        {
-            InventoryItems.Add(new InventoryItemModel
-            {
-                Code = "MED-101",
-                Name = "Amoxicilina 250mg",
-                Category = "Medicamento",
-                Stock = 45,
-                Unit = "Cajas",
-                Branch = "Sede Veracruz",
-                Status = "Disponible"
-            });
-
-            DonationItems.Add(new DonationModel
-            {
-                CompanyName = "Farmacia San Jerónimo",
-                ProductName = "Paquetes de Gasas",
-                Quantity = 100,
-                Presentation = "Material Médico",
-                Branch = "Sede Veracruz",
-            });
-
-            AplicarFiltros();
         }
 
         #endregion

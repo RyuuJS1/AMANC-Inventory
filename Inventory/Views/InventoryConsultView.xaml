@@ -88,7 +88,7 @@
                     <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="Inventario General" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
-                        <TextBlock Text="Stock y Productos" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
+                        <TextBlock Text="Productos y Stock" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Grid>
             </RadioButton>
@@ -121,8 +121,8 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Padrón Beneficiarios" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
-                        <TextBlock Text="Niños y Familias" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
+                        <TextBlock Text="Beneficiarios" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Niños y Tutores" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Grid>
             </RadioButton>
@@ -156,7 +156,7 @@
                     <TextBlock Text="&#xE748;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="Administración" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
-                        <TextBlock Text="Usuarios y Permisos" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
+                        <TextBlock Text="Usuarios y Roles" FontSize="13" FontWeight="Bold" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Grid>
             </RadioButton>

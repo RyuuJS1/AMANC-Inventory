@@ -1,14 +1,18 @@
 ﻿using AMANC_Inventory.Core.Architecture;
 using System;
 using System.IO;
-using System.Text.Json.Serialization; // O using Newtonsoft.Json; según tu librería
+using System.Text.Json.Serialization;
 using System.Windows.Media.Imaging;
 
 namespace AMANC_Inventory.Users.Models
 {
     public class UserModel : ViewModelBase
     {
+        // ID Personalizado / Secuencial ("1", "2", "3"...)
         public string Id { get; set; } = string.Empty;
+
+        // ID único de Firebase Authentication
+        public string AuthUid { get; set; } = string.Empty;
 
         private string _name = string.Empty;
         public string Name
@@ -94,7 +98,7 @@ namespace AMANC_Inventory.Users.Models
                         bi.StreamSource = ms;
                         bi.CacheOption = BitmapCacheOption.OnLoad;
                         bi.EndInit();
-                        bi.Freeze(); // Necesario para renderizar en UI
+                        bi.Freeze();
                         return bi;
                     }
                 }

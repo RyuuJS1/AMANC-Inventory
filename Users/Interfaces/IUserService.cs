@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using AMANC_Inventory.Users.Models;
 
@@ -11,7 +10,8 @@ namespace AMANC_Inventory.Users.Interfaces
         Task<bool> RegisterUserAsync(UserModel userProfile, string password);
         Task<bool> ValidateCredentialsAsync(string email, string password);
         Task<bool> EmailExistsAsync(string email);
-        Task<UserModel?> GetUserByEmailAsync(string email);
+        Task<UserModel?> GetUserByEmailAsync(string? email);
         Task<bool> UpdateUserProfileAsync(UserModel userProfile);
+        Task<List<UserModel>> GetAllUsersAsync();
     }
 }
