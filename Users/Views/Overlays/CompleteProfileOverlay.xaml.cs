@@ -1,6 +1,6 @@
-﻿using AMANC_Inventory.Services;
+﻿using AMANC_Inventory.Users.Services;
 using AMANC_Inventory.Users.Models;
-using AMANC_Inventory.ViewModels;
+using AMANC_Inventory.Users.ViewModels;
 using System.Windows.Controls;
 
 namespace AMANC_Inventory.Views.Overlays
