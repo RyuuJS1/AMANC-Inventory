@@ -23,5 +23,5 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore "AMANC Inventory.csproj"
 
-    - name: Build project
+    - name: Build
       run: dotnet build "AMANC Inventory.csproj" --configuration Release --no-restore
