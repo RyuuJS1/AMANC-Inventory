@@ -21,7 +21,7 @@ jobs:
         dotnet-quality: 'preview'
 
     - name: Restore dependencies
-      run: dotnet restore "AMANC Inventory.csproj"
+      run: dotnet restore "AMANC_Inventory.csproj"
 
     - name: Build
-      run: dotnet build "AMANC Inventory.csproj" --configuration Release --no-restore
+      run: dotnet build "AMANC_Inventory.csproj" --configuration Release --no-restore
