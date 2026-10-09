@@ -8,6 +8,7 @@
         public string Name { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
         public int Stock { get; set; }
+        public decimal Price { get; set; }
         public string Unit { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;

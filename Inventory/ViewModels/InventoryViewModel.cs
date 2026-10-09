@@ -1,5 +1,8 @@
 ﻿using AMANC_Inventory.Core.Architecture;
+using AMANC_Inventory.Donations.Interfaces;
 using AMANC_Inventory.Inventory.Interfaces;
+using AMANC_Inventory.Patients.Services;
+using AMANC_Inventory.Trips.Services;
 using AMANC_Inventory.Users.Models;
 using System;
 using System.Collections.ObjectModel;
@@ -9,17 +12,12 @@ namespace AMANC_Inventory.Inventory.ViewModels
 {
     public class InventoryViewModel : ViewModelBase
     {
-
         private UserModel? _usuarioActual;
-
-        // Navegación de Pestañas Principales (0 = Consultas, 1 = Registros)
         private int _selectedTab = 0;
 
-        // Sub-ViewModels
         public InventoryConsultViewModel ConsultViewModel { get; }
         public InventoryRegisterViewModel RegisterViewModel { get; }
 
-        // Campos para el Header y Perfil de Usuario
         private string _nombreUsuario = "Usuario";
         private string _userInitials = "U";
         private bool _hasProfilePicture;
@@ -36,25 +34,31 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private string _branch = string.Empty;
         private string _department = string.Empty;
 
-        public InventoryViewModel() : this(null)
+        public InventoryViewModel() : this(null, null, null, null)
         {
         }
 
-        public InventoryViewModel(IProductService? productService)
+        public InventoryViewModel(
+            IProductService? productService = null,
+            IDonationService? donationService = null,
+            IPatientService? patientService = null,
+            ITripService? tripService = null)
         {
-            // Instanciación de Sub-ViewModels delegados
-            ConsultViewModel = new InventoryConsultViewModel(productService);
-            RegisterViewModel = new InventoryRegisterViewModel();
+            ConsultViewModel = new InventoryConsultViewModel(productService, donationService, patientService, tripService);
 
-            // Colecciones para el modal de Perfil
+            // Al guardar cualquier registro, se recargan los datos de Firebase en la vista de consultas
+            RegisterViewModel = new InventoryRegisterViewModel(
+                productService,
+                donationService,
+                patientService,
+                tripService,
+                async () => await ConsultViewModel.LoadAllDataAsync());
+
             Relationships = new ObservableCollection<string> { "Padre/Madre", "Cónyuge", "Hermano/a", "Hijo/a", "Tutor", "Otro" };
             Branches = new ObservableCollection<string> { "Sede Central", "Veracruz", "Xalapa", "Córdoba" };
             Departments = new ObservableCollection<string> { "Administración", "Inventario", "Trabajo Social", "Logística", "Sistemas" };
 
-            // Comandos de navegación principal
             SelectMainTabCommand = new RelayCommand(p => SeleccionarPestanaPrincipal(p));
-
-            // Comandos del Perfil de Usuario
             AbrirPerfilCommand = new RelayCommand(_ => AbrirPerfil());
             CerrarPerfilCommand = new RelayCommand(_ => CerrarPerfil());
             SelectPictureCommand = new RelayCommand(_ => SeleccionarFotoPerfil());
@@ -85,8 +89,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         public bool IsTabConsultVisible => SelectedTab == 0;
         public bool IsTabRegisterVisible => SelectedTab == 1;
-
-        // --- Header y Perfil ---
 
         public string NombreUsuario
         {
@@ -209,6 +211,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 UserInitials = !string.IsNullOrEmpty(usuario.UserInitials) ? usuario.UserInitials : "U";
                 HasProfilePicture = !string.IsNullOrEmpty(usuario.ProfilePictureBase64);
                 HasNoProfilePicture = !HasProfilePicture;
+                RegisterViewModel?.SetUserBranch(usuario.Branch);
             }
             else
             {
@@ -225,7 +228,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         private void SeleccionarFotoPerfil()
         {
-            // Lógica para abrir OpenFileDialog y cargar la foto
         }
 
         private void GuardarPerfil()

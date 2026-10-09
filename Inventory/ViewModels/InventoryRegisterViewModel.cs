@@ -1,18 +1,37 @@
-﻿using System;
+﻿using AMANC_Inventory.Core.Architecture;
+using AMANC_Inventory.Donations.Interfaces;
+using AMANC_Inventory.Donations.Models;
+using AMANC_Inventory.Donations.Services;
+using AMANC_Inventory.Inventory.Interfaces;
+using AMANC_Inventory.Inventory.Models;
+using AMANC_Inventory.Inventory.Services;
+using AMANC_Inventory.Patients.Models;
+using AMANC_Inventory.Patients.Services;
+using AMANC_Inventory.Trips.Models;
+using AMANC_Inventory.Trips.Services;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
-using AMANC_Inventory.Core.Architecture;
 
 namespace AMANC_Inventory.Inventory.ViewModels
 {
     public class InventoryRegisterViewModel : INotifyPropertyChanged
     {
+        private readonly IProductService _productService;
+        private readonly IDonationService _donationService;
+        private readonly IPatientService _patientService;
+        private readonly ITripService _tripService;
+        private readonly Func<Task>? _onSaveSuccess;
+
         // -------------------------------------------------------------
         // ESTADOS DE LAS PESTAÑAS (TAB SELECTION)
         // -------------------------------------------------------------
+
+        private string? _userDefaultBranch;
         private bool _isInventoryTabSelected = true;
         public bool IsInventoryTabSelected
         {
@@ -56,11 +75,14 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private string? _newStock;
         public string? NewStock { get => _newStock; set { _newStock = value; OnPropertyChanged(); } }
 
-        private string? _newMinStock;
-        public string? NewMinStock { get => _newMinStock; set { _newMinStock = value; OnPropertyChanged(); } }
-
         private string? _newUnit;
         public string? NewUnit { get => _newUnit; set { _newUnit = value; OnPropertyChanged(); } }
+        private string? _newPrice;
+        public string? NewPrice
+        {
+            get => _newPrice;
+            set { _newPrice = value; OnPropertyChanged(); }
+        }
 
         private string? _newLocation;
         public string? NewLocation { get => _newLocation; set { _newLocation = value; OnPropertyChanged(); } }
@@ -68,11 +90,11 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private string? _newBranch;
         public string? NewBranch { get => _newBranch; set { _newBranch = value; OnPropertyChanged(); } }
 
-        private string? _newStatus;
-        public string? NewStatus { get => _newStatus; set { _newStatus = value; OnPropertyChanged(); } }
-
-        private string? _newDescription;
-        public string? NewDescription { get => _newDescription; set { _newDescription = value; OnPropertyChanged(); } }
+        public void SetUserBranch(string? branch)
+        {
+            _userDefaultBranch = branch;
+            NewBranch = branch;
+        }
 
         // -------------------------------------------------------------
         // PROPIEDADES - PESTAÑA DONACIONES
@@ -186,7 +208,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public ObservableCollection<string> TripStatusList { get; set; } = new();
 
         // -------------------------------------------------------------
-        // DECLARACIÓN DE COMANDOS (ICommand)
+        // COMANDOS
         // -------------------------------------------------------------
         public ICommand ResetFormCommand { get; }
         public ICommand SaveItemCommand { get; }
@@ -194,14 +216,20 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public ICommand SavePatientCommand { get; }
         public ICommand SaveTripCommand { get; }
 
-        // -------------------------------------------------------------
-        // CONSTRUCTOR
-        // -------------------------------------------------------------
-        public InventoryRegisterViewModel()
+        public InventoryRegisterViewModel(
+            IProductService? productService = null,
+            IDonationService? donationService = null,
+            IPatientService? patientService = null,
+            ITripService? tripService = null,
+            Func<Task>? onSaveSuccess = null)
         {
-            IsInventoryTabSelected = true;
+            _productService = productService ?? new ProductService();
+            _donationService = donationService ?? new DonationService();
+            _patientService = patientService ?? new PatientService();
+            _tripService = tripService ?? new TripService();
+            _onSaveSuccess = onSaveSuccess;
 
-            // Inicializar opciones por defecto para los ComboBox
+            IsInventoryTabSelected = true;
             LoadCatalogDefaults();
 
             ResetFormCommand = new RelayCommand(_ => ResetForm());
@@ -223,21 +251,16 @@ namespace AMANC_Inventory.Inventory.ViewModels
             TripStatusList = new ObservableCollection<string> { "Programado", "En Proceso", "Completado", "Cancelado" };
         }
 
-        // -------------------------------------------------------------
-        // MÉTODOS DE LÓGICA DE NEGOCIO
-        // -------------------------------------------------------------
         private void ResetForm()
         {
             NewCode = string.Empty;
             NewName = string.Empty;
             NewCategory = null;
             NewStock = string.Empty;
-            NewMinStock = string.Empty;
+            NewPrice = string.Empty;
             NewUnit = null;
             NewLocation = string.Empty;
-            NewBranch = null;
-            NewStatus = null;
-            NewDescription = string.Empty;
+            NewBranch = _userDefaultBranch;
 
             NewDonorCompany = string.Empty;
             NewDonorType = null;
@@ -275,27 +298,148 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         private async Task SaveItemAsync()
         {
-            await Task.Delay(500);
+            if (string.IsNullOrWhiteSpace(NewCode) || string.IsNullOrWhiteSpace(NewName))
+            {
+                MessageBox.Show("Por favor, ingrese al menos el código y el nombre del producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int.TryParse(NewStock, out int stockResult);
+            decimal.TryParse(NewPrice, out decimal priceResult);
+
+            var newItem = new InventoryItemModel
+            {
+                Code = NewCode ?? string.Empty,
+                Name = NewName ?? string.Empty,
+                Category = NewCategory ?? string.Empty,
+                Stock = stockResult,
+                Price = priceResult,
+                Unit = NewUnit ?? string.Empty,
+                Location = NewLocation ?? string.Empty,
+                Branch = NewBranch ?? string.Empty,
+                Status = "Disponible"
+            };
+
+            bool success = await _productService.SaveProductAsync(newItem);
+            if (success)
+            {
+                MessageBox.Show("Producto guardado correctamente en Firebase.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                ResetForm();
+                if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
+            }
+            else
+            {
+                MessageBox.Show("Error al guardar el producto en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async Task SaveDonationAsync()
         {
-            await Task.Delay(500);
+            if (string.IsNullOrWhiteSpace(NewDonorCompany) || string.IsNullOrWhiteSpace(NewDonatedProduct))
+            {
+                MessageBox.Show("Por favor, ingrese el donante y el producto donado.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int.TryParse(NewDonationQuantity, out int quantity);
+            decimal.TryParse(NewUnitPrice, out decimal unitPrice);
+
+            var donation = new DonationModel
+            {
+                CompanyName = NewDonorCompany.Trim(),
+                DonationDate = NewDonationDate ?? DateTime.Now,
+                ProductName = NewDonatedProduct.Trim(),
+                Presentation = NewPresentation ?? string.Empty,
+                Branch = NewBranch ?? string.Empty,
+                Quantity = quantity,
+                UnitPrice = unitPrice
+            };
+
+            bool success = await _donationService.SaveDonationAsync(donation);
+            if (success)
+            {
+                MessageBox.Show("Donación registrada correctamente en Firebase.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                ResetForm();
+                if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
+            }
+            else
+            {
+                MessageBox.Show("Error al guardar la donación en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async Task SavePatientAsync()
         {
-            await Task.Delay(500);
+            if (string.IsNullOrWhiteSpace(NewChildName) || string.IsNullOrWhiteSpace(NewCancerType))
+            {
+                MessageBox.Show("Por favor, ingrese el nombre del beneficiario y el diagnóstico.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int.TryParse(NewAge, out int age);
+
+            var patient = new PatientModel
+            {
+                ChildName = NewChildName.Trim(),
+                Curp = NewCurp ?? string.Empty,
+                CancerType = NewCancerType.Trim(),
+                Guardians = NewGuardians ?? string.Empty,
+                Relationship = NewRelationship ?? string.Empty,
+                Phones = NewPhones ?? string.Empty,
+                Emails = NewEmails ?? string.Empty,
+                City = NewCity ?? string.Empty,
+                State = NewState ?? string.Empty,
+                Status = NewPatientStatus ?? "Activo",
+                Notes = NewPatientNotes ?? string.Empty
+            };
+
+            bool success = await _patientService.SavePatientAsync(patient);
+            if (success)
+            {
+                MessageBox.Show("Beneficiario registrado correctamente en Firebase.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                ResetForm();
+                if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
+            }
+            else
+            {
+                MessageBox.Show("Error al guardar el beneficiario en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private async Task SaveTripAsync()
         {
-            await Task.Delay(500);
+            if (string.IsNullOrWhiteSpace(NewTripChild) || string.IsNullOrWhiteSpace(NewOrigin) || string.IsNullOrWhiteSpace(NewDestination))
+            {
+                MessageBox.Show("Por favor, ingrese el paciente, origen y destino del viaje.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var trip = new TripModel
+            {
+                ChildName = NewTripChild.Trim(),
+                GuardianName = NewTripGuardian ?? string.Empty,
+                Origin = NewOrigin.Trim(),
+                Destination = NewDestination.Trim(),
+                TransportType = NewTransportType ?? string.Empty,
+                DepartureDate = NewDepartureDate ?? DateTime.Now,
+                ArrivalDate = NewReturnDate ?? DateTime.Now,
+                Status = NewTripStatus ?? "Programado",
+                Notes = NewTripNotes ?? string.Empty
+            };
+
+            bool success = await _tripService.SaveTripAsync(trip);
+            if (success)
+            {
+                MessageBox.Show("Traslado registrado correctamente en Firebase.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                ResetForm();
+                if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
+            }
+            else
+            {
+                MessageBox.Show("Error al guardar el traslado en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
-        // -------------------------------------------------------------
-        // IMPLEMENTACIÓN DE INotifyPropertyChanged
-        // -------------------------------------------------------------
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {

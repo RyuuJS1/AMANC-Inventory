@@ -159,101 +159,100 @@
                     <!-- ============================================================== -->
                     <!-- FORMULARIO 1: PRODUCTO / STOCK -->
                     <!-- ============================================================== -->
-                    <StackPanel Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                            <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#102240" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <TextBlock Text="Alta de Nuevo Artículo en Inventario" FontSize="18" FontWeight="Bold" Foreground="#102240" VerticalAlignment="Center"/>
-                        </StackPanel>
+                    <Grid Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
 
-                        <!-- Fila 1 -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                <TextBlock Text="Código del Artículo *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewCode, UpdateSourceTrigger=PropertyChanged}"/>
+                        <!-- Contenido del formulario (Ocupa todo el espacio disponible) -->
+                        <StackPanel Grid.Row="0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                                <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="22" Foreground="#102240" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                <TextBlock Text="Alta de Nuevo Artículo en Inventario" FontSize="18" FontWeight="Bold" Foreground="#102240" VerticalAlignment="Center"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
-                                <TextBlock Text="Nombre del Artículo *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
+                            <!-- Fila 1 -->
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
-                                <TextBlock Text="Categoría" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <ComboBox ItemsSource="{Binding CategoriesList}" SelectedItem="{Binding NewCategory}"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Fila 2 -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                <TextBlock Text="Stock Inicial *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewStock, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
-                                <TextBlock Text="Stock Mínimo (Alerta)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewMinStock, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
-                                <TextBlock Text="Unidad de Medida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <ComboBox ItemsSource="{Binding UnitsList}" SelectedItem="{Binding NewUnit}"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Fila 3 -->
-                        <Grid Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                                <TextBlock Text="Ubicación en Almacén" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <TextBox Text="{Binding NewLocation, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" Margin="6,0,6,0">
-                                <TextBlock Text="Sede Asignada" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <ComboBox ItemsSource="{Binding BranchesList}" SelectedItem="{Binding NewBranch}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2" Margin="12,0,0,0">
-                                <TextBlock Text="Estatus Inicial" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                                <ComboBox ItemsSource="{Binding StatusList}" SelectedItem="{Binding NewStatus}"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Fila 4: Descripción Completa -->
-                        <StackPanel Margin="0,0,0,25">
-                            <TextBlock Text="Descripción / Notas Adicionales" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding NewDescription, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" AcceptsReturn="True" Height="80" VerticalContentAlignment="Top"/>
-                        </StackPanel>
-
-                        <!-- Acciones -->
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Command="{Binding ResetFormCommand}" Content="Limpiar Campos" Padding="18,10" Background="#F1F5F9" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Margin="0,0,12,0" Cursor="Hand"/>
-                            <Button Command="{Binding SaveItemCommand}" Padding="22,10" Background="#102240" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="Guardar en Inventario" VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                    <TextBlock Text="Código del Artículo *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding NewCode, UpdateSourceTrigger=PropertyChanged}"/>
                                 </StackPanel>
-                            </Button>
+
+                                <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                    <TextBlock Text="Nombre del Artículo *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                    <TextBlock Text="Categoría" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding CategoriesList}" SelectedItem="{Binding NewCategory}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Fila 2 -->
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                    <TextBlock Text="Stock Inicial *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding NewStock, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="6,0,6,0">
+                                    <TextBlock Text="Unidad de Medida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                    <ComboBox ItemsSource="{Binding UnitsList}" SelectedItem="{Binding NewUnit}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                    <TextBlock Text="Precio Unitario ($)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding NewPrice, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Fila 3: Sede asignada fija (Solo Lectura) -->
+                            <Grid Margin="0,0,0,25">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                    <TextBlock Text="Ubicación en Almacén" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding NewLocation, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                    <TextBlock Text="Sede Asignada" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,5"/>
+                                    <TextBox Text="{Binding NewBranch}" IsReadOnly="True" Focusable="False" Background="#F8FAFC" Foreground="#64748B"/>
+                                </StackPanel>
+                            </Grid>
                         </StackPanel>
-                    </StackPanel>
+
+                        <!-- Botón anclado a la parte inferior derecha -->
+                        <Button Grid.Row="1"
+                            Command="{Binding SaveItemCommand}" 
+                            HorizontalAlignment="Right" 
+                            VerticalAlignment="Bottom"
+                            Margin="0,15,0,0" 
+                            Padding="22,10" 
+                            Background="#102240" 
+                            Foreground="White" 
+                            FontWeight="Bold" 
+                            BorderThickness="0" 
+                            Cursor="Hand">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Guardar en Inventario" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
 
                     <!-- ============================================================== -->
                     <!-- FORMULARIO 2: DONACIONES -->
