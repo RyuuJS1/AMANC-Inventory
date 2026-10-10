@@ -17,7 +17,6 @@ namespace AMANC_Inventory.Inventory.Services
     {
         private readonly FirebaseClient _firebaseClient;
         private const string NodeName = "Productos";
-        private const string IdPrefix = "PROD-";
 
         public ProductService()
         {
@@ -32,6 +31,7 @@ namespace AMANC_Inventory.Inventory.Services
                 {
                     if (product == null) return false;
 
+                    // Si no tiene ID o es "0", asigna el siguiente consecutivo numérico (1, 2, 3...)
                     if (string.IsNullOrWhiteSpace(product.Id) || product.Id == "0")
                     {
                         product.Id = await GetNextCustomIdAsync();
@@ -67,7 +67,6 @@ namespace AMANC_Inventory.Inventory.Services
                         .Select(item =>
                         {
                             var prod = item.Object;
-
                             prod.Id = string.IsNullOrEmpty(prod.Id) ? item.Key : prod.Id;
                             return prod;
                         })
@@ -82,8 +81,8 @@ namespace AMANC_Inventory.Inventory.Services
         }
 
         /// <summary>
-        /// Genera el siguiente ID consecutivo dinámico (ej. PROD-000001).
-        /// Admite más de 999,999 registros ya que se expande automáticamente si el número crece.
+        /// Genera el siguiente ID consecutivo numérico sin prefijos ni ceros a la izquierda (ej. 1, 2, 3, 4, 5...).
+        /// Extrae el número más alto existente, incluso si hay registros anteriores con prefijos o ceros.
         /// </summary>
         private async Task<string> GetNextCustomIdAsync()
         {
@@ -93,13 +92,14 @@ namespace AMANC_Inventory.Inventory.Services
                     .Child(NodeName)
                     .OnceAsync<InventoryItemModel>();
 
-                if (!items.Any()) return $"{IdPrefix}000001";
+                if (!items.Any()) return "1";
 
                 int maxId = items
                     .Select(i =>
                     {
-                        string key = i.Key;
-                        string numericPart = Regex.Match(key, @"\d+").Value;
+                        // Toma el Id del objeto o la clave del nodo como respaldo
+                        string idToParse = !string.IsNullOrWhiteSpace(i.Object?.Id) ? i.Object.Id : i.Key;
+                        string numericPart = Regex.Match(idToParse ?? string.Empty, @"\d+").Value;
                         return int.TryParse(numericPart, out int num) ? num : 0;
                     })
                     .DefaultIfEmpty(0)
@@ -107,12 +107,12 @@ namespace AMANC_Inventory.Inventory.Services
 
                 int nextNumericId = maxId + 1;
 
-                return $"{IdPrefix}{nextNumericId:D6}";
+                return nextNumericId.ToString();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Error al calcular el consecutivo del producto]: {ex.Message}");
-                return $"{IdPrefix}000001";
+                return "1";
             }
         }
     }

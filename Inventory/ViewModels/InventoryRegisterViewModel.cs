@@ -27,11 +27,12 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private readonly ITripService _tripService;
         private readonly Func<Task>? _onSaveSuccess;
 
+        private string? _userDefaultBranch;
+
         // -------------------------------------------------------------
         // ESTADOS DE LAS PESTAÑAS (TAB SELECTION)
         // -------------------------------------------------------------
 
-        private string? _userDefaultBranch;
         private bool _isInventoryTabSelected = true;
         public bool IsInventoryTabSelected
         {
@@ -63,8 +64,11 @@ namespace AMANC_Inventory.Inventory.ViewModels
         // -------------------------------------------------------------
         // PROPIEDADES - PESTAÑA INVENTARIO
         // -------------------------------------------------------------
-        private string? _newCode;
-        public string? NewCode { get => _newCode; set { _newCode = value; OnPropertyChanged(); } }
+        private string? _newSKU;
+        public string? NewSKU { get => _newSKU; set { _newSKU = value; OnPropertyChanged(); } }
+
+        private string? _newBarcode;
+        public string? NewBarcode { get => _newBarcode; set { _newBarcode = value; OnPropertyChanged(); } }
 
         private string? _newName;
         public string? NewName { get => _newName; set { _newName = value; OnPropertyChanged(); } }
@@ -75,29 +79,48 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private string? _newStock;
         public string? NewStock { get => _newStock; set { _newStock = value; OnPropertyChanged(); } }
 
+        private string? _newMinStock;
+        public string? NewMinStock { get => _newMinStock; set { _newMinStock = value; OnPropertyChanged(); } }
+
         private string? _newUnit;
         public string? NewUnit { get => _newUnit; set { _newUnit = value; OnPropertyChanged(); } }
-        private string? _newPrice;
-        public string? NewPrice
-        {
-            get => _newPrice;
-            set { _newPrice = value; OnPropertyChanged(); }
-        }
+
+        private string? _newEstimatedValue;
+        public string? NewEstimatedValue { get => _newEstimatedValue; set { _newEstimatedValue = value; OnPropertyChanged(); } }
+
+        private bool _newIsDonated = true;
+        public bool NewIsDonated { get => _newIsDonated; set { _newIsDonated = value; OnPropertyChanged(); } }
 
         private string? _newLocation;
         public string? NewLocation { get => _newLocation; set { _newLocation = value; OnPropertyChanged(); } }
 
-        private string? _newBranch;
-        public string? NewBranch { get => _newBranch; set { _newBranch = value; OnPropertyChanged(); } }
+        private string? _newBranchId;
+        public string? NewBranchId { get => _newBranchId; set { _newBranchId = value; OnPropertyChanged(); } }
 
+        private string? _newStatus = "Active";
+        public string? NewStatus { get => _newStatus; set { _newStatus = value; OnPropertyChanged(); } }
+
+        private DateTime? _newExpirationDate;
+        public DateTime? NewExpirationDate { get => _newExpirationDate; set { _newExpirationDate = value; OnPropertyChanged(); } }
+
+        /// <summary>
+        /// Asigna la sede por defecto del usuario activo.
+        /// </summary>
         public void SetUserBranch(string? branch)
         {
+            if (string.IsNullOrWhiteSpace(branch)) return;
+
             _userDefaultBranch = branch;
-            NewBranch = branch;
+            NewBranchId = branch;
+
+            if (!BranchesList.Contains(branch))
+            {
+                BranchesList.Add(branch);
+            }
         }
 
         // -------------------------------------------------------------
-        // PROPIEDADES - PESTAÑA DONACIONES
+        // PROPIEDADES - OTRAS PESTAÑAS (DONACIONES, PACIENTES, VIAJES)
         // -------------------------------------------------------------
         private string? _newDonorCompany;
         public string? NewDonorCompany { get => _newDonorCompany; set { _newDonorCompany = value; OnPropertyChanged(); } }
@@ -126,9 +149,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private string? _newDonationNotes;
         public string? NewDonationNotes { get => _newDonationNotes; set { _newDonationNotes = value; OnPropertyChanged(); } }
 
-        // -------------------------------------------------------------
-        // PROPIEDADES - PESTAÑA PACIENTES
-        // -------------------------------------------------------------
         private string? _newChildName;
         public string? NewChildName { get => _newChildName; set { _newChildName = value; OnPropertyChanged(); } }
 
@@ -165,9 +185,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private string? _newPatientNotes;
         public string? NewPatientNotes { get => _newPatientNotes; set { _newPatientNotes = value; OnPropertyChanged(); } }
 
-        // -------------------------------------------------------------
-        // PROPIEDADES - PESTAÑA VIAJES / TRIPS
-        // -------------------------------------------------------------
         private string? _newTripChild;
         public string? NewTripChild { get => _newTripChild; set { _newTripChild = value; OnPropertyChanged(); } }
 
@@ -241,10 +258,10 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         private void LoadCatalogDefaults()
         {
-            BranchesList = new ObservableCollection<string> { "Sede Central", "Sucursal Norte", "Sucursal Sur" };
-            CategoriesList = new ObservableCollection<string> { "Medicamento", "Alimento", "Ropa", "Insumo Médico" };
-            UnitsList = new ObservableCollection<string> { "Pieza", "Caja", "Kg", "Litro" };
-            StatusList = new ObservableCollection<string> { "Disponible", "Agotado", "Reservado" };
+            BranchesList = new ObservableCollection<string> { "Veracruz", "CDMX", "Sede Central", "Sucursal Norte", "Sucursal Sur" };
+            CategoriesList = new ObservableCollection<string> { "Medicamentos", "Alimentos / Suplementos", "Higiene Personal", "Ropa", "Insumo Médico" };
+            UnitsList = new ObservableCollection<string> { "Pza", "Caja", "Kg", "Litro", "Frasco" };
+            StatusList = new ObservableCollection<string> { "Active", "Inactive", "Out of Stock", "Expired", "Damaged" };
             DonorTypesList = new ObservableCollection<string> { "Particular", "Empresa", "Fundación" };
             PatientStatusList = new ObservableCollection<string> { "Activo", "En Tratamiento", "Inactivo" };
             TransportTypesList = new ObservableCollection<string> { "Autobús", "Avión", "Particular" };
@@ -253,14 +270,19 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         private void ResetForm()
         {
-            NewCode = string.Empty;
+            NewSKU = string.Empty;
+            NewBarcode = string.Empty;
             NewName = string.Empty;
             NewCategory = null;
             NewStock = string.Empty;
-            NewPrice = string.Empty;
+            NewMinStock = string.Empty;
+            NewEstimatedValue = string.Empty;
+            NewIsDonated = true;
             NewUnit = null;
             NewLocation = string.Empty;
-            NewBranch = _userDefaultBranch;
+            NewBranchId = _userDefaultBranch;
+            NewStatus = "Active";
+            NewExpirationDate = null;
 
             NewDonorCompany = string.Empty;
             NewDonorType = null;
@@ -298,26 +320,32 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         private async Task SaveItemAsync()
         {
-            if (string.IsNullOrWhiteSpace(NewCode) || string.IsNullOrWhiteSpace(NewName))
+            if (string.IsNullOrWhiteSpace(NewName))
             {
-                MessageBox.Show("Por favor, ingrese al menos el código y el nombre del producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, ingrese al menos el nombre del producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             int.TryParse(NewStock, out int stockResult);
-            decimal.TryParse(NewPrice, out decimal priceResult);
+            int.TryParse(NewMinStock, out int minStockResult);
+            decimal.TryParse(NewEstimatedValue, out decimal estimatedValueResult);
 
             var newItem = new InventoryItemModel
             {
-                Code = NewCode ?? string.Empty,
-                Name = NewName ?? string.Empty,
+                SKU = NewSKU?.Trim() ?? string.Empty,
+                Barcode = string.IsNullOrWhiteSpace(NewBarcode) ? null : NewBarcode.Trim(),
+                BranchId = NewBranchId?.Trim() ?? _userDefaultBranch ?? string.Empty,
+                Name = NewName.Trim(),
                 Category = NewCategory ?? string.Empty,
                 Stock = stockResult,
-                Price = priceResult,
+                MinStock = minStockResult,
                 Unit = NewUnit ?? string.Empty,
-                Location = NewLocation ?? string.Empty,
-                Branch = NewBranch ?? string.Empty,
-                Status = "Disponible"
+                EstimatedValue = estimatedValueResult,
+                IsDonated = NewIsDonated,
+                Location = NewLocation?.Trim() ?? string.Empty,
+                Status = NewStatus ?? "Active",
+                ExpirationDate = NewExpirationDate,
+                CreatedAt = DateTime.UtcNow
             };
 
             bool success = await _productService.SaveProductAsync(newItem);
@@ -350,7 +378,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 DonationDate = NewDonationDate ?? DateTime.Now,
                 ProductName = NewDonatedProduct.Trim(),
                 Presentation = NewPresentation ?? string.Empty,
-                Branch = NewBranch ?? string.Empty,
+                Branch = NewBranchId ?? _userDefaultBranch ?? string.Empty,
                 Quantity = quantity,
                 UnitPrice = unitPrice
             };

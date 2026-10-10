@@ -225,71 +225,57 @@ namespace AMANC_Inventory.Inventory.ViewModels
         {
             ExecuteOnUIThread(() =>
             {
-                // 1. Productos
+                // 1. Productos (Solo busca por Nombre que comience con la letra/texto ingresado)
                 FilteredInventoryList.Clear();
                 var invQuery = InventoryItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
                 {
                     invQuery = invQuery.Where(i =>
-                        (i.Name?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (i.Code?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (i.Category?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (i.Branch?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                        i.Name != null && i.Name.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
                     );
                 }
                 foreach (var item in invQuery) FilteredInventoryList.Add(item);
 
-                // 2. Donaciones
+                // 2. Donaciones (Por nombre de producto)
                 FilteredDonationsList.Clear();
                 var donQuery = DonationItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
                 {
                     donQuery = donQuery.Where(d =>
-                        (d.CompanyName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (d.ProductName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (d.Branch?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                        d.ProductName != null && d.ProductName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
                     );
                 }
                 foreach (var item in donQuery) FilteredDonationsList.Add(item);
 
-                // 3. Niños / Beneficiarios
+                // 3. Niños / Beneficiarios (Por nombre del niño)
                 FilteredPatientsList.Clear();
                 var patQuery = PatientItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
                 {
                     patQuery = patQuery.Where(p =>
-                        (p.ChildName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (p.Guardians?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (p.CancerType?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (p.City?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                        p.ChildName != null && p.ChildName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
                     );
                 }
                 foreach (var item in patQuery) FilteredPatientsList.Add(item);
 
-                // 4. Traslados / Viajes
+                // 4. Traslados / Viajes (Por nombre del niño)
                 FilteredTripsList.Clear();
                 var tripQuery = TripItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
                 {
                     tripQuery = tripQuery.Where(t =>
-                        (t.ChildName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (t.GuardianName?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (t.Origin?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (t.Destination?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                        t.ChildName != null && t.ChildName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
                     );
                 }
                 foreach (var item in tripQuery) FilteredTripsList.Add(item);
 
-                // 5. Usuarios
+                // 5. Usuarios (Por nombre del usuario)
                 FilteredUsersList.Clear();
                 var usrQuery = UserItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
                 {
                     usrQuery = usrQuery.Where(u =>
-                        (u.Name?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (u.Email?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (u.Branch?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                        (u.Department?.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ?? false)
+                        u.Name != null && u.Name.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
                     );
                 }
                 foreach (var item in usrQuery) FilteredUsersList.Add(item);

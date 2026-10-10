@@ -173,7 +173,7 @@
 
                 <!-- Caja de Búsqueda -->
                 <StackPanel Grid.Column="0" Margin="0,0,15,0">
-                    <TextBlock Text="Filtrar registros en tiempo real" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                    <TextBlock Text="Filtrar por nombre que empiece con:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
                     <Border CornerRadius="6" BorderBrush="#CBD5E1" BorderThickness="1" Background="#F8FAFC" Padding="6,2">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -219,7 +219,7 @@
         <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="2" BorderBrush="#E2E8F0" BorderThickness="1">
             <Grid>
                 <Grid.Resources>
-                    <!-- Estilo de Encabezado -->
+                    <!-- Estilo de Encabezado Centrado -->
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="Background" Value="#F8FAFC"/>
                         <Setter Property="Foreground" Value="#1E293B"/>
@@ -228,6 +228,7 @@
                         <Setter Property="Padding" Value="10,10"/>
                         <Setter Property="BorderThickness" Value="0,0,0,1"/>
                         <Setter Property="BorderBrush" Value="#E2E8F0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
                     </Style>
 
                     <!-- Estilo General de DataGrid -->
@@ -244,6 +245,8 @@
                         <Setter Property="AlternatingRowBackground" Value="#F8FAFC"/>
                         <Setter Property="SelectionMode" Value="Single"/>
                         <Setter Property="CanUserSortColumns" Value="True"/>
+                        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+                        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
                     </Style>
                 </Grid.Resources>
 
@@ -251,15 +254,44 @@
                 <DataGrid ItemsSource="{Binding FilteredInventoryList}"
                           Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" ElementStyle="{StaticResource CenterTextColumn}"/>
-                        <DataGridTextColumn Header="Sede" Binding="{Binding Branch}" Width="110" ElementStyle="{StaticResource LeftTextColumn}"/>
-                        <DataGridTextColumn Header="Código" Binding="{Binding Code}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
-                        <DataGridTextColumn Header="Producto" Binding="{Binding Name}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Cód. Barras" Binding="{Binding Barcode}" Width="120" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Sede" Binding="{Binding BranchId}" Width="100" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Nombre del Producto" Binding="{Binding Name}" Width="170" ElementStyle="{StaticResource LeftTextColumn}"/>
                         <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
-                        <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="80" ElementStyle="{StaticResource RightTextColumn}"/>
-                        <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="90" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="70" ElementStyle="{StaticResource RightTextColumn}"/>
+                        <DataGridTextColumn Header="Mínimo" Binding="{Binding MinStock}" Width="70" ElementStyle="{StaticResource RightTextColumn}"/>
+                        <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Valor Estimado" Binding="{Binding EstimatedValue, StringFormat=\{0:C\}}" Width="110" ElementStyle="{StaticResource RightTextColumn}"/>
+
+                        <!-- Columna ¿Es Donación? representada con Palomita / Tachuca sin recuadro -->
+                        <DataGridTemplateColumn Header="¿Es Donación?" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="Bold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="✘"/>
+                                                <Setter Property="Foreground" Value="#EF4444"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsDonated}" Value="True">
+                                                        <Setter Property="Text" Value="✔"/>
+                                                        <Setter Property="Foreground" Value="#10B981"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
                         <DataGridTextColumn Header="Ubicación" Binding="{Binding Location}" Width="120" ElementStyle="{StaticResource LeftTextColumn}"/>
-                        <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="100" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="90" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Fecha Caducidad" Binding="{Binding ExpirationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="115" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Fecha Creación" Binding="{Binding CreatedAt, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Última Actualización" Binding="{Binding UpdatedAt, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="140" ElementStyle="{StaticResource CenterTextColumn}"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -273,7 +305,7 @@
                         <DataGridTextColumn Header="Producto" Binding="{Binding ProductName}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
                         <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="120" ElementStyle="{StaticResource LeftTextColumn}"/>
                         <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="85" ElementStyle="{StaticResource RightTextColumn}"/>
-                        <DataGridTextColumn Header="P. Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="100" ElementStyle="{StaticResource RightTextColumn}"/>
+                        <DataGridTextColumn Header="Precio Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="110" ElementStyle="{StaticResource RightTextColumn}"/>
                         <DataGridTextColumn Header="Total Donante" Binding="{Binding TotalSpent, StringFormat=\{0:C\}}" Width="115" ElementStyle="{StaticResource RightTextColumn}"/>
                     </DataGrid.Columns>
                 </DataGrid>
@@ -285,10 +317,10 @@
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="Nombre del Niño" Binding="{Binding ChildName}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
                         <DataGridTextColumn Header="Edad" Binding="{Binding Age}" Width="65" ElementStyle="{StaticResource CenterTextColumn}"/>
-                        <DataGridTextColumn Header="Tipo Cáncer" Binding="{Binding CancerType}" Width="140" ElementStyle="{StaticResource LeftTextColumn}"/>
-                        <DataGridTextColumn Header="Responsable(s)" Binding="{Binding Guardians}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
-                        <DataGridTextColumn Header="Correo(s)" Binding="{Binding Emails}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
-                        <DataGridTextColumn Header="Teléfono(s)" Binding="{Binding Phones}" Width="115" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Tipo de Cáncer" Binding="{Binding CancerType}" Width="140" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Responsables" Binding="{Binding Guardians}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Correos" Binding="{Binding Emails}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
+                        <DataGridTextColumn Header="Teléfonos" Binding="{Binding Phones}" Width="115" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="Estado" Binding="{Binding State}" Width="110" ElementStyle="{StaticResource LeftTextColumn}"/>
                         <DataGridTextColumn Header="Ciudad" Binding="{Binding City}" Width="110" ElementStyle="{StaticResource LeftTextColumn}"/>
                     </DataGrid.Columns>
@@ -303,8 +335,8 @@
                         <DataGridTextColumn Header="Responsable" Binding="{Binding GuardianName}" Width="150" ElementStyle="{StaticResource LeftTextColumn}"/>
                         <DataGridTextColumn Header="Origen" Binding="{Binding Origin}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
                         <DataGridTextColumn Header="Destino" Binding="{Binding Destination}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
-                        <DataGridTextColumn Header="F. Salida" Binding="{Binding DepartureDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="135" ElementStyle="{StaticResource CenterTextColumn}"/>
-                        <DataGridTextColumn Header="F. Llegada Est." Binding="{Binding ArrivalDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="135" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Fecha Salida" Binding="{Binding DepartureDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="135" ElementStyle="{StaticResource CenterTextColumn}"/>
+                        <DataGridTextColumn Header="Fecha Llegada Est." Binding="{Binding ArrivalDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="135" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
                     </DataGrid.Columns>
                 </DataGrid>

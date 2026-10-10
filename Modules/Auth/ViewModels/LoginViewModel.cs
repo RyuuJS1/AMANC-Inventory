@@ -427,48 +427,60 @@ namespace AMANC_Inventory.Modules.Auth.ViewModels
 
         private async Task ValidarCodigoIngresadoAsync(string codigoIngresado)
         {
-            if (codigoIngresado != _codigoEsperado)
+            try
             {
-                MessageBox.Show("El código ingresado es incorrecto.", "Código Incorrecto", MessageBoxButton.OK, MessageBoxImage.Error);
-                LimpiarGuionesCodigo();
-                return;
+                if (codigoIngresado != _codigoEsperado)
+                {
+                    MessageBox.Show("El código ingresado es incorrecto.", "Código Incorrecto", MessageBoxButton.OK, MessageBoxImage.Error);
+                    LimpiarGuionesCodigo();
+                    return;
+                }
+
+                OcultarPanelCodigo();
+
+                if (EsModoRestablecer)
+                {
+                    EsModoRestablecer = false;
+                    bool enviado = await _authService.SendPasswordResetEmailAsync(_emailARestablecer);
+
+                    if (enviado)
+                        MessageBox.Show("¡Código verificado! Revisa tu correo para restablecer tu contraseña.", "Enlace Enviado", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // MODO REGISTRO
+                var nuevoUsuario = new UserModel
+                {
+                    Name = Nombre.Trim(),
+                    Email = Email.Trim().ToLower(),
+                    Status = "Active",
+                    Role = "Volunteer",
+                    IsProfileComplete = false
+                };
+
+                bool registrado = await _userService.RegisterUserAsync(nuevoUsuario, Password);
+
+                if (registrado)
+                {
+                    MessageBox.Show($"¡Cuenta de {nuevoUsuario.Name} registrada con éxito!\n\nActualmente se encuentra pendiente de activación por un administrador antes de poder iniciar sesión.", "Registro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    // Limpia completamente el formulario (ViewModel + Controles PasswordBox visuales)
+                    LimpiarCamposFormulario();
+                    EsModoLogin = true;
+                }
+                else
+                {
+                    MessageBox.Show("No se pudo completar el registro.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
-
-            OcultarPanelCodigo();
-
-            if (EsModoRestablecer)
+            catch (Exception ex)
             {
-                EsModoRestablecer = false;
-                bool enviado = await _authService.SendPasswordResetEmailAsync(_emailARestablecer);
+                string mensajeError = ex.Message.Contains("EMAIL_EXISTS", StringComparison.OrdinalIgnoreCase) ||
+                                     ex.Message.Contains("EmailExists", StringComparison.OrdinalIgnoreCase)
+                    ? "El correo electrónico ya se encuentra registrado en el sistema."
+                    : $"Ocurrió un error durante el registro: {ex.Message}";
 
-                if (enviado)
-                    MessageBox.Show("¡Código verificado! Revisa tu correo para restablecer tu contraseña.", "Enlace Enviado", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // MODO REGISTRO
-            var nuevoUsuario = new UserModel
-            {
-                Name = Nombre.Trim(),
-                Email = Email.Trim().ToLower(),
-                Status = "Active",
-                Role = "Volunteer",
-                IsProfileComplete = false
-            };
-
-            bool registrado = await _userService.RegisterUserAsync(nuevoUsuario, Password);
-
-            if (registrado)
-            {
-                MessageBox.Show($"¡Cuenta de {nuevoUsuario.Name} registrada con éxito!\n\nActualmente se encuentra pendiente de activación por un administrador antes de poder iniciar sesión.", "Registro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // Limpia completamente el formulario (ViewModel + Controles PasswordBox visuales)
-                LimpiarCamposFormulario();
-                EsModoLogin = true;
-            }
-            else
-            {
-                MessageBox.Show("No se pudo completar el registro.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(mensajeError, "Error de Registro", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
