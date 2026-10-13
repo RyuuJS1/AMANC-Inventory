@@ -206,19 +206,6 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0">
-                            <!-- Encabezado del Módulo -->
-                            <Border Background="#F1F5F9" CornerRadius="8" Padding="14,10" Margin="0,0,0,20">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Background="#102240" CornerRadius="6" Width="36" Height="36" Margin="0,0,12,0">
-                                        <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="Alta de Nuevo Artículo" FontSize="16" FontWeight="Bold" Foreground="#102240"/>
-                                        <TextBlock Text="Ingresa los datos generales, stock y condiciones del insumo" FontSize="11" Foreground="#64748B"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
                             <!-- SECCIÓN 1: Identificación y Clasificación -->
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>
@@ -387,19 +374,6 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0">
-                            <!-- Encabezado del Módulo -->
-                            <Border Background="#F1F5F9" CornerRadius="8" Padding="14,10" Margin="0,0,0,20">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Background="#102240" CornerRadius="6" Width="36" Height="36" Margin="0,0,12,0">
-                                        <TextBlock Text="&#xE8A1;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="Registro de Entrada por Donación" FontSize="16" FontWeight="Bold" Foreground="#102240"/>
-                                        <TextBlock Text="Ingresa la información del donante, los insumos recibidos y datos fiscales/comprobantes" FontSize="11" Foreground="#64748B"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
                             <!-- SECCIÓN 1: Información del Donante -->
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>
@@ -529,19 +503,6 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0">
-                            <!-- Encabezado del Módulo -->
-                            <Border Background="#F1F5F9" CornerRadius="8" Padding="14,10" Margin="0,0,0,20">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Background="#102240" CornerRadius="6" Width="36" Height="36" Margin="0,0,12,0">
-                                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="Registro de Nuevo Beneficiario" FontSize="16" FontWeight="Bold" Foreground="#102240"/>
-                                        <TextBlock Text="Ingresa los datos personales del paciente, diagnóstico y datos de contacto de sus tutores" FontSize="11" Foreground="#64748B"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
                             <!-- SECCIÓN 1: Datos del Beneficiario y Diagnóstico -->
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>
@@ -676,19 +637,6 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0">
-                            <!-- Encabezado del Módulo -->
-                            <Border Background="#F1F5F9" CornerRadius="8" Padding="14,10" Margin="0,0,0,20">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Background="#102240" CornerRadius="6" Width="36" Height="36" Margin="0,0,12,0">
-                                        <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="Registro de Solicitud de Traslado" FontSize="16" FontWeight="Bold" Foreground="#102240"/>
-                                        <TextBlock Text="Ingresa el itinerario, paciente asignado, medio de transporte y estatus del viaje" FontSize="11" Foreground="#64748B"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
                             <!-- SECCIÓN 1: Pasajeros y Asignación -->
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>

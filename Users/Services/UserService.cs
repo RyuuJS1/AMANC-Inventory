@@ -29,7 +29,7 @@ namespace AMANC_Inventory.Users.Services
         /// <summary>
         /// Genera el siguiente ID numérico consecutivo para el nodo especificado.
         /// </summary>
-        private async Task<string> GetNextCustomIdAsync(string nodeName, string prefix = "USR-")
+        private async Task<string> GetNextCustomIdAsync(string nodeName)
         {
             try
             {
@@ -37,23 +37,22 @@ namespace AMANC_Inventory.Users.Services
                     .Child(nodeName)
                     .OnceAsync<UserModel>();
 
-                if (!items.Any()) return $"{prefix}0001";
+                if (!items.Any()) return "1";
 
                 int maxId = items
                     .Select(i =>
                     {
-                        string key = i.Key.Replace(prefix, "");
-                        return int.TryParse(key, out int num) ? num : 0;
+                        return int.TryParse(i.Key, out int num) ? num : 0;
                     })
                     .DefaultIfEmpty(0)
                     .Max();
 
-                return $"{prefix}{(maxId + 1):D4}";
+                return (maxId + 1).ToString();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error al calcular siguiente ID: {ex.Message}");
-                return $"{prefix}0001";
+                return "1";
             }
         }
 
