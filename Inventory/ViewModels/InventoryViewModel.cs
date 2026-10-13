@@ -1,6 +1,8 @@
 ﻿using AMANC_Inventory.Core.Architecture;
 using AMANC_Inventory.Donations.Interfaces;
 using AMANC_Inventory.Inventory.Interfaces;
+using AMANC_Inventory.Pantries.Interfaces;
+using AMANC_Inventory.Pantries.Services;
 using AMANC_Inventory.Patients.Services;
 using AMANC_Inventory.Trips.Services;
 using AMANC_Inventory.Users.Models;
@@ -34,21 +36,23 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private string _branch = string.Empty;
         private string _department = string.Empty;
 
-        public InventoryViewModel() : this(null, null, null, null)
+        public InventoryViewModel() : this(null, null, null, null, null)
         {
         }
 
         public InventoryViewModel(
             IProductService? productService = null,
+            IPantryService? pantryService = null,
             IDonationService? donationService = null,
             IPatientService? patientService = null,
             ITripService? tripService = null)
         {
-            ConsultViewModel = new InventoryConsultViewModel(productService, donationService, patientService, tripService);
+            ConsultViewModel = new InventoryConsultViewModel(productService, pantryService, donationService, patientService, tripService);
 
             // Al guardar cualquier registro, se recargan los datos de Firebase en la vista de consultas
             RegisterViewModel = new InventoryRegisterViewModel(
                 productService,
+                pantryService,
                 donationService,
                 patientService,
                 tripService,
@@ -211,7 +215,10 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 UserInitials = !string.IsNullOrEmpty(usuario.UserInitials) ? usuario.UserInitials : "U";
                 HasProfilePicture = !string.IsNullOrEmpty(usuario.ProfilePictureBase64);
                 HasNoProfilePicture = !HasProfilePicture;
-                RegisterViewModel?.SetUserBranch(usuario.Branch);
+
+                // Propaga el usuario logueado a los ViewModels de consulta y registro para activar el control de roles
+                ConsultViewModel.CurrentUser = usuario;
+                RegisterViewModel?.SetCurrentUser(usuario);
             }
             else
             {

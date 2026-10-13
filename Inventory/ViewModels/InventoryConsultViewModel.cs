@@ -5,6 +5,9 @@ using AMANC_Inventory.Donations.Services;
 using AMANC_Inventory.Inventory.Interfaces;
 using AMANC_Inventory.Inventory.Models;
 using AMANC_Inventory.Inventory.Services;
+using AMANC_Inventory.Pantries.Interfaces;
+using AMANC_Inventory.Pantries.Models;
+using AMANC_Inventory.Pantries.Services;
 using AMANC_Inventory.Patients.Models;
 using AMANC_Inventory.Patients.Services;
 using AMANC_Inventory.Trips.Models;
@@ -25,15 +28,18 @@ namespace AMANC_Inventory.Inventory.ViewModels
     public class InventoryConsultViewModel : ViewModelBase
     {
         private readonly IProductService _productService;
+        private readonly IPantryService _pantryService;
         private readonly IDonationService _donationService;
         private readonly IPatientService _patientService;
         private readonly ITripService _tripService;
         private readonly IUserService _userService;
 
+        private UserModel? _currentUser;
         private bool _isLoading;
         private string _filterText = string.Empty;
 
         private bool _isInventoryTabSelected = true;
+        private bool _isPantriesTabSelected;
         private bool _isDonationsTabSelected;
         private bool _isPatientsTabSelected;
         private bool _isTripsTabSelected;
@@ -41,12 +47,14 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         public InventoryConsultViewModel(
             IProductService? productService = null,
+            IPantryService? pantryService = null,
             IDonationService? donationService = null,
             IPatientService? patientService = null,
             ITripService? tripService = null,
             IUserService? userService = null)
         {
             _productService = productService ?? new ProductService();
+            _pantryService = pantryService ?? new PantryService();
             _donationService = donationService ?? new DonationService();
             _patientService = patientService ?? new PatientService();
             _tripService = tripService ?? new TripService();
@@ -54,6 +62,9 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
             InventoryItems = new ObservableCollection<InventoryItemModel>();
             FilteredInventoryList = new ObservableCollection<InventoryItemModel>();
+
+            PantryItems = new ObservableCollection<PantryModel>();
+            FilteredPantriesList = new ObservableCollection<PantryModel>();
 
             DonationItems = new ObservableCollection<DonationModel>();
             FilteredDonationsList = new ObservableCollection<DonationModel>();
@@ -82,6 +93,9 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public ObservableCollection<InventoryItemModel> InventoryItems { get; }
         public ObservableCollection<InventoryItemModel> FilteredInventoryList { get; }
 
+        public ObservableCollection<PantryModel> PantryItems { get; }
+        public ObservableCollection<PantryModel> FilteredPantriesList { get; }
+
         public ObservableCollection<DonationModel> DonationItems { get; }
         public ObservableCollection<DonationModel> FilteredDonationsList { get; }
 
@@ -96,55 +110,46 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         #endregion
 
-        #region Propiedades de Estado y Pestañas
+        #region Propiedades de Usuario y Visibilidad de Permisos
 
-        public bool IsLoading
+        public UserModel? CurrentUser
         {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
-
-        public string FilterText
-        {
-            get => _filterText;
+            get => _currentUser;
             set
             {
-                if (SetProperty(ref _filterText, value))
+                if (SetProperty(ref _currentUser, value))
                 {
-                    AplicarFiltros();
+                    OnPropertyChanged(nameof(CanAccessDonations));
+                    OnPropertyChanged(nameof(CanAccessPatients));
+                    OnPropertyChanged(nameof(CanAccessTrips));
+                    OnPropertyChanged(nameof(CanAccessUsers));
                 }
             }
         }
 
-        public bool IsInventoryTabSelected
+        public bool CanAccessDonations => CurrentUser?.CanAccessDonations ?? false;
+        public bool CanAccessPatients => CurrentUser?.CanAccessPatients ?? false;
+        public bool CanAccessTrips => CurrentUser?.CanAccessTrips ?? false;
+        public bool CanAccessUsers => CurrentUser?.CanAccessUsers ?? false;
+
+        #endregion
+
+        #region Propiedades de Estado y Pestañas
+
+        public bool IsLoading { get => _isLoading; set => SetProperty(ref _isLoading, value); }
+
+        public string FilterText
         {
-            get => _isInventoryTabSelected;
-            set => SetProperty(ref _isInventoryTabSelected, value);
+            get => _filterText;
+            set { if (SetProperty(ref _filterText, value)) AplicarFiltros(); }
         }
 
-        public bool IsDonationsTabSelected
-        {
-            get => _isDonationsTabSelected;
-            set => SetProperty(ref _isDonationsTabSelected, value);
-        }
-
-        public bool IsPatientsTabSelected
-        {
-            get => _isPatientsTabSelected;
-            set => SetProperty(ref _isPatientsTabSelected, value);
-        }
-
-        public bool IsTripsTabSelected
-        {
-            get => _isTripsTabSelected;
-            set => SetProperty(ref _isTripsTabSelected, value);
-        }
-
-        public bool IsUsersTabSelected
-        {
-            get => _isUsersTabSelected;
-            set => SetProperty(ref _isUsersTabSelected, value);
-        }
+        public bool IsInventoryTabSelected { get => _isInventoryTabSelected; set => SetProperty(ref _isInventoryTabSelected, value); }
+        public bool IsPantriesTabSelected { get => _isPantriesTabSelected; set => SetProperty(ref _isPantriesTabSelected, value); }
+        public bool IsDonationsTabSelected { get => _isDonationsTabSelected; set => SetProperty(ref _isDonationsTabSelected, value); }
+        public bool IsPatientsTabSelected { get => _isPatientsTabSelected; set => SetProperty(ref _isPatientsTabSelected, value); }
+        public bool IsTripsTabSelected { get => _isTripsTabSelected; set => SetProperty(ref _isTripsTabSelected, value); }
+        public bool IsUsersTabSelected { get => _isUsersTabSelected; set => SetProperty(ref _isUsersTabSelected, value); }
 
         #endregion
 
@@ -164,10 +169,11 @@ namespace AMANC_Inventory.Inventory.ViewModels
             string tab = parameter.ToString() ?? string.Empty;
 
             IsInventoryTabSelected = tab == "0" || tab.Equals("Inventory", StringComparison.OrdinalIgnoreCase);
-            IsDonationsTabSelected = tab == "1" || tab.Equals("Donations", StringComparison.OrdinalIgnoreCase);
-            IsPatientsTabSelected = tab == "2" || tab.Equals("Patients", StringComparison.OrdinalIgnoreCase);
-            IsTripsTabSelected = tab == "3" || tab.Equals("Trips", StringComparison.OrdinalIgnoreCase);
-            IsUsersTabSelected = tab == "4" || tab.Equals("Users", StringComparison.OrdinalIgnoreCase);
+            IsPantriesTabSelected = tab == "1" || tab.Equals("Pantries", StringComparison.OrdinalIgnoreCase);
+            IsDonationsTabSelected = tab == "2" || tab.Equals("Donations", StringComparison.OrdinalIgnoreCase);
+            IsPatientsTabSelected = tab == "3" || tab.Equals("Patients", StringComparison.OrdinalIgnoreCase);
+            IsTripsTabSelected = tab == "4" || tab.Equals("Trips", StringComparison.OrdinalIgnoreCase);
+            IsUsersTabSelected = tab == "5" || tab.Equals("Users", StringComparison.OrdinalIgnoreCase);
 
             AplicarFiltros();
         }
@@ -177,14 +183,14 @@ namespace AMANC_Inventory.Inventory.ViewModels
             IsLoading = true;
             try
             {
-                // Carga simultánea de los 5 nodos de Firebase
                 var productsTask = _productService.GetAllProductsAsync();
+                var pantriesTask = _pantryService.GetAllPantriesAsync();
                 var donationsTask = _donationService.GetAllDonationsAsync();
                 var patientsTask = _patientService.GetAllPatientsAsync();
                 var tripsTask = _tripService.GetAllTripsAsync();
                 var usersTask = _userService.GetAllUsersAsync();
 
-                await Task.WhenAll(productsTask, donationsTask, patientsTask, tripsTask, usersTask);
+                await Task.WhenAll(productsTask, pantriesTask, donationsTask, patientsTask, tripsTask, usersTask);
 
                 ExecuteOnUIThread(() =>
                 {
@@ -192,13 +198,17 @@ namespace AMANC_Inventory.Inventory.ViewModels
                     foreach (var p in productsTask.Result ?? Enumerable.Empty<InventoryItemModel>())
                         InventoryItems.Add(p);
 
+                    PantryItems.Clear();
+                    foreach (var pa in pantriesTask.Result ?? Enumerable.Empty<PantryModel>())
+                        PantryItems.Add(pa);
+
                     DonationItems.Clear();
                     foreach (var d in donationsTask.Result ?? Enumerable.Empty<DonationModel>())
                         DonationItems.Add(d);
 
                     PatientItems.Clear();
-                    foreach (var pa in patientsTask.Result ?? Enumerable.Empty<PatientModel>())
-                        PatientItems.Add(pa);
+                    foreach (var pat in patientsTask.Result ?? Enumerable.Empty<PatientModel>())
+                        PatientItems.Add(pat);
 
                     TripItems.Clear();
                     foreach (var t in tripsTask.Result ?? Enumerable.Empty<TripModel>())
@@ -225,59 +235,50 @@ namespace AMANC_Inventory.Inventory.ViewModels
         {
             ExecuteOnUIThread(() =>
             {
-                // 1. Productos (Solo busca por Nombre que comience con la letra/texto ingresado)
+                // 1. Productos
                 FilteredInventoryList.Clear();
                 var invQuery = InventoryItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
-                {
-                    invQuery = invQuery.Where(i =>
-                        i.Name != null && i.Name.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
-                    );
-                }
+                    invQuery = invQuery.Where(i => i.Name != null && i.Name.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase));
                 foreach (var item in invQuery) FilteredInventoryList.Add(item);
 
-                // 2. Donaciones (Por nombre de producto)
+                // 2. Despensas (Por producto o destino)
+                FilteredPantriesList.Clear();
+                var pantryQuery = PantryItems.AsEnumerable();
+                if (!string.IsNullOrWhiteSpace(FilterText))
+                {
+                    pantryQuery = pantryQuery.Where(p =>
+                        (p.Destination != null && p.Destination.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)) ||
+                        (p.ProductName != null && p.ProductName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)));
+                }
+                foreach (var item in pantryQuery) FilteredPantriesList.Add(item);
+
+                // 3. Donaciones
                 FilteredDonationsList.Clear();
                 var donQuery = DonationItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
-                {
-                    donQuery = donQuery.Where(d =>
-                        d.ProductName != null && d.ProductName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
-                    );
-                }
+                    donQuery = donQuery.Where(d => d.ProductName != null && d.ProductName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase));
                 foreach (var item in donQuery) FilteredDonationsList.Add(item);
 
-                // 3. Niños / Beneficiarios (Por nombre del niño)
+                // 4. Beneficiarios
                 FilteredPatientsList.Clear();
                 var patQuery = PatientItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
-                {
-                    patQuery = patQuery.Where(p =>
-                        p.ChildName != null && p.ChildName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
-                    );
-                }
+                    patQuery = patQuery.Where(p => p.ChildName != null && p.ChildName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase));
                 foreach (var item in patQuery) FilteredPatientsList.Add(item);
 
-                // 4. Traslados / Viajes (Por nombre del niño)
+                // 5. Traslados
                 FilteredTripsList.Clear();
                 var tripQuery = TripItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
-                {
-                    tripQuery = tripQuery.Where(t =>
-                        t.ChildName != null && t.ChildName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
-                    );
-                }
+                    tripQuery = tripQuery.Where(t => t.ChildName != null && t.ChildName.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase));
                 foreach (var item in tripQuery) FilteredTripsList.Add(item);
 
-                // 5. Usuarios (Por nombre del usuario)
+                // 6. Usuarios
                 FilteredUsersList.Clear();
                 var usrQuery = UserItems.AsEnumerable();
                 if (!string.IsNullOrWhiteSpace(FilterText))
-                {
-                    usrQuery = usrQuery.Where(u =>
-                        u.Name != null && u.Name.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase)
-                    );
-                }
+                    usrQuery = usrQuery.Where(u => u.Name != null && u.Name.StartsWith(FilterText, StringComparison.OrdinalIgnoreCase));
                 foreach (var item in usrQuery) FilteredUsersList.Add(item);
             });
         }
@@ -285,13 +286,9 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private void ExecuteOnUIThread(Action action)
         {
             if (Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess())
-            {
                 Application.Current.Dispatcher.Invoke(action);
-            }
             else
-            {
                 action();
-            }
         }
 
         #endregion

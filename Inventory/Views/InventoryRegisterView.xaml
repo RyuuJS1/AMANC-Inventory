@@ -8,12 +8,12 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
-        <!-- Estilo para Convertir RadioButtons en Tarjetas Interactivas -->
+        <!-- Estilo Optimizado para Tarjetas de Selector -->
         <Style x:Key="CardButtonStyle" TargetType="RadioButton">
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#E2E8F0"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Padding" Value="8,8"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Foreground" Value="#102240"/>
             <Setter Property="Template">
@@ -100,7 +100,7 @@
             <Setter Property="Margin" Value="0,0,0,16"/>
         </Style>
 
-        <!-- Estilos Base Globales para Inputs -->
+        <!-- Estilos Base Globales para DatePicker -->
         <Style TargetType="DatePicker">
             <Setter Property="Padding" Value="6,5"/>
             <Setter Property="Background" Value="#F8FAFC"/>
@@ -110,81 +110,101 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Margin="15">
+    <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Selector de Módulo (4 Tarjetas) -->
+            <!-- Selector de Módulo (5 Tarjetas) -->
             <RowDefinition Height="*"/>
             <!-- Contenedor Completo de Formularios -->
         </Grid.RowDefinitions>
 
-        <!-- 1. SELECTOR DE MÓDULOS DE REGISTRO (4 Tarjetas Abarcando Todo el Ancho) -->
-        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,15">
+        <!-- 1. SELECTOR DE MÓDULOS DE REGISTRO (5 Tarjetas Ajustadas) -->
+        <UniformGrid Grid.Row="0" Columns="5" Margin="0,0,0,12">
 
             <!-- 1. Registro Producto -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsInventoryTabSelected, Mode=TwoWay, FallbackValue=True}"
-                         Margin="0,0,6,0">
+                         Margin="0,0,3,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Registrar Entrada" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
-                        <TextBlock Text="Producto / Stock" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
+                        <TextBlock Text="Registrar Entrada" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Producto / Stock" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
             </RadioButton>
 
-            <!-- 2. Registro Donación -->
+            <!-- 2. Registro Despensa / Entrega -->
+            <RadioButton Style="{StaticResource CardButtonStyle}" 
+                         IsChecked="{Binding IsPantryTabSelected, Mode=TwoWay}"
+                         Margin="3,0,3,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Registrar Salida" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Entrega Despensa" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
+            </RadioButton>
+
+            <!-- 3. Registro Donación -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsDonationsTabSelected, Mode=TwoWay}"
+                         Visibility="{Binding CanAccessDonations, Converter={StaticResource BoolToVisConverter}}"
                          Margin="3,0,3,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="&#xE8A1;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="&#xE8A1;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Registrar Entrada" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
-                        <TextBlock Text="Donación" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
+                        <TextBlock Text="Registrar Entrada" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Donación" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
             </RadioButton>
 
-            <!-- 3. Registro Beneficiario -->
+            <!-- 4. Registro Beneficiario -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsPatientsTabSelected, Mode=TwoWay}"
+                         Visibility="{Binding CanAccessPatients, Converter={StaticResource BoolToVisConverter}}"
                          Margin="3,0,3,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Registrar Beneficiario" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
-                        <TextBlock Text="Niño / Tutor" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
+                        <TextBlock Text="Registrar Beneficiario" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Niño / Tutor" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
             </RadioButton>
 
-            <!-- 4. Registro Traslado -->
+            <!-- 5. Registro Traslado -->
             <RadioButton Style="{StaticResource CardButtonStyle}" 
                          IsChecked="{Binding IsTripsTabSelected, Mode=TwoWay}"
-                         Margin="6,0,0,0">
+                         Visibility="{Binding CanAccessTrips, Converter={StaticResource BoolToVisConverter}}"
+                         Margin="3,0,0,0">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="22" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="Registrar Solicitud" FontSize="10" FontWeight="SemiBold" Opacity="0.75"/>
-                        <TextBlock Text="Traslado / Viaje" FontSize="14" FontWeight="Bold" Margin="0,2,0,0"/>
+                        <TextBlock Text="Registrar Solicitud" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                        <TextBlock Text="Traslado / Viaje" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Grid>
             </RadioButton>
@@ -358,14 +378,123 @@
                                 </Style>
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Guardar en Inventario" VerticalAlignment="Center"/>
+                                <TextBlock Text="Registrar" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </Grid>
 
                     <!-- ============================================================== -->
-                    <!-- FORMULARIO 2: DONACIONES -->
+                    <!-- FORMULARIO 2: DESPENSAS Y ENTREGAS (NUEVO) -->
+                    <!-- ============================================================== -->
+                    <Grid Visibility="{Binding IsPantryTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0">
+                            <!-- SECCIÓN 1: Información de Entrega y Destino -->
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                        <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#2563EB" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="INFORMACIÓN DE ENTREGA Y DESTINO" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
+                                    </StackPanel>
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.5*"/>
+                                            <ColumnDefinition Width="1.5*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                            <TextBlock Text="Destino / Zona / Beneficiario *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding DestinationsList}" SelectedItem="{Binding NewPantryDestination}" IsEditable="True"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                            <TextBlock Text="Producto / Insumo Entregado *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewPantryProduct, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                                            <TextBlock Text="Fecha de Entrega" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <DatePicker SelectedDate="{Binding NewPantryDate}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- SECCIÓN 2: Cantidad y Unidad -->
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                        <TextBlock Text="&#xE1D2;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="CANTIDAD Y UNIDAD DE MEDIDA" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
+                                    </StackPanel>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                            <TextBlock Text="Cantidad Entregada *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewPantryQuantity, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                            <TextBlock Text="Unidad de Medida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding UnitsList}" SelectedItem="{Binding NewPantryUnit}"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- SECCIÓN 3: Observaciones -->
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                                        <TextBlock Text="&#xE150;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#D97706" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="OBSERVACIONES Y NOTAS" FontSize="11" FontWeight="Bold" Foreground="#D97706"/>
+                                    </StackPanel>
+
+                                    <StackPanel>
+                                        <TextBlock Text="Notas / Observaciones de la Entrega" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                        <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewPantryNotes, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Botón Guardar Despensa -->
+                        <Button Grid.Row="1"
+                                Command="{Binding SavePantryCommand}" 
+                                HorizontalAlignment="Right" 
+                                VerticalAlignment="Bottom"
+                                Margin="0,10,0,0" 
+                                Padding="24,12" 
+                                Background="#102240" 
+                                Foreground="White" 
+                                FontWeight="Bold" 
+                                FontSize="13"
+                                BorderThickness="0" 
+                                Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="8"/>
+                                </Style>
+                            </Button.Resources>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Registrar" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- ============================================================== -->
+                    <!-- FORMULARIO 3: DONACIONES -->
                     <!-- ============================================================== -->
                     <Grid Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                         <Grid.RowDefinitions>
@@ -488,13 +617,13 @@
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Guardar Donación" VerticalAlignment="Center"/>
+                                <TextBlock Text="Registrar Donación" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </Grid>
 
                     <!-- ============================================================== -->
-                    <!-- FORMULARIO 3: BENEFICIARIOS / NIÑOS -->
+                    <!-- FORMULARIO 4: BENEFICIARIOS -->
                     <!-- ============================================================== -->
                     <Grid Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                         <Grid.RowDefinitions>
@@ -503,12 +632,12 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0">
-                            <!-- SECCIÓN 1: Datos del Beneficiario y Diagnóstico -->
+                            <!-- SECCIÓN 1: Datos del Beneficiario -->
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
                                         <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#2563EB" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="DATOS DEL BENEFICIARIO Y DIAGNÓSTICO" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
+                                        <TextBlock Text="DATOS PERSONALES DEL BENEFICIARIO" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
                                     </StackPanel>
 
                                     <Grid Margin="0,0,0,12">
@@ -519,7 +648,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                            <TextBlock Text="Nombre del Beneficiario *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Nombre del Niño/a *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewChildName, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
 
@@ -534,66 +663,74 @@
                                         </StackPanel>
                                     </Grid>
 
-                                    <StackPanel>
-                                        <TextBlock Text="Diagnóstico / Tipo de Cáncer *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                                        <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewCancerType, UpdateSourceTrigger=PropertyChanged}"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- SECCIÓN 2: Tutor y Contacto -->
-                            <Border Style="{StaticResource SectionCardStyle}">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#7C3AED" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="TUTOR E INFORMACIÓN DE CONTACTO" FontSize="11" FontWeight="Bold" Foreground="#7C3AED"/>
-                                    </StackPanel>
-
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="1.5*"/>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="1.2*"/>
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                            <TextBlock Text="Tutor / Responsable" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewGuardians, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <TextBlock Text="Diagnóstico / Tipo de Cáncer *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewCancerType, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
 
-                                        <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                                            <TextBlock Text="Parentesco" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewRelationship, UpdateSourceTrigger=PropertyChanged}"/>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
-                                            <TextBlock Text="Teléfono(s) de Contacto" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewPhones, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                            <TextBlock Text="Estatus del Paciente" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding PatientStatusList}" SelectedItem="{Binding NewPatientStatus}"/>
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
                             </Border>
 
-                            <!-- SECCIÓN 3: Ubicación y Residencia -->
+                            <!-- SECCIÓN 2: Responsables y Contacto -->
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                        <TextBlock Text="&#xE707;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="UBICACIÓN Y RESIDENCIA" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
+                                        <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="TUTORES Y DATOS DE CONTACTO" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
                                     </StackPanel>
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.5*"/>
+                                            <ColumnDefinition Width="1.5*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                            <TextBlock Text="Nombre de los Padres / Tutores" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewGuardians, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                            <TextBlock Text="Parentesco / Relación" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewRelationship, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                                            <TextBlock Text="Teléfonos" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewPhones, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+                                    </Grid>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                            <TextBlock Text="Ciudad" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Correos Electrónicos" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewEmails, UpdateSourceTrigger=PropertyChanged}"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                            <TextBlock Text="Ciudad / Municipio" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewCity, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
 
-                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
                                             <TextBlock Text="Estado" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewState, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
@@ -602,7 +739,7 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- Botón Guardar Beneficiario -->
+                        <!-- Botón Guardar Paciente -->
                         <Button Grid.Row="1"
                                 Command="{Binding SavePatientCommand}" 
                                 HorizontalAlignment="Right" 
@@ -622,13 +759,13 @@
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Guardar Beneficiario" VerticalAlignment="Center"/>
+                                <TextBlock Text="Registrar Beneficiario" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </Grid>
 
                     <!-- ============================================================== -->
-                    <!-- FORMULARIO 4: TRASLADOS / VIAJES -->
+                    <!-- FORMULARIO 5: TRASLADOS Y VIAJES -->
                     <!-- ============================================================== -->
                     <Grid Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                         <Grid.RowDefinitions>
@@ -637,22 +774,22 @@
                         </Grid.RowDefinitions>
 
                         <StackPanel Grid.Row="0">
-                            <!-- SECCIÓN 1: Pasajeros y Asignación -->
+                            <!-- SECCIÓN 1: Pasajeros y Ruta -->
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                        <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#2563EB" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="PASAJEROS Y ASIGNACIÓN" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
+                                        <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#2563EB" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="DATOS DE PASAJEROS Y RUTA" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
                                     </StackPanel>
 
-                                    <Grid>
+                                    <Grid Margin="0,0,0,12">
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="1.5*"/>
+                                            <ColumnDefinition Width="1.5*"/>
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                            <TextBlock Text="Nombre del Beneficiario *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Paciente / Niño *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewTripChild, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
 
@@ -661,16 +798,6 @@
                                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding NewTripGuardian, UpdateSourceTrigger=PropertyChanged}"/>
                                         </StackPanel>
                                     </Grid>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- SECCIÓN 2: Ruta y Medio de Transporte -->
-                            <Border Style="{StaticResource SectionCardStyle}">
-                                <StackPanel>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                        <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="RUTA Y MEDIO DE TRANSPORTE" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
-                                    </StackPanel>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -697,12 +824,12 @@
                                 </StackPanel>
                             </Border>
 
-                            <!-- SECCIÓN 3: Programación y Estatus -->
+                            <!-- SECCIÓN 2: Fechas y Estado -->
                             <Border Style="{StaticResource SectionCardStyle}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                        <TextBlock Text="&#xEC92;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#D97706" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                        <TextBlock Text="PROGRAMACIÓN Y ESTATUS" FontSize="11" FontWeight="Bold" Foreground="#D97706"/>
+                                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                        <TextBlock Text="FECHAS Y ESTATUS DEL VIAJE" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
                                     </StackPanel>
 
                                     <Grid>
@@ -713,17 +840,17 @@
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                            <TextBlock Text="Fecha de Salida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Fecha / Hora de Salida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                                             <DatePicker SelectedDate="{Binding NewDepartureDate}"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                                            <TextBlock Text="Fecha de Regreso / Estimada" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Fecha / Hora Estimada de Regreso" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                                             <DatePicker SelectedDate="{Binding NewReturnDate}"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="2" Margin="10,0,0,0">
-                                            <TextBlock Text="Estatus del Viaje" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                            <TextBlock Text="Estatus de la Solicitud" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                                             <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding TripStatusList}" SelectedItem="{Binding NewTripStatus}"/>
                                         </StackPanel>
                                     </Grid>
@@ -751,7 +878,7 @@
                             </Button.Resources>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                <TextBlock Text="Guardar Traslado" VerticalAlignment="Center"/>
+                                <TextBlock Text="Registrar Solicitud de Traslado" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </Grid>

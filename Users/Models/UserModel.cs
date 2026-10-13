@@ -124,5 +124,31 @@ namespace AMANC_Inventory.Users.Models
                 return $"{parts[0][0]}{parts[1][0]}".ToUpper();
             }
         }
+
+        // --- PERMISOS Y CONTROL DE ACCESO SEGÚN ROL ---
+
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public bool CanAccessInventory => true; // Todos (Volunteer, Staff, Manager, Admin)
+
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public bool CanAccessPantries => true; // Todos (Volunteer, Staff, Manager, Admin)
+
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public bool CanAccessDonations => !Role.Equals("Volunteer", StringComparison.OrdinalIgnoreCase); // Staff, Manager, Admin
+
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public bool CanAccessPatients => !Role.Equals("Volunteer", StringComparison.OrdinalIgnoreCase); // Staff, Manager, Admin
+
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public bool CanAccessTrips => !Role.Equals("Volunteer", StringComparison.OrdinalIgnoreCase); // Staff, Manager, Admin
+
+        [JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public bool CanAccessUsers => Role.Equals("Admin", StringComparison.OrdinalIgnoreCase); // Únicamente Admin
     }
 }

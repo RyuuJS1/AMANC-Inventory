@@ -31,8 +31,8 @@ namespace AMANC_Inventory.Inventory.Services
                 {
                     if (product == null) return false;
 
-                    // Si no tiene ID o es "0", asigna el siguiente consecutivo numérico (1, 2, 3...)
-                    if (string.IsNullOrWhiteSpace(product.Id) || product.Id == "0")
+                    // Si no tiene ID, es "0" o contiene un GUID, asigna el número consecutivo (1, 2, 3...)
+                    if (string.IsNullOrWhiteSpace(product.Id) || product.Id == "0" || Guid.TryParse(product.Id, out _))
                     {
                         product.Id = await GetNextCustomIdAsync();
                     }

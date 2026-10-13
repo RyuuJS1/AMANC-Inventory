@@ -5,10 +5,14 @@ using AMANC_Inventory.Donations.Services;
 using AMANC_Inventory.Inventory.Interfaces;
 using AMANC_Inventory.Inventory.Models;
 using AMANC_Inventory.Inventory.Services;
+using AMANC_Inventory.Pantries.Interfaces;
+using AMANC_Inventory.Pantries.Models;
+using AMANC_Inventory.Pantries.Services;
 using AMANC_Inventory.Patients.Models;
 using AMANC_Inventory.Patients.Services;
 using AMANC_Inventory.Trips.Models;
 using AMANC_Inventory.Trips.Services;
+using AMANC_Inventory.Users.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -22,11 +26,13 @@ namespace AMANC_Inventory.Inventory.ViewModels
     public class InventoryRegisterViewModel : INotifyPropertyChanged
     {
         private readonly IProductService _productService;
+        private readonly IPantryService _pantryService;
         private readonly IDonationService _donationService;
         private readonly IPatientService _patientService;
         private readonly ITripService _tripService;
         private readonly Func<Task>? _onSaveSuccess;
 
+        private UserModel? _currentUser;
         private string? _userDefaultBranch;
 
         // -------------------------------------------------------------
@@ -38,6 +44,13 @@ namespace AMANC_Inventory.Inventory.ViewModels
         {
             get => _isInventoryTabSelected;
             set { _isInventoryTabSelected = value; OnPropertyChanged(); }
+        }
+
+        private bool _isPantryTabSelected;
+        public bool IsPantryTabSelected
+        {
+            get => _isPantryTabSelected;
+            set { _isPantryTabSelected = value; OnPropertyChanged(); }
         }
 
         private bool _isDonationsTabSelected;
@@ -60,6 +73,26 @@ namespace AMANC_Inventory.Inventory.ViewModels
             get => _isTripsTabSelected;
             set { _isTripsTabSelected = value; OnPropertyChanged(); }
         }
+
+        // -------------------------------------------------------------
+        // CONTROL DE PERMISOS Y ROLES
+        // -------------------------------------------------------------
+
+        public void SetCurrentUser(UserModel? user)
+        {
+            _currentUser = user;
+            if (user != null)
+            {
+                SetUserBranch(user.Branch);
+            }
+            OnPropertyChanged(nameof(CanAccessDonations));
+            OnPropertyChanged(nameof(CanAccessPatients));
+            OnPropertyChanged(nameof(CanAccessTrips));
+        }
+
+        public bool CanAccessDonations => _currentUser?.CanAccessDonations ?? false;
+        public bool CanAccessPatients => _currentUser?.CanAccessPatients ?? false;
+        public bool CanAccessTrips => _currentUser?.CanAccessTrips ?? false;
 
         // -------------------------------------------------------------
         // PROPIEDADES - PESTAÑA INVENTARIO
@@ -118,6 +151,27 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 BranchesList.Add(branch);
             }
         }
+
+        // -------------------------------------------------------------
+        // PROPIEDADES - PESTAÑA DESPENSAS (NUEVO)
+        // -------------------------------------------------------------
+        private string? _newPantryDestination;
+        public string? NewPantryDestination { get => _newPantryDestination; set { _newPantryDestination = value; OnPropertyChanged(); } }
+
+        private string? _newPantryProduct;
+        public string? NewPantryProduct { get => _newPantryProduct; set { _newPantryProduct = value; OnPropertyChanged(); } }
+
+        private string? _newPantryQuantity;
+        public string? NewPantryQuantity { get => _newPantryQuantity; set { _newPantryQuantity = value; OnPropertyChanged(); } }
+
+        private string? _newPantryUnit;
+        public string? NewPantryUnit { get => _newPantryUnit; set { _newPantryUnit = value; OnPropertyChanged(); } }
+
+        private DateTime? _newPantryDate = DateTime.Now;
+        public DateTime? NewPantryDate { get => _newPantryDate; set { _newPantryDate = value; OnPropertyChanged(); } }
+
+        private string? _newPantryNotes;
+        public string? NewPantryNotes { get => _newPantryNotes; set { _newPantryNotes = value; OnPropertyChanged(); } }
 
         // -------------------------------------------------------------
         // PROPIEDADES - OTRAS PESTAÑAS (DONACIONES, PACIENTES, VIAJES)
@@ -223,24 +277,28 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public ObservableCollection<string> PatientStatusList { get; set; } = new();
         public ObservableCollection<string> TransportTypesList { get; set; } = new();
         public ObservableCollection<string> TripStatusList { get; set; } = new();
+        public ObservableCollection<string> DestinationsList { get; set; } = new();
 
         // -------------------------------------------------------------
         // COMANDOS
         // -------------------------------------------------------------
         public ICommand ResetFormCommand { get; }
         public ICommand SaveItemCommand { get; }
+        public ICommand SavePantryCommand { get; }
         public ICommand SaveDonationCommand { get; }
         public ICommand SavePatientCommand { get; }
         public ICommand SaveTripCommand { get; }
 
         public InventoryRegisterViewModel(
             IProductService? productService = null,
+            IPantryService? pantryService = null,
             IDonationService? donationService = null,
             IPatientService? patientService = null,
             ITripService? tripService = null,
             Func<Task>? onSaveSuccess = null)
         {
             _productService = productService ?? new ProductService();
+            _pantryService = pantryService ?? new PantryService();
             _donationService = donationService ?? new DonationService();
             _patientService = patientService ?? new PatientService();
             _tripService = tripService ?? new TripService();
@@ -251,6 +309,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
             ResetFormCommand = new RelayCommand(_ => ResetForm());
             SaveItemCommand = new RelayCommand(async _ => await SaveItemAsync());
+            SavePantryCommand = new RelayCommand(async _ => await SavePantryAsync());
             SaveDonationCommand = new RelayCommand(async _ => await SaveDonationAsync());
             SavePatientCommand = new RelayCommand(async _ => await SavePatientAsync());
             SaveTripCommand = new RelayCommand(async _ => await SaveTripAsync());
@@ -260,12 +319,13 @@ namespace AMANC_Inventory.Inventory.ViewModels
         {
             BranchesList = new ObservableCollection<string> { "Veracruz", "CDMX", "Sede Central", "Sucursal Norte", "Sucursal Sur" };
             CategoriesList = new ObservableCollection<string> { "Medicamentos", "Alimentos / Suplementos", "Higiene Personal", "Ropa", "Insumo Médico" };
-            UnitsList = new ObservableCollection<string> { "Pza", "Caja", "Kg", "Litro", "Frasco" };
+            UnitsList = new ObservableCollection<string> { "Pza", "Caja", "Kg", "Litro", "Frasco", "Paquete" };
             StatusList = new ObservableCollection<string> { "Active", "Inactive", "Out of Stock", "Expired", "Damaged" };
             DonorTypesList = new ObservableCollection<string> { "Particular", "Empresa", "Fundación" };
             PatientStatusList = new ObservableCollection<string> { "Activo", "En Tratamiento", "Inactivo" };
             TransportTypesList = new ObservableCollection<string> { "Autobús", "Avión", "Particular" };
             TripStatusList = new ObservableCollection<string> { "Programado", "En Proceso", "Completado", "Cancelado" };
+            DestinationsList = new ObservableCollection<string> { "Casa 1", "Casa 2", "Casa 3", "Cocina", "Juan Carlos", "María", "Lucero", "Comedor Principal" };
         }
 
         private void ResetForm()
@@ -283,6 +343,13 @@ namespace AMANC_Inventory.Inventory.ViewModels
             NewBranchId = _userDefaultBranch;
             NewStatus = "Active";
             NewExpirationDate = null;
+
+            NewPantryDestination = null;
+            NewPantryProduct = string.Empty;
+            NewPantryQuantity = string.Empty;
+            NewPantryUnit = null;
+            NewPantryDate = DateTime.Now;
+            NewPantryNotes = string.Empty;
 
             NewDonorCompany = string.Empty;
             NewDonorType = null;
@@ -358,6 +425,41 @@ namespace AMANC_Inventory.Inventory.ViewModels
             else
             {
                 MessageBox.Show("Error al guardar el producto en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task SavePantryAsync()
+        {
+            if (string.IsNullOrWhiteSpace(NewPantryDestination) || string.IsNullOrWhiteSpace(NewPantryProduct))
+            {
+                MessageBox.Show("Por favor, ingrese el destino/zona y el producto entregado.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            int.TryParse(NewPantryQuantity, out int quantity);
+
+            var pantry = new PantryModel
+            {
+                Destination = NewPantryDestination.Trim(),
+                ProductName = NewPantryProduct.Trim(),
+                Quantity = quantity > 0 ? quantity : 1,
+                Unit = NewPantryUnit ?? "Pza",
+                DeliveryDate = NewPantryDate ?? DateTime.Now,
+                DeliveredBy = _currentUser?.Name ?? "Sistema",
+                Branch = _userDefaultBranch ?? "Sede Central",
+                Notes = NewPantryNotes ?? string.Empty
+            };
+
+            bool success = await _pantryService.SavePantryAsync(pantry);
+            if (success)
+            {
+                MessageBox.Show("Entrega de despensa registrada correctamente en Firebase.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                ResetForm();
+                if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
+            }
+            else
+            {
+                MessageBox.Show("Error al guardar la despensa en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

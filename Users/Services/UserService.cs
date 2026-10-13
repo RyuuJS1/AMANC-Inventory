@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AMANC_Inventory.Core.Config;
 using AMANC_Inventory.Modules.Auth.Interfaces;
@@ -10,6 +11,7 @@ using AMANC_Inventory.Users.Interfaces;
 using AMANC_Inventory.Users.Models;
 using Firebase.Database;
 using Firebase.Database.Query;
+using Newtonsoft.Json.Linq;
 
 namespace AMANC_Inventory.Users.Services
 {
@@ -26,23 +28,75 @@ namespace AMANC_Inventory.Users.Services
             _authService = authService;
         }
 
-        /// <summary>
-        /// Genera el siguiente ID numérico consecutivo para el nodo especificado.
-        /// </summary>
+        public async Task<List<UserModel>> GetAllUsersAsync()
+        {
+            try
+            {
+                // OnceSingleAsync<JToken>() obtiene el JSON para procesar Objetos {} o Arreglos []
+                var token = await _dbClient
+                    .Child("Usuarios")
+                    .OnceSingleAsync<JToken>();
+
+                if (token == null || token.Type == JTokenType.Null)
+                    return new List<UserModel>();
+
+                var userList = new List<UserModel>();
+
+                if (token is JArray jArray)
+                {
+                    // Procesa la respuesta cuando Firebase devuelve un Arreglo por usar claves 1, 2, 3...
+                    foreach (var item in jArray)
+                    {
+                        if (item != null && item.Type != JTokenType.Null)
+                        {
+                            var user = item.ToObject<UserModel>();
+                            if (user != null)
+                            {
+                                userList.Add(user);
+                            }
+                        }
+                    }
+                }
+                else if (token is JObject jObject)
+                {
+                    // Procesa la respuesta cuando Firebase devuelve un Objeto JSON estándar
+                    foreach (var prop in jObject.Properties())
+                    {
+                        if (prop.Value != null && prop.Value.Type != JTokenType.Null)
+                        {
+                            var user = prop.Value.ToObject<UserModel>();
+                            if (user != null)
+                            {
+                                if (string.IsNullOrEmpty(user.Id)) user.Id = prop.Name;
+                                userList.Add(user);
+                            }
+                        }
+                    }
+                }
+
+                return userList;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error crítico en GetAllUsersAsync: {ex.Message}");
+                return new List<UserModel>();
+            }
+        }
+
         private async Task<string> GetNextCustomIdAsync(string nodeName)
         {
             try
             {
-                var items = await _dbClient
-                    .Child(nodeName)
-                    .OnceAsync<UserModel>();
+                var users = await GetAllUsersAsync();
 
-                if (!items.Any()) return "1";
+                if (!users.Any()) return "1";
 
-                int maxId = items
-                    .Select(i =>
+                int maxId = users
+                    .Select(u =>
                     {
-                        return int.TryParse(i.Key, out int num) ? num : 0;
+                        string idToParse = !string.IsNullOrWhiteSpace(u.Id) ? u.Id : "0";
+                        string numericPart = Regex.Match(idToParse, @"\d+").Value;
+                        return int.TryParse(numericPart, out int num) ? num : 0;
                     })
                     .DefaultIfEmpty(0)
                     .Max();
@@ -56,84 +110,84 @@ namespace AMANC_Inventory.Users.Services
             }
         }
 
-        public async Task<List<UserModel>> GetAllUsersAsync()
+        public async Task<bool> RegisterUserAsync(UserModel userProfile, string password)
         {
             try
             {
-                var items = await _dbClient
-                    .Child("Usuarios")
-                    .OnceAsync<UserModel>();
+                if (userProfile == null || string.IsNullOrWhiteSpace(userProfile.Email))
+                {
+                    return false;
+                }
 
-                return items
-                    .Where(item => item.Object != null)
-                    .Select(item =>
-                    {
-                        var user = item.Object;
-                        user.Id = string.IsNullOrEmpty(user.Id) ? item.Key : user.Id;
-                        return user;
-                    })
-                    .ToList();
+                userProfile.Email = userProfile.Email.Trim().ToLower();
+
+                // 1. Crear usuario en Firebase Auth
+                string uid = await _authService.CreateUserAsync(userProfile.Email, password);
+
+                // 2. Generar ID numérico consecutivo (1, 2, 3...)
+                string customId = await GetNextCustomIdAsync("Usuarios");
+
+                userProfile.Id = customId;
+                userProfile.AuthUid = uid;
+                userProfile.CreatedAt = DateTime.UtcNow;
+
+                if (string.IsNullOrWhiteSpace(userProfile.Status))
+                {
+                    userProfile.Status = "Active";
+                }
+
+                // 3. Guardar en Realtime Database
+                await _dbClient
+                    .Child("Usuarios")
+                    .Child(customId)
+                    .PutAsync(userProfile);
+
+                return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error crítico en GetAllUsersAsync: {ex.Message}");
-                return new List<UserModel>();
+                Debug.WriteLine($"Error durante el registro: {ex.Message}");
+                throw new Exception($"Error durante el registro: {ex.Message}", ex);
             }
         }
-
-        public async Task<bool> RegisterUserAsync(UserModel userProfile, string password)
-{
-    try
-    {
-        if (userProfile == null || string.IsNullOrWhiteSpace(userProfile.Email))
-        {
-            return false;
-        }
-
-        userProfile.Email = userProfile.Email.Trim().ToLower();
-
-        // 1. Crear en Firebase Auth
-        string uid = await _authService.CreateUserAsync(userProfile.Email, password);
-
-        // 2. Generar ID con prefijo (ej: "USR-0001")
-        string customId = await GetNextCustomIdAsync("Usuarios", "USR-");
-
-        userProfile.Id = customId;
-        userProfile.AuthUid = uid;
-        userProfile.CreatedAt = DateTime.UtcNow;
-
-        // 3. Guardar en Realtime Database
-        await _dbClient
-            .Child("Usuarios")
-            .Child(customId)
-            .PutAsync(userProfile);
-
-        return true;
-    }
-    catch (Exception ex)
-    {
-        throw new Exception($"Error durante el registro: {ex.Message}", ex);
-    }
-}
 
         public async Task<bool> ValidateCredentialsAsync(string email, string password)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(email)) return false;
+                if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+                    return false;
 
-                string uid = await _authService.SignInAsync(email, password);
+                string emailLimpio = email.Trim().ToLower();
 
-                if (string.IsNullOrEmpty(uid)) return false;
+                // 1. Iniciar sesión en Firebase Auth
+                string uid = await _authService.SignInAsync(emailLimpio, password);
 
-                // Consulta al usuario por correo para ubicarlo sin importar el ID de clave del nodo
-                var userProfile = await GetUserByEmailAsync(email);
+                if (string.IsNullOrEmpty(uid))
+                {
+                    Debug.WriteLine("[Login Error]: Firebase Auth rechazó las credenciales.");
+                    return false;
+                }
 
-                return userProfile != null && userProfile.Status == "Active";
+                // 2. Consultar el perfil
+                var userProfile = await GetUserByEmailAsync(emailLimpio);
+
+                if (userProfile == null)
+                {
+                    Debug.WriteLine("[Login Alert]: Usuario autenticado en Auth pero no encontrado en base de datos.");
+                    return true;
+                }
+
+                // 3. Validar estatus activo
+                bool isActive = string.IsNullOrWhiteSpace(userProfile.Status) ||
+                                userProfile.Status.Equals("Active", StringComparison.OrdinalIgnoreCase) ||
+                                userProfile.Status.Equals("Activo", StringComparison.OrdinalIgnoreCase);
+
+                return isActive;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error al validar credenciales: {ex.Message}");
+                Debug.WriteLine($"Error al validar credenciales: {ex.Message}");
                 return false;
             }
         }
@@ -146,20 +200,16 @@ namespace AMANC_Inventory.Users.Services
                     return false;
 
                 string emailLimpio = email.Trim().ToLower();
-
-                var todosLosUsuarios = await _dbClient
-                    .Child("Usuarios")
-                    .OnceAsync<UserModel>();
+                var todosLosUsuarios = await GetAllUsersAsync();
 
                 return todosLosUsuarios.Any(u =>
-                    u.Object != null &&
-                    !string.IsNullOrEmpty(u.Object.Email) &&
-                    u.Object.Email.Trim().ToLower() == emailLimpio
+                    !string.IsNullOrEmpty(u.Email) &&
+                    u.Email.Trim().ToLower() == emailLimpio
                 );
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error crítico en EmailExistsAsync: {ex.Message}");
+                Debug.WriteLine($"Error en EmailExistsAsync: {ex.Message}");
                 return false;
             }
         }
@@ -172,18 +222,12 @@ namespace AMANC_Inventory.Users.Services
                     return null;
 
                 string emailLimpio = email.Trim().ToLower();
+                var todosLosUsuarios = await GetAllUsersAsync();
 
-                var todosLosUsuarios = await _dbClient
-                    .Child("Usuarios")
-                    .OnceAsync<UserModel>();
-
-                var usuarioEncontrado = todosLosUsuarios.FirstOrDefault(u =>
-                    u.Object != null &&
-                    !string.IsNullOrEmpty(u.Object.Email) &&
-                    u.Object.Email.Trim().ToLower() == emailLimpio
+                return todosLosUsuarios.FirstOrDefault(u =>
+                    !string.IsNullOrEmpty(u.Email) &&
+                    u.Email.Trim().ToLower() == emailLimpio
                 );
-
-                return usuarioEncontrado?.Object;
             }
             catch (Exception ex)
             {
