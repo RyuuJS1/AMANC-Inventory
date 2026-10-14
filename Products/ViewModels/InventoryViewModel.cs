@@ -26,9 +26,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private int _selectedSubTab = 0; // 0=Productos, 1=Despensas, 2=Donaciones, 3=Pacientes, 4=Traslados, 5=Usuarios
         private string _filterText = string.Empty;
 
-        // -------------------------------------------------------------
         // SUB-VIEWMODELS DE CONSULTA
-        // -------------------------------------------------------------
         public ProductConsultViewModel ProductConsult { get; }
         public PantryConsultViewModel PantryConsult { get; }
         public DonationConsultViewModel DonationConsult { get; }
@@ -36,18 +34,14 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public TripConsultViewModel TripConsult { get; }
         public UserConsultViewModel UserConsult { get; }
 
-        // -------------------------------------------------------------
         // SUB-VIEWMODELS DE REGISTRO
-        // -------------------------------------------------------------
         public ProductRegisterViewModel ProductRegister { get; }
         public PantryRegisterViewModel PantryRegister { get; }
         public DonationRegisterViewModel DonationRegister { get; }
         public PatientRegisterViewModel PatientRegister { get; }
         public TripRegisterViewModel TripRegister { get; }
 
-        // -------------------------------------------------------------
-        // PROPIEDADES DE PERFIL DE USUARIO
-        // -------------------------------------------------------------
+        // PERFIL DE USUARIO
         private string _nombreUsuario = "Usuario";
         private string _userInitials = "U";
         private bool _hasProfilePicture;
@@ -84,7 +78,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
             TripConsult = new TripConsultViewModel(tripService);
             UserConsult = new UserConsultViewModel(userService);
 
-            // 2. Instanciar Sub-ViewModels de Registro con Callbacks de auto-refresco
+            // 2. Instanciar Sub-ViewModels de Registro
             ProductRegister = new ProductRegisterViewModel(
                 productService,
                 async () => await ProductConsult.ForceReloadAsync());
@@ -103,20 +97,21 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 async () =>
                 {
                     await PatientConsult.ForceReloadAsync();
-                    await PantryRegister.LoadDestinationsAsync(); // Actualiza combo de despensas
+                    await PantryRegister.LoadDestinationsAsync();
                 });
 
             TripRegister = new TripRegisterViewModel(
                 tripService,
                 async () => await TripConsult.ForceReloadAsync());
 
-            // 3. Catálogos de perfil
+            // Catálogos
             Relationships = new ObservableCollection<string> { "Padre/Madre", "Cónyuge", "Hermano/a", "Hijo/a", "Tutor", "Otro" };
             Branches = new ObservableCollection<string> { "Sede Central", "Veracruz", "Xalapa", "Córdoba" };
             Departments = new ObservableCollection<string> { "Administración", "Inventario", "Trabajo Social", "Logística", "Sistemas" };
 
-            // 4. Comandos
+            // Comandos
             SelectMainTabCommand = new RelayCommand(p => SeleccionarPestanaPrincipal(p));
+            SelectTabCommand = SelectMainTabCommand; // Alias para compatibilidad en XAML
             SelectSubTabCommand = new RelayCommand(p => SeleccionarSubPestana(p));
             ClearFilterCommand = new RelayCommand(_ => FilterText = string.Empty);
             AbrirPerfilCommand = new RelayCommand(_ => AbrirPerfil());
@@ -124,11 +119,10 @@ namespace AMANC_Inventory.Inventory.ViewModels
             SelectPictureCommand = new RelayCommand(_ => SeleccionarFotoPerfil());
             SaveProfileCommand = new RelayCommand(_ => GuardarPerfil());
 
-            // Carga inicial de la primera pestaña (Productos)
             _ = ProductConsult.EnsureDataLoadedAsync();
         }
 
-        #region Control de Pestañas y Filtro
+        #region Control de Pestañas y Filtros
 
         public int SelectedTab
         {
@@ -150,6 +144,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
             {
                 if (SetProperty(ref _selectedSubTab, value))
                 {
+                    NotificarCambioSubPestanas();
                     _ = CargarPestanaActivaAsync();
                 }
             }
@@ -157,6 +152,53 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         public bool IsTabConsultVisible => SelectedTab == 0;
         public bool IsTabRegisterVisible => SelectedTab == 1;
+
+        // Banderas Booleanas para los RadioButtons de la vista de Consulta
+        public bool IsInventoryTabSelected
+        {
+            get => SelectedSubTab == 0;
+            set { if (value) SelectedSubTab = 0; }
+        }
+
+        public bool IsPantriesTabSelected
+        {
+            get => SelectedSubTab == 1;
+            set { if (value) SelectedSubTab = 1; }
+        }
+
+        public bool IsDonationsTabSelected
+        {
+            get => SelectedSubTab == 2;
+            set { if (value) SelectedSubTab = 2; }
+        }
+
+        public bool IsPatientsTabSelected
+        {
+            get => SelectedSubTab == 3;
+            set { if (value) SelectedSubTab = 3; }
+        }
+
+        public bool IsTripsTabSelected
+        {
+            get => SelectedSubTab == 4;
+            set { if (value) SelectedSubTab = 4; }
+        }
+
+        public bool IsUsersTabSelected
+        {
+            get => SelectedSubTab == 5;
+            set { if (value) SelectedSubTab = 5; }
+        }
+
+        private void NotificarCambioSubPestanas()
+        {
+            OnPropertyChanged(nameof(IsInventoryTabSelected));
+            OnPropertyChanged(nameof(IsPantriesTabSelected));
+            OnPropertyChanged(nameof(IsDonationsTabSelected));
+            OnPropertyChanged(nameof(IsPatientsTabSelected));
+            OnPropertyChanged(nameof(IsTripsTabSelected));
+            OnPropertyChanged(nameof(IsUsersTabSelected));
+        }
 
         public string FilterText
         {
@@ -186,9 +228,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
             }
         }
 
-        /// <summary>
-        /// Carga perezosa (Lazy Loading): Solo consulta Firebase cuando la sub-pestaña es abierta.
-        /// </summary>
         private async Task CargarPestanaActivaAsync()
         {
             switch (SelectedSubTab)
@@ -214,97 +253,45 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         #endregion
 
+        #region Permisos por Rol
+        public bool CanAccessDonations => CurrentUser?.CanAccessDonations ?? true;
+        public bool CanAccessPatients => CurrentUser?.CanAccessPatients ?? true;
+        public bool CanAccessTrips => CurrentUser?.CanAccessTrips ?? true;
+        public bool CanAccessUsers => CurrentUser?.CanAccessUsers ?? true;
+        #endregion
+
         #region Propiedades de Perfil de Usuario
 
         public UserModel? CurrentUser
         {
             get => _usuarioActual;
-            set => SetProperty(ref _usuarioActual, value);
+            set
+            {
+                if (SetProperty(ref _usuarioActual, value))
+                {
+                    OnPropertyChanged(nameof(CanAccessDonations));
+                    OnPropertyChanged(nameof(CanAccessPatients));
+                    OnPropertyChanged(nameof(CanAccessTrips));
+                    OnPropertyChanged(nameof(CanAccessUsers));
+                }
+            }
         }
 
-        public string NombreUsuario
-        {
-            get => _nombreUsuario;
-            set => SetProperty(ref _nombreUsuario, value);
-        }
+        public string NombreUsuario { get => _nombreUsuario; set => SetProperty(ref _nombreUsuario, value); }
+        public string UserInitials { get => _userInitials; set => SetProperty(ref _userInitials, value); }
+        public bool HasProfilePicture { get => _hasProfilePicture; set => SetProperty(ref _hasProfilePicture, value); }
+        public bool HasNoProfilePicture { get => _hasNoProfilePicture; set => SetProperty(ref _hasNoProfilePicture, value); }
+        public bool IsProfileDetailsOpen { get => _isProfileDetailsOpen; set => SetProperty(ref _isProfileDetailsOpen, value); }
 
-        public string UserInitials
-        {
-            get => _userInitials;
-            set => SetProperty(ref _userInitials, value);
-        }
-
-        public bool HasProfilePicture
-        {
-            get => _hasProfilePicture;
-            set => SetProperty(ref _hasProfilePicture, value);
-        }
-
-        public bool HasNoProfilePicture
-        {
-            get => _hasNoProfilePicture;
-            set => SetProperty(ref _hasNoProfilePicture, value);
-        }
-
-        public bool IsProfileDetailsOpen
-        {
-            get => _isProfileDetailsOpen;
-            set => SetProperty(ref _isProfileDetailsOpen, value);
-        }
-
-        public object? ProfileImageSource
-        {
-            get => _profileImageSource;
-            set => SetProperty(ref _profileImageSource, value);
-        }
-
-        public string Phone
-        {
-            get => _phone;
-            set => SetProperty(ref _phone, value);
-        }
-
-        public string EmergencyPhone
-        {
-            get => _emergencyPhone;
-            set => SetProperty(ref _emergencyPhone, value);
-        }
-
-        public string EmergencyContactName
-        {
-            get => _emergencyContactName;
-            set => SetProperty(ref _emergencyContactName, value);
-        }
-
-        public string EmergencyRelationship
-        {
-            get => _emergencyRelationship;
-            set => SetProperty(ref _emergencyRelationship, value);
-        }
-
-        public string City
-        {
-            get => _city;
-            set => SetProperty(ref _city, value);
-        }
-
-        public DateTime? BirthDate
-        {
-            get => _birthDate;
-            set => SetProperty(ref _birthDate, value);
-        }
-
-        public string Branch
-        {
-            get => _branch;
-            set => SetProperty(ref _branch, value);
-        }
-
-        public string Department
-        {
-            get => _department;
-            set => SetProperty(ref _department, value);
-        }
+        public object? ProfileImageSource { get => _profileImageSource; set => SetProperty(ref _profileImageSource, value); }
+        public string Phone { get => _phone; set => SetProperty(ref _phone, value); }
+        public string EmergencyPhone { get => _emergencyPhone; set => SetProperty(ref _emergencyPhone, value); }
+        public string EmergencyContactName { get => _emergencyContactName; set => SetProperty(ref _emergencyContactName, value); }
+        public string EmergencyRelationship { get => _emergencyRelationship; set => SetProperty(ref _emergencyRelationship, value); }
+        public string City { get => _city; set => SetProperty(ref _city, value); }
+        public DateTime? BirthDate { get => _birthDate; set => SetProperty(ref _birthDate, value); }
+        public string Branch { get => _branch; set => SetProperty(ref _branch, value); }
+        public string Department { get => _department; set => SetProperty(ref _department, value); }
 
         public ObservableCollection<string> Relationships { get; }
         public ObservableCollection<string> Branches { get; }
@@ -315,6 +302,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
         #region Comandos
 
         public ICommand SelectMainTabCommand { get; }
+        public ICommand SelectTabCommand { get; }
         public ICommand SelectSubTabCommand { get; }
         public ICommand ClearFilterCommand { get; }
         public ICommand AbrirPerfilCommand { get; }
@@ -324,7 +312,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         #endregion
 
-        #region Métodos de Perfil
+        #region Métodos
 
         public void InicializarUsuario(UserModel usuario)
         {
@@ -337,32 +325,16 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 HasProfilePicture = !string.IsNullOrEmpty(usuario.ProfilePictureBase64);
                 HasNoProfilePicture = !HasProfilePicture;
 
-                // Transmitir información del usuario a los formularios de registro
                 ProductRegister.SetCurrentUser(usuario);
                 PantryRegister.SetCurrentUser(usuario);
                 DonationRegister.SetCurrentUser(usuario);
             }
-            else
-            {
-                NombreUsuario = "Usuario";
-                UserInitials = "U";
-                HasProfilePicture = false;
-                HasNoProfilePicture = true;
-            }
         }
 
         public void AbrirPerfil() => IsProfileDetailsOpen = true;
-
         public void CerrarPerfil() => IsProfileDetailsOpen = false;
-
-        private void SeleccionarFotoPerfil()
-        {
-        }
-
-        private void GuardarPerfil()
-        {
-            IsProfileDetailsOpen = false;
-        }
+        private void SeleccionarFotoPerfil() { }
+        private void GuardarPerfil() => IsProfileDetailsOpen = false;
 
         #endregion
     }
