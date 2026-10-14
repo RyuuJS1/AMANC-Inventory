@@ -8,7 +8,7 @@ namespace AMANC_Inventory.Inventory.Interfaces
 {
     public interface IProductService
     {
-        Task<bool> SaveProductAsync(InventoryItemModel product);
-        Task<List<InventoryItemModel>> GetAllProductsAsync();
+        Task<bool> SaveProductAsync(ProductModel product);
+        Task<List<ProductModel>> GetAllProductsAsync();
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using AMANC_Inventory.Patients.Interfaces;
 using System.Threading.Tasks;
 using AMANC_Inventory.Core.Config;
 using AMANC_Inventory.Core.Utilities;
@@ -12,12 +13,6 @@ using Firebase.Database.Query;
 
 namespace AMANC_Inventory.Patients.Services
 {
-    public interface IPatientService
-    {
-        Task<List<PatientModel>> GetAllPatientsAsync();
-        Task<bool> SavePatientAsync(PatientModel patient);
-    }
-
     public class PatientService : IPatientService
     {
         private readonly FirebaseClient _firebaseClient;

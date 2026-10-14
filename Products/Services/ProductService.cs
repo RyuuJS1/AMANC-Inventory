@@ -23,7 +23,7 @@ namespace AMANC_Inventory.Inventory.Services
             _firebaseClient = new FirebaseClient(FirebaseConfig.RealtimeDbUrl);
         }
 
-        public async Task<bool> SaveProductAsync(InventoryItemModel product)
+        public async Task<bool> SaveProductAsync(ProductModel product)
         {
             return await PerformanceTracker.MeasureAsync(async () =>
             {
@@ -52,7 +52,7 @@ namespace AMANC_Inventory.Inventory.Services
             }, "Guardar Producto en Firebase");
         }
 
-        public async Task<List<InventoryItemModel>> GetAllProductsAsync()
+        public async Task<List<ProductModel>> GetAllProductsAsync()
         {
             return await PerformanceTracker.MeasureAsync(async () =>
             {
@@ -60,7 +60,7 @@ namespace AMANC_Inventory.Inventory.Services
                 {
                     var items = await _firebaseClient
                         .Child(NodeName)
-                        .OnceAsync<InventoryItemModel>();
+                        .OnceAsync<ProductModel>();
 
                     return items
                         .Where(item => item.Object != null)
@@ -75,7 +75,7 @@ namespace AMANC_Inventory.Inventory.Services
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"[Error al consultar productos]: {ex.Message}");
-                    return new List<InventoryItemModel>();
+                    return new List<ProductModel>();
                 }
             }, "Consultar Productos desde Firebase");
         }
@@ -90,7 +90,7 @@ namespace AMANC_Inventory.Inventory.Services
             {
                 var items = await _firebaseClient
                     .Child(NodeName)
-                    .OnceAsync<InventoryItemModel>();
+                    .OnceAsync<ProductModel>();
 
                 if (!items.Any()) return "1";
 

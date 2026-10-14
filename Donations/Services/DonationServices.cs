@@ -17,7 +17,6 @@ namespace AMANC_Inventory.Donations.Services
     {
         private readonly FirebaseClient _firebaseClient;
         private const string NodeName = "Donations";
-        private const string IdPrefix = "DON-";
 
         public DonationService()
         {
@@ -83,8 +82,8 @@ namespace AMANC_Inventory.Donations.Services
         }
 
         /// <summary>
-        /// Genera el siguiente ID consecutivo dinámico (ej. DON-000001).
-        /// Admite más de 999,999 registros ya que se expande automáticamente si el número crece.
+        /// Genera el siguiente ID consecutivo numérico simple (1, 2, 3...).
+        /// Extrae el número mayor ignorando prefijos antiguos si existieran en la base de datos.
         /// </summary>
         private async Task<string> GetNextCustomIdAsync()
         {
@@ -94,28 +93,25 @@ namespace AMANC_Inventory.Donations.Services
                     .Child(NodeName)
                     .OnceAsync<DonationModel>();
 
-                if (!items.Any()) return $"{IdPrefix}000001";
+                if (!items.Any()) return "1";
 
                 int maxId = items
                     .Select(i =>
                     {
-                        string key = i.Key;
-                        // Extrae únicamente los dígitos de la clave
-                        string numericPart = Regex.Match(key, @"\d+").Value;
+                        string idToParse = !string.IsNullOrWhiteSpace(i.Object?.Id) ? i.Object.Id : i.Key;
+                        // Extrae únicamente los dígitos numéricos
+                        string numericPart = Regex.Match(idToParse ?? string.Empty, @"\d+").Value;
                         return int.TryParse(numericPart, out int num) ? num : 0;
                     })
                     .DefaultIfEmpty(0)
                     .Max();
 
-                int nextNumericId = maxId + 1;
-
-                // :D6 garantiza al menos 6 dígitos con ceros a la izquierda.
-                return $"{IdPrefix}{nextNumericId:D6}";
+                return (maxId + 1).ToString();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Error al calcular el consecutivo de donación]: {ex.Message}");
-                return $"{IdPrefix}000001";
+                return "1";
             }
         }
     }

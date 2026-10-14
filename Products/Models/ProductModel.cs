@@ -3,7 +3,7 @@
     /// <summary>
     /// Representa un insumo o producto dentro del sistema de inventario de AMANC.
     /// </summary>
-    public class InventoryItemModel
+    public class ProductModel
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();     // Identificador único del registro en base de datos (ej. "3fa85f64-5717-4562-b3fc-2c963f66afa6").
         public string SKU { get; set; } = string.Empty;                 // Código de inventario interno del producto (ej. "MED-PAR-500", "HIG-PAÑ-G").

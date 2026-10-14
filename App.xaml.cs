@@ -13,20 +13,30 @@ using AMANC_Inventory.Modules.Auth.Interfaces;
 using AMANC_Inventory.Modules.Auth.Services;
 using AMANC_Inventory.Modules.Auth.ViewModels;
 
-// Módulo Inventario
+// Módulo Inventario / Productos
 using AMANC_Inventory.Inventory.Interfaces;
 using AMANC_Inventory.Inventory.Services;
 using AMANC_Inventory.Inventory.ViewModels;
 
+// Módulo Despensas
+using AMANC_Inventory.Pantries.Interfaces;
+using AMANC_Inventory.Pantries.Services;
+using AMANC_Inventory.Pantries.ViewModels;
+
 // Módulo Donaciones
 using AMANC_Inventory.Donations.Interfaces;
 using AMANC_Inventory.Donations.Services;
+using AMANC_Inventory.Donations.ViewModels;
 
-// Módulo Pacientes
+// Módulo Pacientes / Beneficiarios
+using AMANC_Inventory.Patients.Interfaces;
 using AMANC_Inventory.Patients.Services;
+using AMANC_Inventory.Patients.ViewModels;
 
 // Módulo Traslados / Viajes
+using AMANC_Inventory.Trips.Interfaces;
 using AMANC_Inventory.Trips.Services;
+using AMANC_Inventory.Trips.ViewModels;
 
 // Módulo Usuarios
 using AMANC_Inventory.Users.Interfaces;
@@ -65,6 +75,7 @@ namespace AMANC_Inventory
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IUserService, UserService>();
             services.AddSingleton<IProductService, ProductService>();
+            services.AddSingleton<IPantryService, PantryService>();
             services.AddSingleton<IDonationService, DonationService>();
             services.AddSingleton<IPatientService, PatientService>();
             services.AddSingleton<ITripService, TripService>();
@@ -72,11 +83,26 @@ namespace AMANC_Inventory
             services.AddTransient<IEmailService, EmailService>();
 
             // -----------------------------------------------------------------
-            // 2. ViewModels (Transient para instanciar nuevos al navegar)
+            // 2. ViewModels Principales y Modulares
             // -----------------------------------------------------------------
             services.AddTransient<InventoryViewModel>();
-            services.AddTransient<InventoryConsultViewModel>();
-            services.AddTransient<InventoryRegisterViewModel>();
+
+            // Sub-ViewModels de Consulta
+            services.AddTransient<ProductConsultViewModel>();
+            services.AddTransient<PantryConsultViewModel>();
+            services.AddTransient<DonationConsultViewModel>();
+            services.AddTransient<PatientConsultViewModel>();
+            services.AddTransient<TripConsultViewModel>();
+            services.AddTransient<UserConsultViewModel>();
+
+            // Sub-ViewModels de Registro
+            services.AddTransient<ProductRegisterViewModel>();
+            services.AddTransient<PantryRegisterViewModel>();
+            services.AddTransient<DonationRegisterViewModel>();
+            services.AddTransient<PatientRegisterViewModel>();
+            services.AddTransient<TripRegisterViewModel>();
+
+            // ViewModels de Autenticación y Usuario
             services.AddTransient<LoginViewModel>();
             services.AddTransient<UserProfileViewModel>();
 

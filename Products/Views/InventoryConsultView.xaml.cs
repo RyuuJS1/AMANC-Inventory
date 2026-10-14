@@ -1,5 +1,4 @@
 ﻿using System.Windows.Controls;
-using AMANC_Inventory.Inventory.ViewModels;
 
 namespace AMANC_Inventory.Views
 {
@@ -8,11 +7,6 @@ namespace AMANC_Inventory.Views
         public InventoryConsultView()
         {
             InitializeComponent();
-
-            if (DataContext == null)
-            {
-                DataContext = new InventoryConsultViewModel();
-            }
         }
     }
 }
