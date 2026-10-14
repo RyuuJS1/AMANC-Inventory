@@ -204,7 +204,9 @@
 
                 <Button Grid.Column="1" Command="{Binding ClearFilterCommand}" Padding="10,6" Background="#F1F5F9" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" VerticalAlignment="Bottom">
                     <Button.Resources>
-                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="6"/></Style>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="6"/>
+                        </Style>
                     </Button.Resources>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE894;" FontFamily="Segoe MDL2 Assets" Margin="0,0,4,0" VerticalAlignment="Center" FontSize="12"/>
@@ -214,7 +216,6 @@
             </Grid>
         </Border>
 
-        <!-- DATAGRIDS -->
         <!-- DATAGRIDS Y PAGINACIÓN -->
         <Border Grid.Row="2" Background="White" CornerRadius="8" Padding="12" BorderBrush="#E2E8F0" BorderThickness="1">
             <Grid>
@@ -258,7 +259,7 @@
                         <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
                     </Style>
 
-                    <!-- Estilo para Botones Numéricos de Página (Agregado) -->
+                    <!-- Estilo para Botones Numéricos de Página -->
                     <Style x:Key="PageButtonStyle" TargetType="RadioButton">
                         <Setter Property="Background" Value="White"/>
                         <Setter Property="Foreground" Value="#1E293B"/>
@@ -298,7 +299,7 @@
                 <!-- ============================================================== -->
 
                 <!-- TABLA 1: PRODUCTOS -->
-                <DataGrid Grid.Row="0" ItemsSource="{Binding FilteredInventoryList}" Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                <DataGrid Grid.Row="0" ItemsSource="{Binding ProductConsult.FilteredItems}" Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100" ElementStyle="{StaticResource CenterTextColumn}"/>
@@ -338,7 +339,7 @@
                 </DataGrid>
 
                 <!-- TABLA 2: DESPENSAS -->
-                <DataGrid Grid.Row="0" ItemsSource="{Binding FilteredPantriesList}" Visibility="{Binding IsPantriesTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                <DataGrid Grid.Row="0" ItemsSource="{Binding PantryConsult.FilteredPantriesList}" Visibility="{Binding IsPantriesTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Folio" Binding="{Binding Id}" Width="80" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="Destino / Beneficiario" Binding="{Binding Destination}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
@@ -353,7 +354,7 @@
                 </DataGrid>
 
                 <!-- TABLA 3: DONACIONES -->
-                <DataGrid Grid.Row="0" ItemsSource="{Binding FilteredDonationsList}" Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                <DataGrid Grid.Row="0" ItemsSource="{Binding DonationConsult.FilteredDonationsList}" Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="Empresa / Donante" Binding="{Binding CompanyName}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
@@ -366,7 +367,7 @@
                 </DataGrid>
 
                 <!-- TABLA 4: BENEFICIARIOS -->
-                <DataGrid Grid.Row="0" ItemsSource="{Binding FilteredPatientsList}" Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                <DataGrid Grid.Row="0" ItemsSource="{Binding PatientConsult.FilteredPatientsList}" Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="Nombre del Niño" Binding="{Binding ChildName}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
@@ -379,7 +380,7 @@
                 </DataGrid>
 
                 <!-- TABLA 5: TRASLADOS -->
-                <DataGrid Grid.Row="0" ItemsSource="{Binding FilteredTripsList}" Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                <DataGrid Grid.Row="0" ItemsSource="{Binding TripConsult.FilteredTripsList}" Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="Paciente / Niño" Binding="{Binding ChildName}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>
@@ -392,7 +393,7 @@
                 </DataGrid>
 
                 <!-- TABLA 6: USUARIOS -->
-                <DataGrid Grid.Row="0" ItemsSource="{Binding FilteredUsersList}" Visibility="{Binding IsUsersTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                <DataGrid Grid.Row="0" ItemsSource="{Binding UserConsult.FilteredUsersList}" Visibility="{Binding IsUsersTabSelected, Converter={StaticResource BoolToVisConverter}}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
                         <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*" ElementStyle="{StaticResource LeftTextColumn}"/>

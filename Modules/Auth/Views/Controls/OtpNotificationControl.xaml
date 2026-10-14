@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="AMANC_Inventory.Modules.Auth.Views.Controls.OtpNotificationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+    </UserControl.Resources>
+
+    <Border Name="PanelNotificacion" Background="#151515" Width="250" Height="125" 
+            HorizontalAlignment="Right" VerticalAlignment="Bottom" 
+            Margin="0,0,25,25" CornerRadius="8" 
+            Visibility="{Binding IsPanelCodigoVisible, Converter={StaticResource BoolToVisConverter}}"
+            Panel.ZIndex="99">
+
+        <Border.Effect>
+            <DropShadowEffect Color="Black" BlurRadius="12" Opacity="0.5" Direction="270" ShadowDepth="4"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="3"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="10,8,10,0">
+                <TextBlock Text="Introduce Código" Foreground="White" FontWeight="Bold" FontSize="12" 
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                <Button Content="✕" Command="{Binding CloseNotificationCommand}" Foreground="#888888" Background="Transparent" BorderThickness="0" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="14" Cursor="Hand" Padding="4,-2">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="White"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,2,0,4">
+                <TextBox Name="TxtDigito1" Text="{Binding Digito1, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
+                <TextBox Name="TxtDigito2" Text="{Binding Digito2, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
+                <TextBox Name="TxtDigito3" Text="{Binding Digito3, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
+                <TextBox Name="TxtDigito4" Text="{Binding Digito4, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
+                <TextBox Name="TxtDigito5" Text="{Binding Digito5, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
+                <TextBox Name="TxtDigito6" Text="{Binding Digito6, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Width="24" Height="32" Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="0,0,0,2" FontSize="16" TextAlignment="Center" Margin="2,0" CaretBrush="White" TextChanged="TxtDigito_TextChanged" PreviewKeyDown="TxtDigito_PreviewKeyDown"/>
+            </StackPanel>
+
+            <TextBlock Name="TxtTiempoRestante" Grid.Row="2" Text="{Binding TiempoRestanteTexto}" 
+                       Foreground="#AAAAAA" FontSize="10" FontWeight="SemiBold" 
+                       HorizontalAlignment="Center" Margin="0,0,0,4"/>
+
+            <ProgressBar Name="BarraTiempo" Grid.Row="3" Minimum="0" Maximum="{Binding BarraTiempoMaximo}" Value="{Binding BarraTiempoValor}" Foreground="White" Background="#333333" BorderThickness="0"/>
+        </Grid>
+    </Border>
+</UserControl>

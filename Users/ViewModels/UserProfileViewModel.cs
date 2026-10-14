@@ -1,11 +1,11 @@
 ﻿using AMANC_Inventory.Core.Architecture;
 using AMANC_Inventory.Core.Utilities;
 using AMANC_Inventory.Modules.Auth.Interfaces;
-using AMANC_Inventory.Users.ViewModels;
 using AMANC_Inventory.Modules.Auth.Services;
 using AMANC_Inventory.Shared.Interfaces;
 using AMANC_Inventory.Users.Interfaces;
 using AMANC_Inventory.Users.Models;
+using AMANC_Inventory.Users.ViewModels;
 using AMANC_Inventory.Views;
 using Microsoft.Win32;
 using System;
@@ -50,7 +50,7 @@ namespace AMANC_Inventory.Users.ViewModels
             set => SetProperty(ref _isEditing, value);
         }
 
-        private bool _isProfileDetailsOpen = true;
+        private bool _isProfileDetailsOpen = false;
         public bool IsProfileDetailsOpen
         {
             get => _isProfileDetailsOpen;
@@ -200,7 +200,7 @@ namespace AMANC_Inventory.Users.ViewModels
             {
                 if (SetProperty(ref _profilePictureBase64, value))
                 {
-                    _currentUser.ProfilePictureBase64 = value; // Sincroniza inmediatamente con el UserModel que usa el Header
+                    _currentUser.ProfilePictureBase64 = value;
                     OnPropertyChanged(nameof(HasProfilePicture));
                     OnPropertyChanged(nameof(HasNoProfilePicture));
                     OnPropertyChanged(nameof(ProfileImageSource));
@@ -273,7 +273,7 @@ namespace AMANC_Inventory.Users.ViewModels
             ParseInitialAvailability();
 
             // Comandos
-            CloseProfileCommand = new RelayCommand(_ => OnReturnToInventoryRequested?.Invoke());
+            CloseProfileCommand = new RelayCommand(_ => CerrarPerfil());
             ChangeProfilePictureCommand = new RelayCommand(_ => SelectPicture());
             RemoveProfilePictureCommand = new RelayCommand(async _ => await RemovePictureAsync());
             EditProfileCommand = new RelayCommand(_ => StartEditing());
@@ -296,16 +296,18 @@ namespace AMANC_Inventory.Users.ViewModels
 
         // --- Métodos de Acción y Auxiliares ---
 
-        /// <summary>
-        /// Redimensiona la imagen a un ancho máximo de 256px y la comprime en JPEG a Base64.
-        /// Esto evita que el string sea demasiado pesado y falle al guardarse en Firebase.
-        /// </summary>
+        private void CerrarPerfil()
+        {
+            IsProfileDetailsOpen = false;
+            OnReturnToInventoryRequested?.Invoke();
+        }
+
         private string CompressAndResizeImageToBase64(string filePath, int targetWidth = 256)
         {
             BitmapImage bitmap = new BitmapImage();
             bitmap.BeginInit();
             bitmap.UriSource = new Uri(filePath);
-            bitmap.DecodePixelWidth = targetWidth; // Redimensionar manteniendo proporción
+            bitmap.DecodePixelWidth = targetWidth;
             bitmap.CacheOption = BitmapCacheOption.OnLoad;
             bitmap.EndInit();
             bitmap.Freeze();
@@ -327,13 +329,9 @@ namespace AMANC_Inventory.Users.ViewModels
             {
                 try
                 {
-                    // 1. Redimensionar y comprimir
                     string base64Compressed = CompressAndResizeImageToBase64(openFileDialog.FileName);
-
-                    // 2. Asignar localmente
                     ProfilePictureBase64 = base64Compressed;
 
-                    // 3. GUARDAR INMEDIATAMENTE EN BASE DE DATOS
                     bool guardado = await _userService.UpdateUserProfileAsync(_currentUser);
 
                     if (guardado)

@@ -1,30 +1,44 @@
 ﻿using AMANC_Inventory.Core.Architecture;
 using AMANC_Inventory.Donations.Interfaces;
+using AMANC_Inventory.Donations.Models;
 using AMANC_Inventory.Donations.ViewModels;
 using AMANC_Inventory.Inventory.Interfaces;
+using AMANC_Inventory.Inventory.Models;
 using AMANC_Inventory.Inventory.ViewModels;
 using AMANC_Inventory.Pantries.Interfaces;
+using AMANC_Inventory.Pantries.Models;
 using AMANC_Inventory.Pantries.ViewModels;
 using AMANC_Inventory.Patients.Interfaces;
+using AMANC_Inventory.Patients.Models;
 using AMANC_Inventory.Patients.ViewModels;
 using AMANC_Inventory.Trips.Interfaces;
+using AMANC_Inventory.Trips.Models;
 using AMANC_Inventory.Trips.ViewModels;
 using AMANC_Inventory.Users.Interfaces;
 using AMANC_Inventory.Users.Models;
+using AMANC_Inventory.Users.Services;
 using AMANC_Inventory.Users.ViewModels;
+using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace AMANC_Inventory.Inventory.ViewModels
 {
     public class InventoryViewModel : ViewModelBase
     {
+        private readonly IUserService _userService;
         private UserModel? _usuarioActual;
         private int _selectedTab = 0; // 0 = Consulta, 1 = Registro
         private int _selectedSubTab = 0; // 0=Productos, 1=Despensas, 2=Donaciones, 3=Pacientes, 4=Traslados, 5=Usuarios
         private string _filterText = string.Empty;
+
+        // PAGINACIÓN
+        private int _currentPage = 1;
+        private int _totalPages = 1;
 
         // SUB-VIEWMODELS DE CONSULTA
         public ProductConsultViewModel ProductConsult { get; }
@@ -40,6 +54,14 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public DonationRegisterViewModel DonationRegister { get; }
         public PatientRegisterViewModel PatientRegister { get; }
         public TripRegisterViewModel TripRegister { get; }
+
+        // PROXIES DE LISTAS PARA BINDING CON LA VISTA INVENTORYCONSULTVIEW.XAML
+        public ObservableCollection<ProductModel> FilteredInventoryList => ProductConsult.FilteredItems;
+        public ObservableCollection<PantryModel> FilteredPantriesList => PantryConsult.FilteredPantriesList;
+        public ObservableCollection<DonationModel> FilteredDonationsList => DonationConsult.FilteredDonationsList;
+        public ObservableCollection<PatientModel> FilteredPatientsList => PatientConsult.FilteredPatientsList;
+        public ObservableCollection<TripModel> FilteredTripsList => TripConsult.FilteredTripsList;
+        public ObservableCollection<UserModel> FilteredUsersList => UserConsult.FilteredUsersList;
 
         // PERFIL DE USUARIO
         private string _nombreUsuario = "Usuario";
@@ -70,13 +92,15 @@ namespace AMANC_Inventory.Inventory.ViewModels
             ITripService? tripService = null,
             IUserService? userService = null)
         {
+            _userService = userService ?? new UserService();
+
             // 1. Instanciar Sub-ViewModels de Consulta
             ProductConsult = new ProductConsultViewModel(productService);
             PantryConsult = new PantryConsultViewModel(pantryService);
             DonationConsult = new DonationConsultViewModel(donationService);
             PatientConsult = new PatientConsultViewModel(patientService);
             TripConsult = new TripConsultViewModel(tripService);
-            UserConsult = new UserConsultViewModel(userService);
+            UserConsult = new UserConsultViewModel(_userService);
 
             // 2. Instanciar Sub-ViewModels de Registro
             ProductRegister = new ProductRegisterViewModel(
@@ -109,9 +133,9 @@ namespace AMANC_Inventory.Inventory.ViewModels
             Branches = new ObservableCollection<string> { "Sede Central", "Veracruz", "Xalapa", "Córdoba" };
             Departments = new ObservableCollection<string> { "Administración", "Inventario", "Trabajo Social", "Logística", "Sistemas" };
 
-            // Comandos
+            // Comandos principales
             SelectMainTabCommand = new RelayCommand(p => SeleccionarPestanaPrincipal(p));
-            SelectTabCommand = SelectMainTabCommand; // Alias para compatibilidad en XAML
+            SelectTabCommand = SelectMainTabCommand;
             SelectSubTabCommand = new RelayCommand(p => SeleccionarSubPestana(p));
             ClearFilterCommand = new RelayCommand(_ => FilterText = string.Empty);
             AbrirPerfilCommand = new RelayCommand(_ => AbrirPerfil());
@@ -119,8 +143,53 @@ namespace AMANC_Inventory.Inventory.ViewModels
             SelectPictureCommand = new RelayCommand(_ => SeleccionarFotoPerfil());
             SaveProfileCommand = new RelayCommand(_ => GuardarPerfil());
 
+            // Comandos de Paginación
+            FirstPageCommand = new RelayCommand(_ => CurrentPage = 1, _ => CurrentPage > 1);
+            PreviousPageCommand = new RelayCommand(_ => CurrentPage--, _ => CurrentPage > 1);
+            NextPageCommand = new RelayCommand(_ => CurrentPage++, _ => CurrentPage < TotalPages);
+            LastPageCommand = new RelayCommand(_ => CurrentPage = TotalPages, _ => CurrentPage < TotalPages);
+            GoToPageCommand = new RelayCommand(p => { if (p != null && int.TryParse(p.ToString(), out int page)) CurrentPage = page; });
+
             _ = ProductConsult.EnsureDataLoadedAsync();
         }
+
+        #region Paginación
+
+        public int CurrentPage
+        {
+            get => _currentPage;
+            set
+            {
+                if (SetProperty(ref _currentPage, value))
+                {
+                    (FirstPageCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (PreviousPageCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (NextPageCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (LastPageCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        public int TotalPages
+        {
+            get => _totalPages;
+            set
+            {
+                if (SetProperty(ref _totalPages, value))
+                {
+                    (NextPageCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (LastPageCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        public ICommand FirstPageCommand { get; }
+        public ICommand PreviousPageCommand { get; }
+        public ICommand NextPageCommand { get; }
+        public ICommand LastPageCommand { get; }
+        public ICommand GoToPageCommand { get; }
+
+        #endregion
 
         #region Control de Pestañas y Filtros
 
@@ -153,7 +222,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public bool IsTabConsultVisible => SelectedTab == 0;
         public bool IsTabRegisterVisible => SelectedTab == 1;
 
-        // Banderas Booleanas para los RadioButtons de la vista de Consulta
         public bool IsInventoryTabSelected
         {
             get => SelectedSubTab == 0;
@@ -333,8 +401,46 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         public void AbrirPerfil() => IsProfileDetailsOpen = true;
         public void CerrarPerfil() => IsProfileDetailsOpen = false;
-        private void SeleccionarFotoPerfil() { }
-        private void GuardarPerfil() => IsProfileDetailsOpen = false;
+
+        private async void SeleccionarFotoPerfil()
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Archivos de imagen (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    byte[] bytes = File.ReadAllBytes(openFileDialog.FileName);
+                    string base64 = Convert.ToBase64String(bytes);
+
+                    if (CurrentUser != null)
+                    {
+                        CurrentUser.ProfilePictureBase64 = base64;
+                        HasProfilePicture = true;
+                        HasNoProfilePicture = false;
+                        ProfileImageSource = CurrentUser.ProfileImageSource;
+
+                        await _userService.UpdateUserProfileAsync(CurrentUser);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al seleccionar la imagen: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private async void GuardarPerfil()
+        {
+            if (CurrentUser != null)
+            {
+                await _userService.UpdateUserProfileAsync(CurrentUser);
+            }
+            IsProfileDetailsOpen = false;
+        }
 
         #endregion
     }

@@ -30,6 +30,7 @@ namespace AMANC_Inventory.Views
 
             // 1. Inyectar la información del usuario al ViewModel Principal
             _mainViewModel.InicializarUsuario(usuarioLogueado);
+            _mainViewModel.CerrarPerfil(); // Asegura que el estado en InventoryViewModel inicie en false
 
             // Función local para manejar el cierre de sesión
             void CerrarSesion()
@@ -41,11 +42,31 @@ namespace AMANC_Inventory.Views
 
             // 2. Crear ViewModel del perfil
             var profileVM = new UserProfileViewModel(usuarioLogueado, userService, emailService);
+            profileVM.IsProfileDetailsOpen = false; // Asegura que el perfil inicie CERRADO al iniciar sesión
 
-            // Asignar acciones
+            // --- SINCRONIZACIÓN BIDI RECCIONAL DE APERTURA DE PERFIL ---
+            // Cuando el Header (InventoryViewModel) abre el perfil, notifica a profileVM
+            _mainViewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(InventoryViewModel.IsProfileDetailsOpen))
+                {
+                    profileVM.IsProfileDetailsOpen = _mainViewModel.IsProfileDetailsOpen;
+                }
+            };
+
+            // Cuando profileVM se cierra (vía botón "Volver al Inventario"), notifica a InventoryViewModel
+            profileVM.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(UserProfileViewModel.IsProfileDetailsOpen))
+                {
+                    _mainViewModel.IsProfileDetailsOpen = profileVM.IsProfileDetailsOpen;
+                }
+            };
+
+            // Asignar acciones de retorno y cierre de sesión
             profileVM.OnReturnToInventoryRequested = () =>
             {
-                _mainViewModel.CerrarPerfil();
+                profileVM.IsProfileDetailsOpen = false;
             };
             profileVM.OnLogoutRequested = CerrarSesion;
 
@@ -68,7 +89,25 @@ namespace AMANC_Inventory.Views
                     _mainViewModel.InicializarUsuario(usuarioLogueado);
 
                     var newProfileVM = new UserProfileViewModel(usuarioLogueado, userService, emailService);
-                    newProfileVM.OnReturnToInventoryRequested = () => _mainViewModel.CerrarPerfil();
+                    newProfileVM.IsProfileDetailsOpen = false;
+
+                    _mainViewModel.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(InventoryViewModel.IsProfileDetailsOpen))
+                        {
+                            newProfileVM.IsProfileDetailsOpen = _mainViewModel.IsProfileDetailsOpen;
+                        }
+                    };
+
+                    newProfileVM.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(UserProfileViewModel.IsProfileDetailsOpen))
+                        {
+                            _mainViewModel.IsProfileDetailsOpen = newProfileVM.IsProfileDetailsOpen;
+                        }
+                    };
+
+                    newProfileVM.OnReturnToInventoryRequested = () => newProfileVM.IsProfileDetailsOpen = false;
                     newProfileVM.OnLogoutRequested = CerrarSesion;
 
                     UserProfileViewControl.DataContext = newProfileVM;
