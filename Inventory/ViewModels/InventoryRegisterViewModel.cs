@@ -16,6 +16,8 @@ using AMANC_Inventory.Users.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -153,7 +155,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
         }
 
         // -------------------------------------------------------------
-        // PROPIEDADES - PESTAÑA DESPENSAS (NUEVO)
+        // PROPIEDADES - PESTAÑA DESPENSAS
         // -------------------------------------------------------------
         private string? _newPantryDestination;
         public string? NewPantryDestination { get => _newPantryDestination; set { _newPantryDestination = value; OnPropertyChanged(); } }
@@ -307,6 +309,9 @@ namespace AMANC_Inventory.Inventory.ViewModels
             IsInventoryTabSelected = true;
             LoadCatalogDefaults();
 
+            // Cargar los beneficiarios registrados desde Firebase
+            _ = LoadDestinationsAsync();
+
             ResetFormCommand = new RelayCommand(_ => ResetForm());
             SaveItemCommand = new RelayCommand(async _ => await SaveItemAsync());
             SavePantryCommand = new RelayCommand(async _ => await SavePantryAsync());
@@ -325,7 +330,38 @@ namespace AMANC_Inventory.Inventory.ViewModels
             PatientStatusList = new ObservableCollection<string> { "Activo", "En Tratamiento", "Inactivo" };
             TransportTypesList = new ObservableCollection<string> { "Autobús", "Avión", "Particular" };
             TripStatusList = new ObservableCollection<string> { "Programado", "En Proceso", "Completado", "Cancelado" };
-            DestinationsList = new ObservableCollection<string> { "Casa 1", "Casa 2", "Casa 3", "Cocina", "Juan Carlos", "María", "Lucero", "Comedor Principal" };
+        }
+
+        /// <summary>
+        /// Obtiene dinámicamente la lista de beneficiarios/niños registrados en Firebase
+        /// para el selector de entregas de despensa.
+        /// </summary>
+        public async Task LoadDestinationsAsync()
+        {
+            try
+            {
+                var patients = await _patientService.GetAllPatientsAsync();
+
+                DestinationsList.Clear();
+
+                if (patients != null && patients.Any())
+                {
+                    var names = patients
+                        .Where(p => !string.IsNullOrWhiteSpace(p.ChildName))
+                        .Select(p => p.ChildName.Trim())
+                        .Distinct()
+                        .OrderBy(name => name);
+
+                    foreach (var name in names)
+                    {
+                        DestinationsList.Add(name);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Error al cargar lista de niños para despensas]: {ex.Message}");
+            }
         }
 
         private void ResetForm()
@@ -432,7 +468,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
         {
             if (string.IsNullOrWhiteSpace(NewPantryDestination) || string.IsNullOrWhiteSpace(NewPantryProduct))
             {
-                MessageBox.Show("Por favor, ingrese el destino/zona y el producto entregado.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, ingrese el destino/beneficiario y el producto entregado.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -528,6 +564,10 @@ namespace AMANC_Inventory.Inventory.ViewModels
             {
                 MessageBox.Show("Beneficiario registrado correctamente en Firebase.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 ResetForm();
+
+                // Recargar el desplegable de despensas con el nuevo niño guardado
+                await LoadDestinationsAsync();
+
                 if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
             }
             else
