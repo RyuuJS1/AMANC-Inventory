@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="AMANC_Inventory.Inventory.Views.Controls.ConsultFilterControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d">
+
+    <Border Background="White" CornerRadius="8" Padding="10,8" Margin="0,0,0,10" BorderBrush="#E2E8F0" BorderThickness="1">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                <TextBlock Text="Filtrar por nombre:" FontSize="11" FontWeight="SemiBold" Foreground="#64748B" Margin="0,0,0,4"/>
+                <Border CornerRadius="6" BorderBrush="#CBD5E1" BorderThickness="1" Background="#F8FAFC" Padding="6,2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="#94A3B8" VerticalAlignment="Center" Margin="4,0,6,0" FontSize="13"/>
+                        <TextBox Grid.Column="1" Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" Padding="4,4" Background="Transparent" BorderThickness="0" VerticalAlignment="Center" FontSize="12"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <Button Grid.Column="1" Command="{Binding ClearFilterCommand}" Padding="10,6" Background="#F1F5F9" Foreground="#334155" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand" VerticalAlignment="Bottom">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="6"/>
+                    </Style>
+                </Button.Resources>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE894;" FontFamily="Segoe MDL2 Assets" Margin="0,0,4,0" VerticalAlignment="Center" FontSize="12"/>
+                    <TextBlock Text="Limpiar Búsqueda" VerticalAlignment="Center" FontSize="11"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>

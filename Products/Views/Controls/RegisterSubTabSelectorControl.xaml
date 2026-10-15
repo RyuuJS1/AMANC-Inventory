@@ -1,0 +1,141 @@
+﻿<UserControl x:Class="AMANC_Inventory.Inventory.Views.Controls.RegisterSubTabSelectorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+
+        <Style x:Key="CardButtonStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="#102240"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="cardBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#2563EB"/>
+                    <Setter Property="Background" Value="#F8FAFC"/>
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#102240"/>
+                    <Setter Property="BorderBrush" Value="#102240"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <UniformGrid Columns="5" Margin="0,0,0,12">
+        <!-- 1. Registro Producto -->
+        <RadioButton Style="{StaticResource CardButtonStyle}" 
+                     GroupName="RegisterSubTabsGroup"
+                     IsChecked="{Binding IsInventoryTabSelected, Mode=TwoWay, FallbackValue=True}"
+                     Margin="0,0,3,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Registrar Entrada" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                    <TextBlock Text="Producto / Stock" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </RadioButton>
+
+        <!-- 2. Registro Despensa (Propiedad corregida a IsPantriesTabSelected) -->
+        <RadioButton Style="{StaticResource CardButtonStyle}" 
+                     GroupName="RegisterSubTabsGroup"
+                     IsChecked="{Binding IsPantriesTabSelected, Mode=TwoWay}"
+                     Margin="3,0,3,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Registrar Salida" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                    <TextBlock Text="Entrega Despensa" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </RadioButton>
+
+        <!-- 3. Registro Donación -->
+        <RadioButton Style="{StaticResource CardButtonStyle}" 
+                     GroupName="RegisterSubTabsGroup"
+                     IsChecked="{Binding IsDonationsTabSelected, Mode=TwoWay}"
+                     Visibility="{Binding CanAccessDonations, Converter={StaticResource BoolToVisConverter}}"
+                     Margin="3,0,3,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE8A1;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Registrar Entrada" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                    <TextBlock Text="Donación" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </RadioButton>
+
+        <!-- 4. Registro Beneficiario -->
+        <RadioButton Style="{StaticResource CardButtonStyle}" 
+                     GroupName="RegisterSubTabsGroup"
+                     IsChecked="{Binding IsPatientsTabSelected, Mode=TwoWay}"
+                     Visibility="{Binding CanAccessPatients, Converter={StaticResource BoolToVisConverter}}"
+                     Margin="3,0,3,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE716;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Registrar Beneficiario" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                    <TextBlock Text="Niño / Tutor" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </RadioButton>
+
+        <!-- 5. Registro Traslado -->
+        <RadioButton Style="{StaticResource CardButtonStyle}" 
+                     GroupName="RegisterSubTabsGroup"
+                     IsChecked="{Binding IsTripsTabSelected, Mode=TwoWay}"
+                     Visibility="{Binding CanAccessTrips, Converter={StaticResource BoolToVisConverter}}"
+                     Margin="3,0,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="18" VerticalAlignment="Center" Margin="2,0,6,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Registrar Solicitud" FontSize="9" FontWeight="SemiBold" Opacity="0.75"/>
+                    <TextBlock Text="Traslado / Viaje" FontSize="11" FontWeight="Bold" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Grid>
+        </RadioButton>
+    </UniformGrid>
+</UserControl>
