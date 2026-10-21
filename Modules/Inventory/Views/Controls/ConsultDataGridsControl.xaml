@@ -123,17 +123,31 @@
                 </DataGrid.Columns>
             </DataGrid>
 
-            <!-- TABLA 3: DONACIONES -->
+            <!-- TABLA 3: DONACIONES MULTIPRODUCTO EN LISTA -->
             <DataGrid ItemsSource="{Binding DonationConsult.FilteredDonationsList}" 
-                      Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                      Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}"
+                      MinRowHeight="36">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
                     <DataGridTextColumn Header="Empresa / Donante" Binding="{Binding CompanyName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
                     <DataGridTextColumn Header="Fecha" Binding="{Binding DonationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Producto" Binding="{Binding ProductName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Precio Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Detalles del Insumo en Lista -->
+                    <DataGridTemplateColumn Header="Productos y Detalles (Presentación | Cantidad | P.U. | Subtotal)" Width="Auto" MinWidth="360">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ItemsControl ItemsSource="{Binding Items}" Margin="8,6">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FormattedDetail}" FontSize="12" Foreground="#334155" HorizontalAlignment="Center" Margin="0,2"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Monto Total" Binding="{Binding TotalDonation, StringFormat=\{0:C\}}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
 

@@ -49,14 +49,23 @@ namespace AMANC_Inventory.Donations.ViewModels
 
             LoadDataCommand = new RelayCommand(async _ => await ForceReloadAsync());
             ClearFilterCommand = new RelayCommand(_ => FilterText = string.Empty);
+
+            // 1. CARGA AUTOMÁTICA EN SEGUNDO PLANO
+            _ = EnsureDataLoadedAsync();
         }
 
+        /// <summary>
+        /// Garantiza la carga perezosa de donaciones si no han sido cargadas o la lista está vacía.
+        /// </summary>
         public async Task EnsureDataLoadedAsync()
         {
-            if (_isLoaded) return;
+            if (_isLoaded && DonationItems.Any()) return;
             await ForceReloadAsync();
         }
 
+        /// <summary>
+        /// Fuerza la descarga y actualización de las donaciones desde Firebase.
+        /// </summary>
         public async Task ForceReloadAsync()
         {
             IsLoading = true;
@@ -67,20 +76,25 @@ namespace AMANC_Inventory.Donations.ViewModels
                 ExecuteOnUIThread(() =>
                 {
                     DonationItems.Clear();
-                    if (donations != null)
+                    if (donations != null && donations.Any())
                     {
                         foreach (var item in donations)
                         {
                             DonationItems.Add(item);
                         }
+                        _isLoaded = true;
                     }
+                    else
+                    {
+                        _isLoaded = false;
+                    }
+
                     ApplyFilter(FilterText);
                 });
-
-                _isLoaded = true;
             }
             catch (Exception ex)
             {
+                _isLoaded = false;
                 Debug.WriteLine($"[Error al cargar donaciones]: {ex.Message}");
             }
             finally
@@ -89,6 +103,9 @@ namespace AMANC_Inventory.Donations.ViewModels
             }
         }
 
+        /// <summary>
+        /// Filtra la lista por Empresa, Resumen de Productos, Detalles o Folio de Recibo.
+        /// </summary>
         public void ApplyFilter(string filterText)
         {
             ExecuteOnUIThread(() =>
@@ -100,8 +117,10 @@ namespace AMANC_Inventory.Donations.ViewModels
                 {
                     string cleanFilter = filterText.Trim();
                     query = query.Where(d =>
-                        (!string.IsNullOrEmpty(d.ProductName) && d.ProductName.StartsWith(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
-                        (!string.IsNullOrEmpty(d.CompanyName) && d.CompanyName.StartsWith(cleanFilter, StringComparison.OrdinalIgnoreCase))
+                        (!string.IsNullOrEmpty(d.CompanyName) && d.CompanyName.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(d.ProductsSummary) && d.ProductsSummary.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(d.DetailsSummary) && d.DetailsSummary.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(d.ReceiptFolio) && d.ReceiptFolio.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase))
                     );
                 }
 
@@ -109,6 +128,8 @@ namespace AMANC_Inventory.Donations.ViewModels
                 {
                     FilteredDonationsList.Add(item);
                 }
+
+                OnPropertyChanged(nameof(FilteredDonationsList));
             });
         }
 

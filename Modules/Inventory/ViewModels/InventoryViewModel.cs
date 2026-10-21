@@ -82,8 +82,9 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 async () => await PantryConsult.ForceReloadAsync());
 
             DonationRegister = new DonationRegisterViewModel(
-                donationService,
-                async () => await DonationConsult.ForceReloadAsync());
+            donationService,
+            productService,
+            () => DonationConsult.ForceReloadAsync());
 
             PatientRegister = new PatientRegisterViewModel(
                 patientService,

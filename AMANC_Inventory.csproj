@@ -23,4 +23,43 @@
     <Resource Include="Assets\LogoAMANC.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Modules\Inventory\Views\Controls\ConsultDataGridsControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\Controls\ConsultFilterControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\Controls\ConsultSubTabSelectorControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\Controls\DonationRegisterFormControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\Controls\PantryRegisterFormControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\Controls\PatientRegisterFormControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\Controls\ProductRegisterFormControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\Controls\RegisterSubTabSelectorControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\Controls\TripRegisterFormControl.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\InventoryConsultView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\InventoryRegisterView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Modules\Inventory\Views\InventoryWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

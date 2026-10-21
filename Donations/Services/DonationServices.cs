@@ -8,19 +8,23 @@ using AMANC_Inventory.Core.Config;
 using AMANC_Inventory.Core.Utilities;
 using AMANC_Inventory.Donations.Interfaces;
 using AMANC_Inventory.Donations.Models;
+using AMANC_Inventory.Inventory.Services;
 using Firebase.Database;
 using Firebase.Database.Query;
+using Newtonsoft.Json.Linq;
 
 namespace AMANC_Inventory.Donations.Services
 {
     public class DonationService : IDonationService
     {
-        private readonly FirebaseClient _firebaseClient;
+        private readonly FirebaseClient _dbClient;
+        private readonly ProductService _productService;
         private const string NodeName = "Donations";
 
         public DonationService()
         {
-            _firebaseClient = new FirebaseClient(FirebaseConfig.RealtimeDbUrl);
+            _dbClient = new FirebaseClient(FirebaseConfig.RealtimeDbUrl);
+            _productService = new ProductService();
         }
 
         public async Task<List<DonationModel>> GetAllDonationsAsync()
@@ -29,19 +33,43 @@ namespace AMANC_Inventory.Donations.Services
             {
                 try
                 {
-                    var items = await _firebaseClient
+                    var token = await _dbClient
                         .Child(NodeName)
-                        .OnceAsync<DonationModel>();
+                        .OnceSingleAsync<JToken>();
 
-                    return items
-                        .Where(item => item.Object != null)
-                        .Select(item =>
+                    if (token == null || token.Type == JTokenType.Null)
+                        return new List<DonationModel>();
+
+                    var donationList = new List<DonationModel>();
+
+                    if (token is JArray jArray)
+                    {
+                        foreach (var item in jArray)
                         {
-                            var donation = item.Object;
-                            donation.Id = string.IsNullOrEmpty(donation.Id) ? item.Key : donation.Id;
-                            return donation;
-                        })
-                        .ToList();
+                            if (item != null && item.Type != JTokenType.Null)
+                            {
+                                var donation = item.ToObject<DonationModel>();
+                                if (donation != null) donationList.Add(donation);
+                            }
+                        }
+                    }
+                    else if (token is JObject jObject)
+                    {
+                        foreach (var prop in jObject.Properties())
+                        {
+                            if (prop.Value != null && prop.Value.Type != JTokenType.Null)
+                            {
+                                var donation = prop.Value.ToObject<DonationModel>();
+                                if (donation != null)
+                                {
+                                    if (string.IsNullOrEmpty(donation.Id)) donation.Id = prop.Name;
+                                    donationList.Add(donation);
+                                }
+                            }
+                        }
+                    }
+
+                    return donationList;
                 }
                 catch (Exception ex)
                 {
@@ -59,17 +87,36 @@ namespace AMANC_Inventory.Donations.Services
                 {
                     if (donation == null) return false;
 
-                    // Si es una nueva donación o no tiene un ID asignado, se genera el consecutivo
                     if (string.IsNullOrWhiteSpace(donation.Id) || donation.Id == "0")
                     {
                         donation.Id = await GetNextCustomIdAsync();
                     }
 
-                    // Guardado mediante PutAsync para evitar claves alfanuméricas aleatorias
-                    await _firebaseClient
+                    // 1. Guardar la Donación
+                    await _dbClient
                         .Child(NodeName)
                         .Child(donation.Id)
                         .PutAsync(donation);
+
+                    // 2. ACTUALIZAR PRODUCTOS EXISTENTES EN EL INVENTARIO
+                    if (donation.Items != null && donation.Items.Any())
+                    {
+                        var allProducts = await _productService.GetAllProductsAsync();
+
+                        foreach (var item in donation.Items)
+                        {
+                            var existingProduct = allProducts.FirstOrDefault(p => p.Id == item.ProductId);
+                            if (existingProduct != null)
+                            {
+                                existingProduct.Stock += item.Quantity; // Sumar la cantidad donada al stock
+                                existingProduct.IsDonated = true;       // Marcar que es donado
+                                existingProduct.Location = $"Donante: {donation.CompanyName}";
+                                existingProduct.UpdatedAt = DateTime.UtcNow;
+
+                                await _productService.SaveProductAsync(existingProduct);
+                            }
+                        }
+                    }
 
                     return true;
                 }
@@ -81,26 +128,17 @@ namespace AMANC_Inventory.Donations.Services
             }, "Guardar Donación en Firebase");
         }
 
-        /// <summary>
-        /// Genera el siguiente ID consecutivo numérico simple (1, 2, 3...).
-        /// Extrae el número mayor ignorando prefijos antiguos si existieran en la base de datos.
-        /// </summary>
         private async Task<string> GetNextCustomIdAsync()
         {
             try
             {
-                var items = await _firebaseClient
-                    .Child(NodeName)
-                    .OnceAsync<DonationModel>();
+                var donations = await GetAllDonationsAsync();
+                if (!donations.Any()) return "1";
 
-                if (!items.Any()) return "1";
-
-                int maxId = items
-                    .Select(i =>
+                int maxId = donations
+                    .Select(d =>
                     {
-                        string idToParse = !string.IsNullOrWhiteSpace(i.Object?.Id) ? i.Object.Id : i.Key;
-                        // Extrae únicamente los dígitos numéricos
-                        string numericPart = Regex.Match(idToParse ?? string.Empty, @"\d+").Value;
+                        string numericPart = Regex.Match(d.Id ?? "0", @"\d+").Value;
                         return int.TryParse(numericPart, out int num) ? num : 0;
                     })
                     .DefaultIfEmpty(0)
@@ -110,7 +148,7 @@ namespace AMANC_Inventory.Donations.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Error al calcular el consecutivo de donación]: {ex.Message}");
+                Debug.WriteLine($"[Error consecutivo donación]: {ex.Message}");
                 return "1";
             }
         }
