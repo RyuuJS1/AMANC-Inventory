@@ -286,13 +286,13 @@ namespace AMANC_Inventory.Inventory.ViewModels
             bool success = await _productService.SaveProductAsync(newItem);
             if (success)
             {
-                MessageBox.Show("Producto guardado correctamente en Firebase.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Producto guardado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 ResetForm();
                 if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
             }
             else
             {
-                MessageBox.Show("Error al guardar el producto en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error al guardar el producto.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

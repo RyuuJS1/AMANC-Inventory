@@ -8,58 +8,51 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
+        <!-- ESTILO PARA CENTRAR TODA LA INFORMACIÓN DE LAS CELDAS -->
         <Style x:Key="CenterTextColumn" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-
-        <Style x:Key="RightTextColumn" TargetType="TextBlock">
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-        </Style>
-
-        <Style x:Key="LeftTextColumn" TargetType="TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="6,0,0,0"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="8,0"/>
         </Style>
 
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#F8FAFC"/>
-            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="Background" Value="#1E293B"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Padding" Value="8,8"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
-        <!-- ESTILO GLOBAL DATAGRID: BLOQUEA REDIMENSIÓN Y ACTIVA AJUSTE -->
+        <!-- ESTILO GLOBAL DATAGRID: FILAS ALTERNADAS Y DESPLAZAMIENTO -->
         <Style TargetType="DataGrid">
             <Setter Property="AutoGenerateColumns" Value="False"/>
             <Setter Property="CanUserAddRows" Value="False"/>
             <Setter Property="IsReadOnly" Value="True"/>
             <Setter Property="CanUserResizeColumns" Value="False"/>
-            <!-- BLOQUEA CAMBIO DE TAMAÑO -->
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#F1F5F9"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#CBD5E1"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
             <Setter Property="RowHeight" Value="36"/>
-            <Setter Property="AlternatingRowBackground" Value="#F8FAFC"/>
+
+            <!-- DOS COLORES PARA DIFERENCIAR FILAS (CLARO Y OSCURO) -->
+            <Setter Property="RowBackground" Value="#FFFFFF"/>
+            <Setter Property="AlternatingRowBackground" Value="#E2E8F0"/>
+
             <Setter Property="SelectionMode" Value="Single"/>
             <Setter Property="CanUserSortColumns" Value="True"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
 
-            <!-- Permite scroll por píxel y deshabilita scrollbar horizontal interno -->
             <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
             <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
 
-            <!-- Virtualización vertical -->
             <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
             <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
             <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel"/>
@@ -78,16 +71,16 @@
             <DataGrid ItemsSource="{Binding ProductConsult.FilteredItems}" 
                       Visibility="{Binding IsInventoryTabSelected, Converter={StaticResource BoolToVisConverter}}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="100" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Cód. Barras" Binding="{Binding Barcode}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Nombre del Producto" Binding="{Binding Name}" Width="*" MinWidth="160" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="120" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="65" ElementStyle="{StaticResource RightTextColumn}"/>
-                    <DataGridTextColumn Header="Mínimo" Binding="{Binding MinStock}" Width="65" ElementStyle="{StaticResource RightTextColumn}"/>
-                    <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="75" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Valor Estimado" Binding="{Binding EstimatedValue, StringFormat=\{0:C\}}" Width="100" ElementStyle="{StaticResource RightTextColumn}"/>
-                    <DataGridTemplateColumn Header="¿Donado?" Width="80">
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="SKU" Binding="{Binding SKU}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Cód. Barras" Binding="{Binding Barcode}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Nombre del Producto" Binding="{Binding Name}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Mínimo" Binding="{Binding MinStock}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Valor Estimado" Binding="{Binding EstimatedValue, StringFormat=\{0:C\}}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTemplateColumn Header="¿Donado?" Width="Auto" MinWidth="80">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13" FontWeight="Bold">
@@ -107,11 +100,11 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Ubicación" Binding="{Binding Location}" Width="110" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="85" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Fecha Caducidad" Binding="{Binding ExpirationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Fecha Creación" Binding="{Binding CreatedAt, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="125" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Última Actualización" Binding="{Binding UpdatedAt, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="135" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Ubicación" Binding="{Binding Location}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="Auto" MinWidth="90" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Fecha Caducidad" Binding="{Binding ExpirationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Fecha Creación" Binding="{Binding CreatedAt, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Última Actualización" Binding="{Binding UpdatedAt, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -119,14 +112,14 @@
             <DataGrid ItemsSource="{Binding PantryConsult.FilteredPantriesList}" 
                       Visibility="{Binding IsPantriesTabSelected, Converter={StaticResource BoolToVisConverter}}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Folio" Binding="{Binding Id}" Width="80" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Destino / Beneficiario" Binding="{Binding Destination}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Producto Entregado" Binding="{Binding ProductName}" Width="450" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="80" ElementStyle="{StaticResource RightTextColumn}"/>
-                    <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="75" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Fecha Entrega" Binding="{Binding DeliveryDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Entregado Por" Binding="{Binding DeliveredBy}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Notas" Binding="{Binding Notes}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
+                    <DataGridTextColumn Header="Folio" Binding="{Binding Id}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Destino / Beneficiario" Binding="{Binding Destination}" Width="Auto" MinWidth="160" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Producto Entregado" Binding="{Binding ProductName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Fecha Entrega" Binding="{Binding DeliveryDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Entregado Por" Binding="{Binding DeliveredBy}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Notas" Binding="{Binding Notes}" Width="Auto" MinWidth="160" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -134,13 +127,13 @@
             <DataGrid ItemsSource="{Binding DonationConsult.FilteredDonationsList}" 
                       Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Empresa / Donante" Binding="{Binding CompanyName}" Width="180" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Fecha" Binding="{Binding DonationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="95" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Producto" Binding="{Binding ProductName}" Width="*" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="110" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="80" ElementStyle="{StaticResource RightTextColumn}"/>
-                    <DataGridTextColumn Header="Precio Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="100" ElementStyle="{StaticResource RightTextColumn}"/>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Empresa / Donante" Binding="{Binding CompanyName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Fecha" Binding="{Binding DonationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Producto" Binding="{Binding ProductName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Presentación" Binding="{Binding Presentation}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Precio Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -148,13 +141,13 @@
             <DataGrid ItemsSource="{Binding PatientConsult.FilteredPatientsList}" 
                       Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Nombre del Niño" Binding="{Binding ChildName}" Width="*" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Edad" Binding="{Binding Age}" Width="60" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Tipo de Cáncer" Binding="{Binding CancerType}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Responsables" Binding="{Binding Guardians}" Width="150" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Teléfonos" Binding="{Binding Phones}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Ciudad" Binding="{Binding City}" Width="100" ElementStyle="{StaticResource LeftTextColumn}"/>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Nombre del Niño" Binding="{Binding ChildName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Edad" Binding="{Binding Age}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Tipo de Cáncer" Binding="{Binding CancerType}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Responsables" Binding="{Binding Guardians}" Width="Auto" MinWidth="160" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Teléfonos" Binding="{Binding Phones}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Ciudad" Binding="{Binding City}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -162,13 +155,13 @@
             <DataGrid ItemsSource="{Binding TripConsult.FilteredTripsList}" 
                       Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Paciente / Niño" Binding="{Binding ChildName}" Width="*" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Responsable" Binding="{Binding GuardianName}" Width="140" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Origen" Binding="{Binding Origin}" Width="120" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Destino" Binding="{Binding Destination}" Width="120" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Fecha Salida" Binding="{Binding DepartureDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="100" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Paciente / Niño" Binding="{Binding ChildName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Responsable" Binding="{Binding GuardianName}" Width="Auto" MinWidth="150" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Origen" Binding="{Binding Origin}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Destino" Binding="{Binding Destination}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Fecha Salida" Binding="{Binding DepartureDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -176,11 +169,11 @@
             <DataGrid ItemsSource="{Binding UserConsult.FilteredUsersList}" 
                       Visibility="{Binding IsUsersTabSelected, Converter={StaticResource BoolToVisConverter}}">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="400" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Correo" Binding="{Binding Email}" Width="300" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Teléfono" Binding="{Binding Phone}" Width="200" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Rol / Permiso" Binding="{Binding Role}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Correo" Binding="{Binding Email}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Teléfono" Binding="{Binding Phone}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Rol / Permiso" Binding="{Binding Role}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
