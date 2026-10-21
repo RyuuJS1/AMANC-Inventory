@@ -5,6 +5,7 @@ using AMANC_Inventory.Inventory.Services;
 using AMANC_Inventory.Users.Models;
 using System;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -19,30 +20,104 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private UserModel? _currentUser;
         private string? _userDefaultBranch;
 
-        // Propiedades del Formulario
+        // --- SKU: Mínimo 8, máximo 12 caracteres, mayúsculas, sin espacios ni símbolos (excepto guión) ---
         private string? _newSKU;
-        public string? NewSKU { get => _newSKU; set => SetProperty(ref _newSKU, value); }
+        public string? NewSKU
+        {
+            get => _newSKU;
+            set
+            {
+                if (value == null) { SetProperty(ref _newSKU, value); return; }
+                // Elimina lo no permitido y convierte automáticamente a MAYÚSCULAS
+                string sanitized = Regex.Replace(value, @"[^a-zA-Z0-9-]", "").ToUpper();
+                if (sanitized.Length > 12) sanitized = sanitized.Substring(0, 12);
+                SetProperty(ref _newSKU, sanitized);
+            }
+        }
 
+        // --- Código de Barras: Exactamente 13 números, sin espacios ni símbolos ---
         private string? _newBarcode;
-        public string? NewBarcode { get => _newBarcode; set => SetProperty(ref _newBarcode, value); }
+        public string? NewBarcode
+        {
+            get => _newBarcode;
+            set
+            {
+                if (value == null) { SetProperty(ref _newBarcode, value); return; }
+                string sanitized = Regex.Replace(value, @"[^\d]", "");
+                if (sanitized.Length > 13) sanitized = sanitized.Substring(0, 13);
+                SetProperty(ref _newBarcode, sanitized);
+            }
+        }
 
+        // --- Nombre: No permite escribir números ---
         private string? _newName;
-        public string? NewName { get => _newName; set => SetProperty(ref _newName, value); }
+        public string? NewName
+        {
+            get => _newName;
+            set
+            {
+                if (value == null) { SetProperty(ref _newName, value); return; }
+                string sanitized = Regex.Replace(value, @"[\d]", "");
+                SetProperty(ref _newName, sanitized);
+            }
+        }
 
         private string? _newCategory;
         public string? NewCategory { get => _newCategory; set => SetProperty(ref _newCategory, value); }
 
+        // --- Stock Inicial: Solo números ---
         private string? _newStock;
-        public string? NewStock { get => _newStock; set => SetProperty(ref _newStock, value); }
+        public string? NewStock
+        {
+            get => _newStock;
+            set
+            {
+                if (value == null) { SetProperty(ref _newStock, value); return; }
+                string sanitized = Regex.Replace(value, @"[^\d]", "");
+                SetProperty(ref _newStock, sanitized);
+            }
+        }
 
+        // --- Stock Mínimo: Solo números ---
         private string? _newMinStock;
-        public string? NewMinStock { get => _newMinStock; set => SetProperty(ref _newMinStock, value); }
+        public string? NewMinStock
+        {
+            get => _newMinStock;
+            set
+            {
+                if (value == null) { SetProperty(ref _newMinStock, value); return; }
+                string sanitized = Regex.Replace(value, @"[^\d]", "");
+                SetProperty(ref _newMinStock, sanitized);
+            }
+        }
 
         private string? _newUnit;
         public string? NewUnit { get => _newUnit; set => SetProperty(ref _newUnit, value); }
 
+        // --- Valor Estimado Unitario: Solo números con prefijo '$ ' ---
         private string? _newEstimatedValue;
-        public string? NewEstimatedValue { get => _newEstimatedValue; set => SetProperty(ref _newEstimatedValue, value); }
+        public string? NewEstimatedValue
+        {
+            get => _newEstimatedValue;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    SetProperty(ref _newEstimatedValue, string.Empty);
+                    return;
+                }
+
+                string digitsOnly = Regex.Replace(value, @"[^\d]", "");
+                if (!string.IsNullOrEmpty(digitsOnly))
+                {
+                    SetProperty(ref _newEstimatedValue, $"$ {digitsOnly}");
+                }
+                else
+                {
+                    SetProperty(ref _newEstimatedValue, string.Empty);
+                }
+            }
+        }
 
         private bool _newIsDonated = true;
         public bool NewIsDonated { get => _newIsDonated; set => SetProperty(ref _newIsDonated, value); }
@@ -155,20 +230,45 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         public async Task SaveProductAsync()
         {
+            // Validar Nombre
             if (string.IsNullOrWhiteSpace(NewName))
             {
-                MessageBox.Show("Por favor, ingrese al menos el nombre del producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, ingrese el nombre del producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            int.TryParse(NewStock, out int stockResult);
+            // Validar SKU (Mínimo 8 y Máximo 12 caracteres)
+            string sku = NewSKU?.Trim().ToUpper() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(sku) || sku.Length < 8 || sku.Length > 12)
+            {
+                MessageBox.Show("El SKU debe tener entre 8 y 12 caracteres (solo mayúsculas, números y guión '-').", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Validar Código de Barras (Exactamente 13 dígitos si se proporciona)
+            string barcode = NewBarcode?.Trim() ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(barcode) && barcode.Length != 13)
+            {
+                MessageBox.Show("El Código de Barras debe contener exactamente 13 caracteres numéricos.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Validar Stock Inicial
+            if (string.IsNullOrWhiteSpace(NewStock) || !int.TryParse(NewStock, out int stockResult))
+            {
+                MessageBox.Show("Por favor, ingrese una cantidad válida para el Stock Inicial.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             int.TryParse(NewMinStock, out int minStockResult);
-            decimal.TryParse(NewEstimatedValue, out decimal estimatedValueResult);
+
+            string cleanEstimatedValue = Regex.Replace(NewEstimatedValue ?? "", @"[^\d]", "");
+            decimal.TryParse(cleanEstimatedValue, out decimal estimatedValueResult);
 
             var newItem = new ProductModel
             {
-                SKU = NewSKU?.Trim() ?? string.Empty,
-                Barcode = string.IsNullOrWhiteSpace(NewBarcode) ? null : NewBarcode.Trim(),
+                SKU = sku,
+                Barcode = string.IsNullOrWhiteSpace(barcode) ? null : barcode,
                 BranchId = NewBranchId?.Trim() ?? _userDefaultBranch ?? string.Empty,
                 Name = NewName.Trim(),
                 Category = NewCategory ?? string.Empty,

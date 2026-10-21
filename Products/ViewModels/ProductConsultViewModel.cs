@@ -29,14 +29,15 @@ namespace AMANC_Inventory.Inventory.ViewModels
         public ProductConsultViewModel(IProductService? productService = null)
         {
             _productService = productService ?? new ProductService();
+            _ = EnsureDataLoadedAsync();
         }
 
         /// <summary>
-        /// Garantiza la carga perezosa solo la primera vez que se abre la pestaña.
+        /// Carga los datos si no han sido cargados o si la colección actual está vacía.
         /// </summary>
         public async Task EnsureDataLoadedAsync()
         {
-            if (_isLoaded) return;
+            if (_isLoaded && Items.Any()) return;
             await ForceReloadAsync();
         }
 
@@ -53,21 +54,30 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 ExecuteOnUIThread(() =>
                 {
                     Items.Clear();
-                    if (products != null)
+                    if (products != null && products.Any())
                     {
                         foreach (var p in products)
                         {
                             Items.Add(p);
                         }
+                        _isLoaded = true; // Solo marca como cargado si hubo éxito
                     }
+                    else
+                    {
+                        _isLoaded = false; // Permite reintentar si no devolvió registros
+                    }
+
                     ApplyFilter(string.Empty);
                 });
-
-                _isLoaded = true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[Error al cargar productos]: {ex.Message}");
+                _isLoaded = false; // Restablece para reintentar en el siguiente cambio de pestaña
+                ExecuteOnUIThread(() =>
+                {
+                    MessageBox.Show($"Error al consultar productos desde Firebase:\n{ex.Message}",
+                                    "Error de Carga", MessageBoxButton.OK, MessageBoxImage.Error);
+                });
             }
             finally
             {
@@ -85,13 +95,20 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 if (!string.IsNullOrWhiteSpace(filterText))
                 {
                     string cleanFilter = filterText.Trim();
-                    query = query.Where(i => i.Name != null && i.Name.StartsWith(cleanFilter, StringComparison.OrdinalIgnoreCase));
+                    query = query.Where(i =>
+                        (!string.IsNullOrEmpty(i.Name) && i.Name.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(i.SKU) && i.SKU.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(i.Barcode) && i.Barcode.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(i.Category) && i.Category.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase))
+                    );
                 }
 
                 foreach (var item in query)
                 {
                     FilteredItems.Add(item);
                 }
+
+                OnPropertyChanged(nameof(FilteredItems));
             });
         }
 

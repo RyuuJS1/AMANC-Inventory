@@ -104,7 +104,6 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
             // Inicializar Comandos
             InicializarComandosTabsYFiltros();
-            InicializarComandosPaginacion();
             InicializarComandosPerfil();
 
             _ = ProductConsult.EnsureDataLoadedAsync();

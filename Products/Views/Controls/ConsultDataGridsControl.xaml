@@ -121,11 +121,11 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Folio" Binding="{Binding Id}" Width="80" ElementStyle="{StaticResource CenterTextColumn}"/>
                     <DataGridTextColumn Header="Destino / Beneficiario" Binding="{Binding Destination}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Producto Entregado" Binding="{Binding ProductName}" Width="*" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
+                    <DataGridTextColumn Header="Producto Entregado" Binding="{Binding ProductName}" Width="450" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
                     <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="80" ElementStyle="{StaticResource RightTextColumn}"/>
                     <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="75" ElementStyle="{StaticResource CenterTextColumn}"/>
                     <DataGridTextColumn Header="Fecha Entrega" Binding="{Binding DeliveryDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="130" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Entregado Por" Binding="{Binding DeliveredBy}" Width="140" ElementStyle="{StaticResource LeftTextColumn}"/>
+                    <DataGridTextColumn Header="Entregado Por" Binding="{Binding DeliveredBy}" Width="130" ElementStyle="{StaticResource LeftTextColumn}"/>
                     <DataGridTextColumn Header="Notas" Binding="{Binding Notes}" Width="160" ElementStyle="{StaticResource LeftTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
@@ -177,9 +177,9 @@
                       Visibility="{Binding IsUsersTabSelected, Converter={StaticResource BoolToVisConverter}}">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="70" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="*" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Correo" Binding="{Binding Email}" Width="170" ElementStyle="{StaticResource LeftTextColumn}"/>
-                    <DataGridTextColumn Header="Teléfono" Binding="{Binding Phone}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <DataGridTextColumn Header="Nombre" Binding="{Binding Name}" Width="400" MinWidth="180" ElementStyle="{StaticResource LeftTextColumn}"/>
+                    <DataGridTextColumn Header="Correo" Binding="{Binding Email}" Width="300" ElementStyle="{StaticResource LeftTextColumn}"/>
+                    <DataGridTextColumn Header="Teléfono" Binding="{Binding Phone}" Width="200" ElementStyle="{StaticResource CenterTextColumn}"/>
                     <DataGridTextColumn Header="Rol / Permiso" Binding="{Binding Role}" Width="110" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>

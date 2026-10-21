@@ -80,13 +80,13 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="SKU (Código Interno)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewSKU, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="SKU (8-12 Caracteres)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBox Style="{StaticResource ModernInputStyle}" MaxLength="12" Text="{Binding ProductRegister.NewSKU, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="Código de Barras" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewBarcode, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="Código de Barras (13 Dígitos)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBox Style="{StaticResource ModernInputStyle}" MaxLength="13" Text="{Binding ProductRegister.NewBarcode, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2" Margin="10,0,0,0">
@@ -199,7 +199,7 @@
 
         <!-- Botón Guardar Producto -->
         <Button Grid.Row="1"
-                Command="{Binding ProductRegister.SaveItemCommand}" 
+                Command="{Binding ProductRegister.SaveProductCommand}" 
                 HorizontalAlignment="Right" VerticalAlignment="Bottom"
                 Margin="0,10,0,0" Padding="24,12" Background="#102240" Foreground="White" FontWeight="Bold" FontSize="13" BorderThickness="0" Cursor="Hand">
             <Button.Resources>
