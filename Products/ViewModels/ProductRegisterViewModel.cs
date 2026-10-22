@@ -1,10 +1,12 @@
 ﻿using AMANC_Inventory.Core.Architecture;
+using AMANC_Inventory.Donations.ViewModels;
 using AMANC_Inventory.Inventory.Interfaces;
 using AMANC_Inventory.Inventory.Models;
 using AMANC_Inventory.Inventory.Services;
 using AMANC_Inventory.Users.Models;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,6 +18,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
     {
         private readonly IProductService _productService;
         private readonly Func<Task>? _onSaveSuccess;
+        private DonationRegisterViewModel? _donationRegisterViewModel;
 
         private UserModel? _currentUser;
         private string? _userDefaultBranch;
@@ -148,15 +151,22 @@ namespace AMANC_Inventory.Inventory.ViewModels
 
         public ProductRegisterViewModel(
             IProductService? productService = null,
-            Func<Task>? onSaveSuccess = null)
+            Func<Task>? onSaveSuccess = null,
+            DonationRegisterViewModel? donationRegisterViewModel = null)
         {
             _productService = productService ?? new ProductService();
             _onSaveSuccess = onSaveSuccess;
+            _donationRegisterViewModel = donationRegisterViewModel;
 
             LoadCatalogDefaults();
 
             SaveProductCommand = new RelayCommand(async _ => await SaveProductAsync());
             ResetFormCommand = new RelayCommand(_ => ResetForm());
+        }
+
+        public void SetDonationRegisterViewModel(DonationRegisterViewModel donationRegister)
+        {
+            _donationRegisterViewModel = donationRegister;
         }
 
         public void SetCurrentUser(UserModel? user)
@@ -262,13 +272,11 @@ namespace AMANC_Inventory.Inventory.ViewModels
                 return;
             }
 
-            // Parsear opcionales
             int.TryParse(NewMinStock, out int minStockResult);
 
             string cleanEstimatedValue = Regex.Replace(NewEstimatedValue ?? "", @"[^\d]", "");
             decimal.TryParse(cleanEstimatedValue, out decimal estimatedValueResult);
 
-            // Construir la unidad combinada (ej. "500 ml" o "Caja")
             string finalUnit = !string.IsNullOrWhiteSpace(NewUnitDetail)
                 ? $"{NewUnitDetail.Trim()} {NewUnit}"
                 : NewUnit ?? "Pzas";
@@ -296,7 +304,18 @@ namespace AMANC_Inventory.Inventory.ViewModels
             {
                 MessageBox.Show("Producto registrado correctamente en el inventario.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 ResetForm();
-                if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
+
+                // RECARGA EN TIEMPO REAL: Refresca el catálogo del módulo de donaciones al instante
+                if (_donationRegisterViewModel != null)
+                {
+                    await _donationRegisterViewModel.LoadExistingProductsAsync();
+                }
+
+                // RECARGA EN TIEMPO REAL: Refresca las tablas de consulta de productos
+                if (_onSaveSuccess != null)
+                {
+                    await _onSaveSuccess.Invoke();
+                }
             }
             else
             {

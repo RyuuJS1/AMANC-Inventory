@@ -72,19 +72,26 @@ namespace AMANC_Inventory.Inventory.ViewModels
             UserConsult = new UserConsultViewModel(_userService);
 
             // 2. Instanciar Sub-ViewModels de Registro
+            // A) Primero instanciamos DonationRegister
+            DonationRegister = new DonationRegisterViewModel(
+                donationService,
+                productService,
+                () => DonationConsult.ForceReloadAsync());
+
+            // B) Luego instanciamos ProductRegister pasándole la referencia de DonationRegister
             ProductRegister = new ProductRegisterViewModel(
                 productService,
-                async () => await ProductConsult.ForceReloadAsync());
+                async () =>
+                {
+                    await ProductConsult.ForceReloadAsync();
+                    await DonationRegister.LoadExistingProductsAsync(); // <--- Recarga el buscador de donaciones al guardar
+                },
+                DonationRegister); // <--- Vinculación directa
 
             PantryRegister = new PantryRegisterViewModel(
                 pantryService,
                 patientService,
                 async () => await PantryConsult.ForceReloadAsync());
-
-            DonationRegister = new DonationRegisterViewModel(
-            donationService,
-            productService,
-            () => DonationConsult.ForceReloadAsync());
 
             PatientRegister = new PatientRegisterViewModel(
                 patientService,

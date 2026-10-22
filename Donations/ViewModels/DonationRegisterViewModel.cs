@@ -63,15 +63,12 @@ namespace AMANC_Inventory.Donations.ViewModels
             {
                 if (SetProperty(ref _selectedProduct, value) && value != null)
                 {
-                    // 1. Mantener el nombre del producto en el campo de búsqueda
                     _productSearchText = value.Name;
                     OnPropertyChanged(nameof(ProductSearchText));
 
-                    // 2. Cargar unidad y valor estimado
+                    // Carga automática de datos en solo lectura
                     TempPresentation = value.Unit;
                     TempUnitPrice = value.EstimatedValue.ToString("C");
-
-                    // 3. Cargar automáticamente la cantidad (Stock registrado) sin escribir
                     TempQuantity = value.Stock > 0 ? value.Stock.ToString() : "1";
                 }
             }
@@ -86,7 +83,7 @@ namespace AMANC_Inventory.Donations.ViewModels
         private string? _tempUnitPrice;
         public string? TempUnitPrice { get => _tempUnitPrice; set => SetProperty(ref _tempUnitPrice, value); }
 
-        // Colecciones de Productos
+        // Colecciones
         public ObservableCollection<ProductModel> AllProductsList { get; } = new();
         public ObservableCollection<ProductModel> FilteredProductsList { get; } = new();
         public ObservableCollection<DonationItemModel> DonationItemsList { get; } = new();
@@ -120,6 +117,9 @@ namespace AMANC_Inventory.Donations.ViewModels
             ResetFormCommand = new RelayCommand(_ => ResetForm());
         }
 
+        /// <summary>
+        /// Carga el catálogo filtrando ÚNICAMENTE los productos marcados como donados (IsDonated == true).
+        /// </summary>
         public async Task LoadExistingProductsAsync()
         {
             try
@@ -130,7 +130,9 @@ namespace AMANC_Inventory.Donations.ViewModels
 
                 if (products != null)
                 {
-                    foreach (var p in products)
+                    var donatedProducts = products.Where(p => p.IsDonated).ToList();
+
+                    foreach (var p in donatedProducts)
                     {
                         AllProductsList.Add(p);
                         FilteredProductsList.Add(p);
@@ -139,7 +141,7 @@ namespace AMANC_Inventory.Donations.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error al cargar catálogo de productos en donaciones: {ex.Message}");
+                Debug.WriteLine($"Error al cargar productos donados: {ex.Message}");
             }
         }
 
@@ -153,7 +155,8 @@ namespace AMANC_Inventory.Donations.ViewModels
                 string clean = searchText.Trim();
                 query = query.Where(p =>
                     (!string.IsNullOrEmpty(p.Name) && p.Name.Contains(clean, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(p.SKU) && p.SKU.Contains(clean, StringComparison.OrdinalIgnoreCase))
+                    (!string.IsNullOrEmpty(p.SKU) && p.SKU.Contains(clean, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(p.Barcode) && p.Barcode.Contains(clean, StringComparison.OrdinalIgnoreCase))
                 );
             }
 
@@ -192,13 +195,19 @@ namespace AMANC_Inventory.Donations.ViewModels
         {
             if (SelectedProduct == null)
             {
-                MessageBox.Show("Por favor, busque y seleccione un producto existente del catálogo.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, busque y seleccione un producto donado del catálogo.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (!int.TryParse(TempQuantity, out int qty) || qty <= 0)
             {
-                MessageBox.Show("Ingrese una cantidad válida mayor a cero.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Cantidad no válida.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (DonationItemsList.Any(i => i.ProductId == SelectedProduct.Id))
+            {
+                MessageBox.Show("El producto seleccionado ya fue añadido a esta donación.", "Aviso", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -214,7 +223,7 @@ namespace AMANC_Inventory.Donations.ViewModels
             DonationItemsList.Add(item);
             OnPropertyChanged(nameof(TotalDonationAmount));
 
-            // Limpiar selección temporal
+            // Limpieza temporal
             SelectedProduct = null;
             ProductSearchText = string.Empty;
             TempPresentation = string.Empty;
@@ -247,6 +256,8 @@ namespace AMANC_Inventory.Donations.ViewModels
 
             DonationItemsList.Clear();
             OnPropertyChanged(nameof(TotalDonationAmount));
+
+            _ = LoadExistingProductsAsync();
         }
 
         public async Task SaveDonationAsync()
@@ -259,7 +270,7 @@ namespace AMANC_Inventory.Donations.ViewModels
 
             if (!DonationItemsList.Any())
             {
-                MessageBox.Show("Debe seleccionar al menos un producto existente para la donación.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Debe seleccionar al menos un producto para registrar la donación.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -276,7 +287,7 @@ namespace AMANC_Inventory.Donations.ViewModels
             bool success = await _donationService.SaveDonationAsync(donation);
             if (success)
             {
-                MessageBox.Show("Donación registrada correctamente y stock actualizado.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Donación registrada correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 ResetForm();
                 if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
             }

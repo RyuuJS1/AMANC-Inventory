@@ -8,19 +8,22 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
+        <!-- ESTILO PARA INPUTS DE TEXTO -->
         <Style x:Key="ModernInputStyle" TargetType="TextBox">
-            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="Background" Value="#F8FAFC"/>
             <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="#0F172A"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -31,20 +34,136 @@
                                 <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
                                 <Setter TargetName="border" Property="Background" Value="#FFFFFF"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#E2E8F0"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#CBD5E1"/>
+                                <Setter Property="Foreground" Value="#94A3B8"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
+        <!-- ESTILO ESPECÍFICO PARA BLOQUEAR DINÁMICAMENTE 'CONTENIDO' SEGÚN LA PRESENTACIÓN -->
+        <Style x:Key="ContentDetailInputStyle" TargetType="TextBox" BasedOn="{StaticResource ModernInputStyle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ProductRegister.NewUnit}" Value="Caja">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ProductRegister.NewUnit}" Value="Paquete">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ProductRegister.NewUnit}" Value="Pzas">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ProductRegister.NewUnit}" Value="Lata">
+                    <Setter Property="IsEnabled" Value="False"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ESTILO MODERNO PARA COMBOBOX (DESPLEGABLE) -->
         <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Background" Value="#F8FAFC"/>
             <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="#0F172A"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="true">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="30"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="Border" Grid.ColumnSpan="2" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6"/>
+
+                            <ContentPresenter IsHitTestVisible="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+
+                            <Path x:Name="Arrow" Grid.Column="1" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                            <ToggleButton x:Name="ToggleButton" Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" Focusable="False" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="Transparent"/>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <Popup x:Name="PART_Popup" AllowsTransparency="true" Grid.ColumnSpan="2" IsOpen="{TemplateBinding IsDropDownOpen}" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom">
+                                <Border x:Name="DropDownBorder" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{Binding ActualWidth, ElementName=MainGrid}" Margin="0,4,0,0">
+                                    <ScrollViewer x:Name="DropDownScrollViewer">
+                                        <Grid RenderOptions.ClearTypeHint="Enabled">
+                                            <Canvas Height="0" Width="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                <Rectangle x:Name="OpaqueRect" Fill="{Binding Background, ElementName=DropDownBorder}" Height="{Binding ActualHeight, ElementName=DropDownBorder}" Width="{Binding ActualWidth, ElementName=DropDownBorder}"/>
+                                            </Canvas>
+                                            <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#94A3B8"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                                <Setter TargetName="Arrow" Property="Fill" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO MODERNO PARA DATEPICKER -->
+        <Style x:Key="ModernDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <Grid x:Name="PART_Root" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <DatePickerTextBox x:Name="PART_TextBox" Grid.Column="0" Focusable="{TemplateBinding Focusable}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" FontSize="13" Foreground="#0F172A"/>
+
+                                <Button x:Name="PART_Button" Grid.Column="1" Focusable="False" Foreground="#64748B" Background="Transparent" BorderThickness="0" Padding="4,0" Cursor="Hand">
+                                    <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/>
+                                </Button>
+
+                                <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Bottom" PlacementTarget="{Binding ElementName=Border}" StaysOpen="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#94A3B8"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="SectionCardStyle" TargetType="Border">
@@ -144,13 +263,13 @@
 
                         <!-- Stock Inicial (Obligatorio) -->
                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                            <TextBlock Text="Stock Inicial *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBlock Text="Cantidad *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewStock, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
                         <!-- Stock Mínimo (Opcional) -->
                         <StackPanel Grid.Column="1" Margin="4,0,8,0">
-                            <TextBlock Text="Stock Mínimo (Opcional)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBlock Text="Cantidad Mínima (Opcional)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewMinStock, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
@@ -160,10 +279,10 @@
                             <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding ProductRegister.UnitsList}" SelectedItem="{Binding ProductRegister.NewUnit}"/>
                         </StackPanel>
 
-                        <!-- Especificación / Cantidad -->
+                        <!-- Especificación / Cantidad (SE DESACTIVA DINÁMICAMENTE SI ES CAJA, PAQUETE, PZAS O LATA) -->
                         <StackPanel Grid.Column="3" Margin="4,0,0,0">
-                            <TextBlock Text="Contenido *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewUnitDetail, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="Contenido (Opcional)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBox Style="{StaticResource ContentDetailInputStyle}" Text="{Binding ProductRegister.NewUnitDetail, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
                     </Grid>
 
@@ -186,28 +305,31 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="1.2*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- Valor Estimado Unitario ($) -->
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
                             <TextBlock Text="Valor Estimado Unitario ($) *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewEstimatedValue, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
+                        <!-- Fecha de Caducidad -->
                         <StackPanel Grid.Column="1" Margin="5,0,5,0">
                             <TextBlock Text="Fecha de Caducidad *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <DatePicker SelectedDate="{Binding ProductRegister.NewExpirationDate}"/>
+                            <DatePicker Style="{StaticResource ModernDatePickerStyle}" SelectedDate="{Binding ProductRegister.NewExpirationDate}"/>
                         </StackPanel>
 
-                        <Border Grid.Column="2" Margin="10,0,0,0" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="12,8" VerticalAlignment="Bottom">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <CheckBox IsChecked="{Binding ProductRegister.NewIsDonated}" VerticalAlignment="Center" Cursor="Hand"/>
-                                <StackPanel Margin="10,0,0,0">
-                                    <TextBlock Text="¿Es Insumo Donado?" FontSize="12" FontWeight="Bold" Foreground="#102240"/>
-                                    <TextBlock Text="Marca para contabilidad fiscal" FontSize="10" Foreground="#64748B"/>
+                        <!-- ¿Es Insumo Donado? -->
+                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                            <TextBlock Text="Origen del Insumo *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <Border Height="38" Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="12,0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox IsChecked="{Binding ProductRegister.NewIsDonated}" VerticalAlignment="Center" Cursor="Hand"/>
+                                    <TextBlock Text="¿Es Insumo Donado?" FontSize="12" FontWeight="SemiBold" Foreground="#0F172A" Margin="8,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </StackPanel>
-                        </Border>
+                            </Border>
+                        </StackPanel>
                     </Grid>
                 </StackPanel>
             </Border>

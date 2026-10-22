@@ -125,15 +125,27 @@
 
             <!-- TABLA 3: DONACIONES MULTIPRODUCTO EN LISTA -->
             <DataGrid ItemsSource="{Binding DonationConsult.FilteredDonationsList}" 
-                      Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}"
-                      MinRowHeight="36">
+          Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}"
+          RowHeight="NaN"
+          MinRowHeight="36">
                 <DataGrid.Columns>
+                    <!-- ID -->
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Empresa / Donante" Binding="{Binding CompanyName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Folio Recibo Deducible -->
+                    <DataGridTextColumn Header="Folio" Binding="{Binding ReceiptFolio}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Empresa / Donante -->
+                    <DataGridTextColumn Header="Donante" Binding="{Binding CompanyName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Tipo de Donante -->
+                    <DataGridTextColumn Header="Tipo Donante" Binding="{Binding DonorType}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Fecha -->
                     <DataGridTextColumn Header="Fecha" Binding="{Binding DonationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterTextColumn}"/>
 
-                    <!-- Detalles del Insumo en Lista -->
-                    <DataGridTemplateColumn Header="Productos y Detalles (Presentación | Cantidad | P.U. | Subtotal)" Width="Auto" MinWidth="360">
+                    <!-- Muestra TODOS los productos y sus detalles en lista vertical -->
+                    <DataGridTemplateColumn Header="Productos y Detalles (Presentación | Cantidad | P.U. | Subtotal)" Width="Auto" MinWidth="380">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ItemsControl ItemsSource="{Binding Items}" Margin="8,6">
@@ -147,6 +159,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
+                    <!-- Monto Total -->
                     <DataGridTextColumn Header="Monto Total" Binding="{Binding TotalDonation, StringFormat=\{0:C\}}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
