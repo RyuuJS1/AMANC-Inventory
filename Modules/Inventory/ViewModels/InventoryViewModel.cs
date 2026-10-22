@@ -72,38 +72,42 @@ namespace AMANC_Inventory.Inventory.ViewModels
             UserConsult = new UserConsultViewModel(_userService);
 
             // 2. Instanciar Sub-ViewModels de Registro
-            // A) Primero instanciamos DonationRegister
             DonationRegister = new DonationRegisterViewModel(
                 donationService,
                 productService,
                 () => DonationConsult.ForceReloadAsync());
 
-            // B) Luego instanciamos ProductRegister pasándole la referencia de DonationRegister
+            PantryRegister = new PantryRegisterViewModel(
+                pantryService,
+                patientService,
+                productService,
+                async () => await PantryConsult.ForceReloadAsync());
+
             ProductRegister = new ProductRegisterViewModel(
                 productService,
                 async () =>
                 {
                     await ProductConsult.ForceReloadAsync();
-                    await DonationRegister.LoadExistingProductsAsync(); // <--- Recarga el buscador de donaciones al guardar
+                    await DonationRegister.LoadExistingProductsAsync();
+                    await PantryRegister.LoadExistingProductsAsync();
                 },
-                DonationRegister); // <--- Vinculación directa
+            DonationRegister);
 
-            PantryRegister = new PantryRegisterViewModel(
-                pantryService,
-                patientService,
-                async () => await PantryConsult.ForceReloadAsync());
+            // A) Instanciar TripRegister primero para tener la referencia lista
+            TripRegister = new TripRegisterViewModel(
+                tripService,
+                patientService, // <--- Conecta el servicio de pacientes
+                async () => await TripConsult.ForceReloadAsync());
 
+            // B) PatientRegister recarga tanto Despansas como la lista de Niños en Traslados al guardar
             PatientRegister = new PatientRegisterViewModel(
                 patientService,
                 async () =>
                 {
                     await PatientConsult.ForceReloadAsync();
                     await PantryRegister.LoadDestinationsAsync();
+                    await TripRegister.LoadPatientsAsync(); // <--- Recarga dinámica en vivo
                 });
-
-            TripRegister = new TripRegisterViewModel(
-                tripService,
-                async () => await TripConsult.ForceReloadAsync());
 
             // Catálogos
             Relationships = new ObservableCollection<string> { "Padre/Madre", "Cónyuge", "Hermano/a", "Hijo/a", "Tutor", "Otro" };

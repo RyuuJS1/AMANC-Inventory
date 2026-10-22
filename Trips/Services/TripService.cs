@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using AMANC_Inventory.Trips.Interfaces;
 using System.Threading.Tasks;
 using AMANC_Inventory.Core.Config;
 using AMANC_Inventory.Core.Utilities;
+using AMANC_Inventory.Trips.Interfaces;
 using AMANC_Inventory.Trips.Models;
 using Firebase.Database;
 using Firebase.Database.Query;
+using Newtonsoft.Json.Linq;
 
 namespace AMANC_Inventory.Trips.Services
 {
@@ -17,7 +18,6 @@ namespace AMANC_Inventory.Trips.Services
     {
         private readonly FirebaseClient _firebaseClient;
         private const string NodeName = "Trips";
-        private const string IdPrefix = "VIA-";
 
         public TripService()
         {
@@ -30,19 +30,47 @@ namespace AMANC_Inventory.Trips.Services
             {
                 try
                 {
-                    var items = await _firebaseClient
+                    // Lee el token JSON crudo para procesar Objetos {} o Arreglos [] de Firebase
+                    var token = await _firebaseClient
                         .Child(NodeName)
-                        .OnceAsync<TripModel>();
+                        .OnceSingleAsync<JToken>();
 
-                    return items
-                        .Where(item => item.Object != null)
-                        .Select(item =>
+                    if (token == null || token.Type == JTokenType.Null)
+                        return new List<TripModel>();
+
+                    var tripList = new List<TripModel>();
+
+                    if (token is JArray jArray)
+                    {
+                        foreach (var item in jArray)
                         {
-                            var trip = item.Object;
-                            trip.Id = string.IsNullOrEmpty(trip.Id) ? item.Key : trip.Id;
-                            return trip;
-                        })
-                        .ToList();
+                            if (item != null && item.Type != JTokenType.Null)
+                            {
+                                var trip = item.ToObject<TripModel>();
+                                if (trip != null)
+                                {
+                                    tripList.Add(trip);
+                                }
+                            }
+                        }
+                    }
+                    else if (token is JObject jObject)
+                    {
+                        foreach (var prop in jObject.Properties())
+                        {
+                            if (prop.Value != null && prop.Value.Type != JTokenType.Null)
+                            {
+                                var trip = prop.Value.ToObject<TripModel>();
+                                if (trip != null)
+                                {
+                                    if (string.IsNullOrEmpty(trip.Id)) trip.Id = prop.Name;
+                                    tripList.Add(trip);
+                                }
+                            }
+                        }
+                    }
+
+                    return tripList;
                 }
                 catch (Exception ex)
                 {
@@ -60,13 +88,12 @@ namespace AMANC_Inventory.Trips.Services
                 {
                     if (trip == null) return false;
 
-                    // Si es un nuevo viaje o no tiene un ID asignado, se genera el consecutivo
-                    if (string.IsNullOrWhiteSpace(trip.Id) || trip.Id == "0")
+                    // Genera ID numérico consecutivo simple (1, 2, 3...)
+                    if (string.IsNullOrWhiteSpace(trip.Id) || trip.Id == "0" || Guid.TryParse(trip.Id, out _))
                     {
                         trip.Id = await GetNextCustomIdAsync();
                     }
 
-                    // Guardado mediante PutAsync para usar la clave personalizada (VIA-000001)
                     await _firebaseClient
                         .Child(NodeName)
                         .Child(trip.Id)
@@ -82,40 +109,30 @@ namespace AMANC_Inventory.Trips.Services
             }, "Guardar Viaje en Firebase");
         }
 
-        /// <summary>
-        /// Genera el siguiente ID consecutivo dinámico (ej. VIA-000001).
-        /// Admite más de 999,999 registros ya que se expande automáticamente si el número crece.
-        /// </summary>
         private async Task<string> GetNextCustomIdAsync()
         {
             try
             {
-                var items = await _firebaseClient
-                    .Child(NodeName)
-                    .OnceAsync<TripModel>();
+                var trips = await GetAllTripsAsync();
 
-                if (!items.Any()) return $"{IdPrefix}000001";
+                if (!trips.Any()) return "1";
 
-                int maxId = items
-                    .Select(i =>
+                int maxId = trips
+                    .Select(t =>
                     {
-                        string key = i.Key;
-                        // Extrae únicamente los dígitos de la clave
-                        string numericPart = Regex.Match(key, @"\d+").Value;
+                        string idToParse = !string.IsNullOrWhiteSpace(t.Id) ? t.Id : "0";
+                        string numericPart = Regex.Match(idToParse, @"\d+").Value;
                         return int.TryParse(numericPart, out int num) ? num : 0;
                     })
                     .DefaultIfEmpty(0)
                     .Max();
 
-                int nextNumericId = maxId + 1;
-
-                // :D6 garantiza al menos 6 dígitos con ceros a la izquierda.
-                return $"{IdPrefix}{nextNumericId:D6}";
+                return (maxId + 1).ToString();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Error al calcular el consecutivo del viaje]: {ex.Message}");
-                return $"{IdPrefix}000001";
+                return "1";
             }
         }
     }

@@ -99,10 +99,12 @@ namespace AMANC_Inventory.Pantries.ViewModels
                 if (!string.IsNullOrWhiteSpace(filterText))
                 {
                     string cleanFilter = filterText.Trim();
+
+                    // Búsqueda por Destino, Entregado Por, o dentro de la lista de productos (Items)
                     query = query.Where(p =>
-                        (!string.IsNullOrEmpty(p.Destination) && p.Destination.StartsWith(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
-                        (!string.IsNullOrEmpty(p.ProductName) && p.ProductName.StartsWith(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
-                        (!string.IsNullOrEmpty(p.DeliveredBy) && p.DeliveredBy.StartsWith(cleanFilter, StringComparison.OrdinalIgnoreCase))
+                        (!string.IsNullOrEmpty(p.Destination) && p.Destination.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
+                        (!string.IsNullOrEmpty(p.DeliveredBy) && p.DeliveredBy.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)) ||
+                        (p.Items != null && p.Items.Any(i => !string.IsNullOrEmpty(i.ProductName) && i.ProductName.Contains(cleanFilter, StringComparison.OrdinalIgnoreCase)))
                     );
                 }
 

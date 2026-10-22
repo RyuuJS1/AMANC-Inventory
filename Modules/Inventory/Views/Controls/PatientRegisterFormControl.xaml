@@ -375,7 +375,6 @@
                 </Style>
             </Button.Resources>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
                 <TextBlock Text="Registrar Beneficiario" VerticalAlignment="Center"/>
             </StackPanel>
         </Button>

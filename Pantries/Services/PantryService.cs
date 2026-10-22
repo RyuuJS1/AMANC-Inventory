@@ -10,6 +10,7 @@ using AMANC_Inventory.Pantries.Interfaces;
 using AMANC_Inventory.Pantries.Models;
 using Firebase.Database;
 using Firebase.Database.Query;
+using Newtonsoft.Json.Linq;
 
 namespace AMANC_Inventory.Pantries.Services
 {
@@ -29,19 +30,46 @@ namespace AMANC_Inventory.Pantries.Services
             {
                 try
                 {
-                    var items = await _firebaseClient
+                    var token = await _firebaseClient
                         .Child(NodeName)
-                        .OnceAsync<PantryModel>();
+                        .OnceSingleAsync<JToken>();
 
-                    return items
-                        .Where(item => item.Object != null)
-                        .Select(item =>
+                    if (token == null || token.Type == JTokenType.Null)
+                        return new List<PantryModel>();
+
+                    var pantryList = new List<PantryModel>();
+
+                    if (token is JArray jArray)
+                    {
+                        foreach (var item in jArray)
                         {
-                            var pantry = item.Object;
-                            pantry.Id = string.IsNullOrEmpty(pantry.Id) ? item.Key : pantry.Id;
-                            return pantry;
-                        })
-                        .ToList();
+                            if (item != null && item.Type != JTokenType.Null)
+                            {
+                                var pantry = item.ToObject<PantryModel>();
+                                if (pantry != null)
+                                {
+                                    pantryList.Add(pantry);
+                                }
+                            }
+                        }
+                    }
+                    else if (token is JObject jObject)
+                    {
+                        foreach (var prop in jObject.Properties())
+                        {
+                            if (prop.Value != null && prop.Value.Type != JTokenType.Null)
+                            {
+                                var pantry = prop.Value.ToObject<PantryModel>();
+                                if (pantry != null)
+                                {
+                                    if (string.IsNullOrEmpty(pantry.Id)) pantry.Id = prop.Name;
+                                    pantryList.Add(pantry);
+                                }
+                            }
+                        }
+                    }
+
+                    return pantryList;
                 }
                 catch (Exception ex)
                 {
@@ -59,7 +87,7 @@ namespace AMANC_Inventory.Pantries.Services
                 {
                     if (pantry == null) return false;
 
-                    if (string.IsNullOrWhiteSpace(pantry.Id) || pantry.Id == "0")
+                    if (string.IsNullOrWhiteSpace(pantry.Id) || pantry.Id == "0" || Guid.TryParse(pantry.Id, out _))
                     {
                         pantry.Id = await GetNextCustomIdAsync();
                     }
@@ -83,24 +111,21 @@ namespace AMANC_Inventory.Pantries.Services
         {
             try
             {
-                var items = await _firebaseClient
-                    .Child(NodeName)
-                    .OnceAsync<PantryModel>();
+                var pantries = await GetAllPantriesAsync();
 
-                if (!items.Any()) return "1";
+                if (!pantries.Any()) return "1";
 
-                int maxId = items
-                    .Select(i =>
+                int maxId = pantries
+                    .Select(p =>
                     {
-                        string key = i.Key;
-                        string numericPart = Regex.Match(key, @"\d+").Value;
+                        string idToParse = !string.IsNullOrWhiteSpace(p.Id) ? p.Id : "0";
+                        string numericPart = Regex.Match(idToParse, @"\d+").Value;
                         return int.TryParse(numericPart, out int num) ? num : 0;
                     })
                     .DefaultIfEmpty(0)
                     .Max();
 
-                int nextNumericId = maxId + 1;
-                return nextNumericId.ToString();
+                return (maxId + 1).ToString();
             }
             catch (Exception ex)
             {

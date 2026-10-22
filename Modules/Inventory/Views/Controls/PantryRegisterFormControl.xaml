@@ -8,24 +8,147 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
+        <!-- ESTILO PARA INPUTS DE TEXTO -->
         <Style x:Key="ModernInputStyle" TargetType="TextBox">
-            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="Background" Value="#F8FAFC"/>
             <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="#0F172A"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#94A3B8"/>
+                                <Setter TargetName="border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
+        <!-- ESTILO MODERNO PARA COMBOBOX CON SOPORTE PARA EDICIÓN DE TEXTO (PART_EditableTextBox) -->
         <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Background" Value="#F8FAFC"/>
             <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="#0F172A"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="true">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="30"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="Border" Grid.ColumnSpan="2" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6"/>
+
+                            <!-- Muestra el elemento seleccionado en modo de solo lectura -->
+                            <ContentPresenter x:Name="contentPresenter" IsHitTestVisible="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+
+                            <!-- Requerido para permitir escribir en el ComboBox cuando IsEditable="True" -->
+                            <TextBox x:Name="PART_EditableTextBox" HorizontalAlignment="Stretch" VerticalContentAlignment="Center" Margin="{TemplateBinding Padding}" Focusable="True" Background="Transparent" BorderThickness="0" FontSize="13" Foreground="#0F172A" Visibility="Hidden" IsReadOnly="{TemplateBinding IsReadOnly}"/>
+
+                            <Path x:Name="Arrow" Grid.Column="1" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                            <ToggleButton x:Name="ToggleButton" Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" Focusable="False" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="Transparent"/>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <Popup x:Name="PART_Popup" AllowsTransparency="true" Grid.ColumnSpan="2" IsOpen="{TemplateBinding IsDropDownOpen}" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom">
+                                <Border x:Name="DropDownBorder" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{Binding ActualWidth, ElementName=MainGrid}" Margin="0,4,0,0">
+                                    <ScrollViewer x:Name="DropDownScrollViewer">
+                                        <Grid RenderOptions.ClearTypeHint="Enabled">
+                                            <Canvas Height="0" Width="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                <Rectangle x:Name="OpaqueRect" Fill="{Binding Background, ElementName=DropDownBorder}" Height="{Binding ActualHeight, ElementName=DropDownBorder}" Width="{Binding ActualWidth, ElementName=DropDownBorder}"/>
+                                            </Canvas>
+                                            <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="contentPresenter" Property="Visibility" Value="Hidden"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#94A3B8"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                                <Setter TargetName="Arrow" Property="Fill" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO MODERNO PARA DATEPICKER -->
+        <Style x:Key="ModernDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <Grid x:Name="PART_Root" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <DatePickerTextBox x:Name="PART_TextBox" Grid.Column="0" Focusable="{TemplateBinding Focusable}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" FontSize="13" Foreground="#0F172A"/>
+
+                                <Button x:Name="PART_Button" Grid.Column="1" Focusable="False" Foreground="#64748B" Background="Transparent" BorderThickness="0" Padding="4,0" Cursor="Hand">
+                                    <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/>
+                                </Button>
+
+                                <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Bottom" PlacementTarget="{Binding ElementName=Border}" StaysOpen="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#94A3B8"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="SectionCardStyle" TargetType="Border">
@@ -44,82 +167,281 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0">
-            <!-- SECCIÓN 1: Información de Entrega y Destino -->
-            <Border Style="{StaticResource SectionCardStyle}">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#2563EB" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="INFORMACIÓN DE ENTREGA Y DESTINO" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
-                    </StackPanel>
-
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.5*"/>
-                            <ColumnDefinition Width="1.5*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Destino / Zona / Beneficiario *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding PantryRegister.DestinationsList}" SelectedItem="{Binding PantryRegister.NewPantryDestination}" IsEditable="True"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="Producto / Insumo Entregado *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding PantryRegister.NewPantryProduct, UpdateSourceTrigger=PropertyChanged}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
-                            <TextBlock Text="Fecha de Entrega" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <DatePicker SelectedDate="{Binding PantryRegister.NewPantryDate}"/>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- SECCIÓN 2: Cantidad y Unidad -->
-            <Border Style="{StaticResource SectionCardStyle}">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE1D2;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="CANTIDAD Y UNIDAD DE MEDIDA" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
-                    </StackPanel>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Cantidad Entregada *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding PantryRegister.NewPantryQuantity, UpdateSourceTrigger=PropertyChanged}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                            <TextBlock Text="Unidad de Medida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding PantryRegister.UnitsList}" SelectedItem="{Binding PantryRegister.NewPantryUnit}"/>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- SECCIÓN 3: Observaciones -->
-            <Border Style="{StaticResource SectionCardStyle}">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE150;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#D97706" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="OBSERVACIONES Y NOTAS" FontSize="11" FontWeight="Bold" Foreground="#D97706"/>
-                    </StackPanel>
-
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Grid.Row="0">
+                <!-- SECCIÓN 1: Información de Entrega y Firma Electrónica -->
+                <Border Style="{StaticResource SectionCardStyle}">
                     <StackPanel>
-                        <TextBlock Text="Notas / Observaciones de la Entrega" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                        <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding PantryRegister.NewPantryNotes, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#2563EB" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="INFORMACIÓN DE ENTREGA Y DESTINO" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
+                        </StackPanel>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.5*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Beneficiario / Niño / Zona (Soporta selección de lista o texto libre manual) -->
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Beneficiario / Destino *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <ComboBox Style="{StaticResource ModernComboBoxStyle}" 
+                                          ItemsSource="{Binding PantryRegister.DestinationsList}" 
+                                          Text="{Binding PantryRegister.NewPantryDestination, UpdateSourceTrigger=PropertyChanged}" 
+                                          IsEditable="True"/>
+                            </StackPanel>
+
+                            <!-- Fecha de Entrega -->
+                            <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                <TextBlock Text="Fecha de Entrega *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <DatePicker Style="{StaticResource ModernDatePickerStyle}" SelectedDate="{Binding PantryRegister.NewPantryDate}"/>
+                            </StackPanel>
+
+                            <!-- Botón Firma Electrónica -->
+                            <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                                <TextBlock Text="Conformidad / Firma *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <Button Command="{Binding PantryRegister.CaptureSignatureCommand}" Height="38" Cursor="Hand" BorderThickness="0">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="#F1F5F9"/>
+                                            <Setter Property="Foreground" Value="#0F172A"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" CornerRadius="6" BorderBrush="#CBD5E1" BorderThickness="1">
+                                                            <TextBlock Text="{Binding DataContext.PantryRegister.SignatureStatusText, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+                                                                       FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding PantryRegister.HasSignature}" Value="True">
+                                                    <Setter Property="Background" Value="#DCFCE7"/>
+                                                    <Setter Property="Foreground" Value="#15803D"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+                </Border>
+
+                <!-- SECCIÓN 2: Buscador y Asociación de Productos del Inventario -->
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <TextBlock Text="&#xE8B9;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="BUSCAR Y ASOCIAR PRODUCTOS DE LA BASE DE DATOS" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
+                        </StackPanel>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Buscador Desplegable de Productos Existentes -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="Seleccionar Producto Registrado *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <ComboBox Style="{StaticResource ModernComboBoxStyle}" 
+                                          ItemsSource="{Binding PantryRegister.FilteredProductsList}"
+                                          SelectedItem="{Binding PantryRegister.SelectedProduct}"
+                                          IsEditable="True"
+                                          TextSearch.TextPath="Name">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#0F172A"/>
+                                                <TextBlock Text=" - Cód. Barras: " Foreground="#64748B"/>
+                                                <TextBlock Text="{Binding Barcode}" Foreground="#2563EB" FontWeight="SemiBold"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Unidad (Solo Lectura) -->
+                            <StackPanel Grid.Column="1" Margin="4,0,8,0">
+                                <TextBlock Text="Unidad" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding PantryRegister.TempUnit}" IsReadOnly="True" Focusable="False" Background="#F1F5F9" Foreground="#64748B"/>
+                            </StackPanel>
+
+                            <!-- Precio Unitario (Solo Lectura) -->
+                            <StackPanel Grid.Column="2" Margin="4,0,8,0">
+                                <TextBlock Text="P. Unitario" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding PantryRegister.TempUnitPrice}" IsReadOnly="True" Focusable="False" Background="#F1F5F9" Foreground="#64748B"/>
+                            </StackPanel>
+
+                            <!-- Cantidad Entregada -->
+                            <StackPanel Grid.Column="3" Margin="4,0,8,0">
+                                <TextBlock Text="Cantidad *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding PantryRegister.TempQuantity, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <!-- Botón Añadir a Despensa -->
+                            <Button Grid.Column="4" Command="{Binding PantryRegister.AddItemCommand}"
+                                    Content="+ Añadir a Despensa" Background="#059669" Foreground="White" FontWeight="Bold" 
+                                    Padding="16,0" Height="38" VerticalAlignment="Bottom" Cursor="Hand" BorderThickness="0">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="6"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+                        </Grid>
+
+                        <!-- TABLA DE INSUMOS DE LA DESPENSA -->
+                        <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8" ClipToBounds="True" Background="#FFFFFF" Margin="0,4,0,0">
+                            <DataGrid ItemsSource="{Binding PantryRegister.PantryItemsList}" 
+                                      AutoGenerateColumns="False" 
+                                      CanUserAddRows="False" 
+                                      IsReadOnly="True" 
+                                      Height="150" 
+                                      GridLinesVisibility="Horizontal"
+                                      HorizontalGridLinesBrush="#F1F5F9"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      RowHeight="36"
+                                      HeadersVisibility="Column"
+                                      RowBackground="#FFFFFF"
+                                      AlternatingRowBackground="#F8FAFC"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto">
+
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="Background" Value="#0F172A"/>
+                                        <Setter Property="Foreground" Value="#FFFFFF"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="FontSize" Value="11"/>
+                                        <Setter Property="Padding" Value="10,6"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                    </Style>
+
+                                    <Style x:Key="CenterCellStyle" TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="FontSize" Value="12"/>
+                                        <Setter Property="Foreground" Value="#334155"/>
+                                    </Style>
+
+                                    <Style x:Key="ProductNameCellStyle" TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Left"/>
+                                        <Setter Property="VerticalAlignment" Value="Center"/>
+                                        <Setter Property="Margin" Value="10,0"/>
+                                        <Setter Property="FontSize" Value="12"/>
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="#0F172A"/>
+                                    </Style>
+                                </DataGrid.Resources>
+
+                                <DataGrid.Columns>
+                                    <!-- ID Prod. -->
+                                    <DataGridTextColumn Header="ID Prod." Binding="{Binding ProductId}" Width="75" ElementStyle="{StaticResource CenterCellStyle}"/>
+
+                                    <!-- Producto -->
+                                    <DataGridTextColumn Header="Producto Seleccionado" Binding="{Binding ProductName}" Width="*" ElementStyle="{StaticResource ProductNameCellStyle}"/>
+
+                                    <!-- Unidad -->
+                                    <DataGridTemplateColumn Header="Unidad" Width="85">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#E2E8F0" CornerRadius="4" Padding="6,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Unit}" FontSize="11" FontWeight="Bold" Foreground="#475569" HorizontalAlignment="Center"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- Cantidad -->
+                                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="80" ElementStyle="{StaticResource CenterCellStyle}"/>
+
+                                    <!-- Precio Unitario -->
+                                    <DataGridTextColumn Header="P. Unitario" Binding="{Binding UnitPrice, StringFormat=\{0:C\}}" Width="100" ElementStyle="{StaticResource CenterCellStyle}"/>
+
+                                    <!-- Subtotal -->
+                                    <DataGridTemplateColumn Header="Subtotal" Width="110">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Subtotal, StringFormat=\{0:C\}}" FontWeight="Bold" Foreground="#059669" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <!-- Botón Eliminar -->
+                                    <DataGridTemplateColumn Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Command="{Binding DataContext.PantryRegister.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        ToolTip="Quitar producto de la despensa"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                        Cursor="Hand">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Background" Value="#FEE2E2"/>
+                                                            <Setter Property="Foreground" Value="#DC2626"/>
+                                                            <Setter Property="BorderThickness" Value="0"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="8,3">
+                                                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                                                                <TextBlock Text="&#xE74D;" FontFamily="Segoe MDL2 Assets" FontSize="11" VerticalAlignment="Center" Margin="0,0,3,0"/>
+                                                                                <TextBlock Text="Quitar" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                                            </StackPanel>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#DC2626"/>
+                                                                    <Setter Property="Foreground" Value="#FFFFFF"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Border>
+
+                        <!-- TOTAL ESTIMADO DE LA DESPENSA -->
+                        <TextBlock Text="{Binding PantryRegister.TotalPantryAmount, StringFormat='Monto Total Estimado de la Despensa: \{0:C\}'}" 
+                                   HorizontalAlignment="Right" FontWeight="Bold" FontSize="14" Foreground="#102240" Margin="0,10,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- SECCIÓN 3: Observaciones -->
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <TextBlock Text="&#xE150;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#D97706" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="OBSERVACIONES Y NOTAS" FontSize="11" FontWeight="Bold" Foreground="#D97706"/>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Notas / Observaciones de la Entrega" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding PantryRegister.NewPantryNotes, UpdateSourceTrigger=PropertyChanged}" Height="50" TextWrapping="Wrap" AcceptsReturn="True"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
 
         <!-- Botón Guardar Despensa -->
         <Button Grid.Row="1"
@@ -132,7 +454,8 @@
                 </Style>
             </Button.Resources>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Registrar" VerticalAlignment="Center"/>
+                <TextBlock Text="&#xE8F1;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <TextBlock Text="Registrar Despensa" VerticalAlignment="Center"/>
             </StackPanel>
         </Button>
     </Grid>

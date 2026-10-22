@@ -1,9 +1,13 @@
 ﻿using AMANC_Inventory.Core.Architecture;
+using AMANC_Inventory.Patients.Interfaces;
+using AMANC_Inventory.Patients.Models;
+using AMANC_Inventory.Patients.Services;
 using AMANC_Inventory.Trips.Interfaces;
 using AMANC_Inventory.Trips.Models;
 using AMANC_Inventory.Trips.Services;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -13,7 +17,36 @@ namespace AMANC_Inventory.Trips.ViewModels
     public class TripRegisterViewModel : ViewModelBase
     {
         private readonly ITripService _tripService;
+        private readonly IPatientService _patientService;
         private readonly Func<Task>? _onSaveSuccess;
+
+        // Selección de Paciente Vinculado
+        private PatientModel? _selectedPatient;
+        public PatientModel? SelectedPatient
+        {
+            get => _selectedPatient;
+            set
+            {
+                if (SetProperty(ref _selectedPatient, value))
+                {
+                    if (value != null)
+                    {
+                        NewTripChild = value.ChildName;
+
+                        // Autocompleta el nombre del acompañante si existen tutores registrados
+                        if (value.Guardians != null && value.Guardians.Any())
+                        {
+                            NewTripGuardian = string.Join(" / ", value.Guardians.Select(g => g.Name));
+                        }
+                    }
+                    else
+                    {
+                        NewTripChild = string.Empty;
+                        NewTripGuardian = string.Empty;
+                    }
+                }
+            }
+        }
 
         // Propiedades del Formulario
         private string? _newTripChild;
@@ -37,13 +70,14 @@ namespace AMANC_Inventory.Trips.ViewModels
         private DateTime? _newReturnDate = DateTime.Now;
         public DateTime? NewReturnDate { get => _newReturnDate; set => SetProperty(ref _newReturnDate, value); }
 
-        private string? _newTripStatus;
+        private string? _newTripStatus = "Programado";
         public string? NewTripStatus { get => _newTripStatus; set => SetProperty(ref _newTripStatus, value); }
 
         private string? _newTripNotes;
         public string? NewTripNotes { get => _newTripNotes; set => SetProperty(ref _newTripNotes, value); }
 
         // Colecciones para Combos
+        public ObservableCollection<PatientModel> PatientsList { get; } = new();
         public ObservableCollection<string> TransportTypesList { get; } = new();
         public ObservableCollection<string> TripStatusList { get; } = new();
 
@@ -53,15 +87,35 @@ namespace AMANC_Inventory.Trips.ViewModels
 
         public TripRegisterViewModel(
             ITripService? tripService = null,
+            IPatientService? patientService = null,
             Func<Task>? onSaveSuccess = null)
         {
             _tripService = tripService ?? new TripService();
+            _patientService = patientService ?? new PatientService();
             _onSaveSuccess = onSaveSuccess;
 
             LoadCatalogDefaults();
+            _ = LoadPatientsAsync();
 
             SaveTripCommand = new RelayCommand(async _ => await SaveTripAsync());
             ResetFormCommand = new RelayCommand(_ => ResetForm());
+        }
+
+        public async Task LoadPatientsAsync()
+        {
+            try
+            {
+                var patients = await _patientService.GetAllPatientsAsync();
+                PatientsList.Clear();
+                foreach (var patient in patients.OrderBy(p => p.ChildName))
+                {
+                    PatientsList.Add(patient);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Error al cargar pacientes en viajes]: {ex.Message}");
+            }
         }
 
         private void LoadCatalogDefaults()
@@ -70,6 +124,7 @@ namespace AMANC_Inventory.Trips.ViewModels
             TransportTypesList.Add("Autobús");
             TransportTypesList.Add("Avión");
             TransportTypesList.Add("Particular");
+            TransportTypesList.Add("Ambulancia / Vehículo AMANC");
 
             TripStatusList.Clear();
             TripStatusList.Add("Programado");
@@ -80,6 +135,7 @@ namespace AMANC_Inventory.Trips.ViewModels
 
         public void ResetForm()
         {
+            SelectedPatient = null;
             NewTripChild = string.Empty;
             NewTripGuardian = string.Empty;
             NewOrigin = string.Empty;
@@ -87,35 +143,89 @@ namespace AMANC_Inventory.Trips.ViewModels
             NewTransportType = null;
             NewDepartureDate = DateTime.Now;
             NewReturnDate = DateTime.Now;
-            NewTripStatus = null;
+            NewTripStatus = "Programado";
             NewTripNotes = string.Empty;
         }
 
         public async Task SaveTripAsync()
         {
-            if (string.IsNullOrWhiteSpace(NewTripChild) || string.IsNullOrWhiteSpace(NewOrigin) || string.IsNullOrWhiteSpace(NewDestination))
+            // 1. Validar Paciente
+            if (SelectedPatient == null || string.IsNullOrWhiteSpace(NewTripChild))
             {
-                MessageBox.Show("Por favor, ingrese el paciente, origen y destino del viaje.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, seleccione un beneficiario/niño de la lista.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 2. Validar Acompañante
+            if (string.IsNullOrWhiteSpace(NewTripGuardian))
+            {
+                MessageBox.Show("Por favor, ingrese el nombre del acompañante o tutor.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 3. Validar Origen y Destino
+            if (string.IsNullOrWhiteSpace(NewOrigin))
+            {
+                MessageBox.Show("Por favor, ingrese la ciudad/lugar de origen.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(NewDestination))
+            {
+                MessageBox.Show("Por favor, ingrese el destino del traslado.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 4. Validar Medio de Transporte
+            if (string.IsNullOrWhiteSpace(NewTransportType))
+            {
+                MessageBox.Show("Por favor, seleccione el medio de transporte.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 5. Validar Fechas
+            if (!NewDepartureDate.HasValue)
+            {
+                MessageBox.Show("Por favor, seleccione la fecha de salida.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (!NewReturnDate.HasValue)
+            {
+                MessageBox.Show("Por favor, seleccione la fecha estimada de regreso.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (NewReturnDate.Value.Date < NewDepartureDate.Value.Date)
+            {
+                MessageBox.Show("La fecha estimada de regreso no puede ser anterior a la fecha de salida.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 6. Validar Estatus
+            if (string.IsNullOrWhiteSpace(NewTripStatus))
+            {
+                MessageBox.Show("Por favor, seleccione el estatus de la solicitud.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             var trip = new TripModel
             {
                 ChildName = NewTripChild.Trim(),
-                GuardianName = NewTripGuardian ?? string.Empty,
+                GuardianName = NewTripGuardian.Trim(),
                 Origin = NewOrigin.Trim(),
                 Destination = NewDestination.Trim(),
-                TransportType = NewTransportType ?? string.Empty,
-                DepartureDate = NewDepartureDate ?? DateTime.Now,
-                ArrivalDate = NewReturnDate ?? DateTime.Now,
-                Status = NewTripStatus ?? "Programado",
+                TransportType = NewTransportType,
+                DepartureDate = NewDepartureDate.Value,
+                ArrivalDate = NewReturnDate.Value,
+                Status = NewTripStatus,
                 Notes = NewTripNotes ?? string.Empty
             };
 
             bool success = await _tripService.SaveTripAsync(trip);
             if (success)
             {
-                MessageBox.Show("Traslado registrado correctamente en Firebase.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Traslado registrado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 ResetForm();
                 if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
             }

@@ -8,12 +8,12 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
-        <!-- ESTILO PARA CENTRAR TODA LA INFORMACIÓN DE LAS CELDAS -->
+        <!-- ESTILO PARA CENTRAR TODA LA INFORMACIÓN DE LAS CELDAS Y DAR PADDING -->
         <Style x:Key="CenterTextColumn" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="TextAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="8,0"/>
+            <Setter Property="Margin" Value="10,0"/>
         </Style>
 
         <Style TargetType="DataGridColumnHeader">
@@ -21,19 +21,20 @@
             <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Padding" Value="12,8"/>
             <Setter Property="BorderThickness" Value="0,0,1,1"/>
             <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
-        <!-- ESTILO GLOBAL DATAGRID: FILAS ALTERNADAS Y DESPLAZAMIENTO -->
+        <!-- ESTILO GLOBAL DATAGRID: AUTO-AJUSTE DE COLUMNAS Y DESPLAZAMIENTO FLUIDO -->
         <Style TargetType="DataGrid">
             <Setter Property="AutoGenerateColumns" Value="False"/>
             <Setter Property="CanUserAddRows" Value="False"/>
             <Setter Property="IsReadOnly" Value="True"/>
-            <Setter Property="CanUserResizeColumns" Value="False"/>
+            <Setter Property="CanUserResizeColumns" Value="True"/>
+            <Setter Property="ColumnWidth" Value="Auto"/>
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
             <Setter Property="HorizontalGridLinesBrush" Value="#CBD5E1"/>
             <Setter Property="Background" Value="White"/>
@@ -41,16 +42,17 @@
             <Setter Property="HeadersVisibility" Value="Column"/>
             <Setter Property="RowHeight" Value="36"/>
 
-            <!-- DOS COLORES PARA DIFERENCIAR FILAS (CLARO Y OSCURO) -->
+            <!-- DIFERENCIACIÓN DE FILAS -->
             <Setter Property="RowBackground" Value="#FFFFFF"/>
-            <Setter Property="AlternatingRowBackground" Value="#E2E8F0"/>
+            <Setter Property="AlternatingRowBackground" Value="#F8FAFC"/>
 
             <Setter Property="SelectionMode" Value="Single"/>
             <Setter Property="CanUserSortColumns" Value="True"/>
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
 
+            <!-- PERMITE QUE EL DATAGRID MIDA SU ANCHO REAL Y HABILITE EL SCROLL HORIZONTAL EXTERNO -->
             <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
 
             <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
@@ -110,24 +112,60 @@
 
             <!-- TABLA 2: DESPENSAS -->
             <DataGrid ItemsSource="{Binding PantryConsult.FilteredPantriesList}" 
-                      Visibility="{Binding IsPantriesTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                      Visibility="{Binding IsPantriesTabSelected, Converter={StaticResource BoolToVisConverter}}"
+                      RowHeight="NaN"
+                      MinRowHeight="36">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Folio" Binding="{Binding Id}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+                    <!-- Folio -->
+                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Destino / Beneficiario -->
                     <DataGridTextColumn Header="Destino / Beneficiario" Binding="{Binding Destination}" Width="Auto" MinWidth="160" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Producto Entregado" Binding="{Binding ProductName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Cantidad" Binding="{Binding Quantity}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Unidad" Binding="{Binding Unit}" Width="Auto" MinWidth="80" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Despliegue Multiproducto de Insumos -->
+                    <DataGridTemplateColumn Header="Productos Entregados (Insumo | Cantidad | P.U. | Subtotal)" Width="Auto" MinWidth="340">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ItemsControl ItemsSource="{Binding Items}" Margin="8,6">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2">
+                                                <TextBlock Text="{Binding ProductName}" FontWeight="Bold" Foreground="#0F172A" FontSize="12"/>
+                                                <TextBlock Text=" — " Foreground="#64748B" FontSize="12"/>
+                                                <TextBlock Text="{Binding Quantity}" FontWeight="Bold" Foreground="#2563EB" FontSize="12"/>
+                                                <TextBlock Text=" " FontSize="12"/>
+                                                <TextBlock Text="{Binding Unit}" Foreground="#64748B" FontSize="11"/>
+                                                <TextBlock Text=" x " Foreground="#64748B" FontSize="11"/>
+                                                <TextBlock Text="{Binding UnitPrice, StringFormat=\{0:C\}}" Foreground="#475569" FontSize="11"/>
+                                                <TextBlock Text=" = " Foreground="#64748B" FontSize="11"/>
+                                                <TextBlock Text="{Binding Subtotal, StringFormat=\{0:C\}}" FontWeight="Bold" Foreground="#059669" FontSize="12"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Monto Total Estimado -->
+                    <DataGridTextColumn Header="Total Estimado" Binding="{Binding TotalAmount, StringFormat=\{0:C\}}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Fecha Entrega -->
                     <DataGridTextColumn Header="Fecha Entrega" Binding="{Binding DeliveryDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Entregado Por -->
                     <DataGridTextColumn Header="Entregado Por" Binding="{Binding DeliveredBy}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Notas -->
                     <DataGridTextColumn Header="Notas" Binding="{Binding Notes}" Width="Auto" MinWidth="160" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
 
             <!-- TABLA 3: DONACIONES MULTIPRODUCTO EN LISTA -->
             <DataGrid ItemsSource="{Binding DonationConsult.FilteredDonationsList}" 
-          Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}"
-          RowHeight="NaN"
-          MinRowHeight="36">
+                      Visibility="{Binding IsDonationsTabSelected, Converter={StaticResource BoolToVisConverter}}"
+                      RowHeight="NaN"
+                      MinRowHeight="36">
                 <DataGrid.Columns>
                     <!-- ID -->
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
@@ -144,14 +182,14 @@
                     <!-- Fecha -->
                     <DataGridTextColumn Header="Fecha" Binding="{Binding DonationDate, StringFormat=\{0:dd/MM/yyyy\}}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterTextColumn}"/>
 
-                    <!-- Muestra TODOS los productos y sus detalles en lista vertical -->
+                    <!-- Productos y detalles en lista vertical -->
                     <DataGridTemplateColumn Header="Productos y Detalles (Presentación | Cantidad | P.U. | Subtotal)" Width="Auto" MinWidth="380">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <ItemsControl ItemsSource="{Binding Items}" Margin="8,6">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding FormattedDetail}" FontSize="12" Foreground="#334155" HorizontalAlignment="Center" Margin="0,2"/>
+                                            <TextBlock Text="{Binding FormattedDetail}" FontSize="12" Foreground="#334155" HorizontalAlignment="Left" Margin="0,2"/>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
@@ -166,9 +204,9 @@
 
             <!-- TABLA 4: BENEFICIARIOS -->
             <DataGrid ItemsSource="{Binding PatientConsult.FilteredPatientsList}" 
-                Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}"
-                RowHeight="NaN"
-                MinRowHeight="36">
+                      Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}"
+                      RowHeight="NaN"
+                      MinRowHeight="36">
                 <DataGrid.Columns>
                     <!-- ID -->
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
@@ -192,7 +230,7 @@
                                 <ItemsControl ItemsSource="{Binding Guardians}" Margin="8,6">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2">
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,2">
                                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#0F172A" FontSize="12"/>
                                                 <TextBlock Text=" (" Foreground="#64748B" FontSize="12"/>
                                                 <TextBlock Text="{Binding Relationship}" Foreground="#2563EB" FontWeight="SemiBold" FontSize="11"/>
@@ -220,14 +258,35 @@
 
             <!-- TABLA 5: TRASLADOS -->
             <DataGrid ItemsSource="{Binding TripConsult.FilteredTripsList}" 
-                      Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                      Visibility="{Binding IsTripsTabSelected, Converter={StaticResource BoolToVisConverter}}"
+                      RowHeight="NaN"
+                      MinRowHeight="36">
                 <DataGrid.Columns>
+                    <!-- ID -->
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Paciente / Niño -->
                     <DataGridTextColumn Header="Paciente / Niño" Binding="{Binding ChildName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Responsable -->
                     <DataGridTextColumn Header="Responsable" Binding="{Binding GuardianName}" Width="Auto" MinWidth="150" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Origen -->
                     <DataGridTextColumn Header="Origen" Binding="{Binding Origin}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Destino -->
                     <DataGridTextColumn Header="Destino" Binding="{Binding Destination}" Width="Auto" MinWidth="130" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Medio de Transporte -->
+                    <DataGridTextColumn Header="Transporte" Binding="{Binding TransportType}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Fecha Salida -->
                     <DataGridTextColumn Header="Fecha Salida" Binding="{Binding DepartureDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Fecha Estimada de Regreso -->
+                    <DataGridTextColumn Header="Fecha Regreso" Binding="{Binding ArrivalDate, StringFormat=\{0:dd/MM/yyyy HH:mm\}}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Estatus del Traslado -->
                     <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>

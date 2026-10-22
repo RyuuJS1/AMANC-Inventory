@@ -8,24 +8,139 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
 
+        <!-- ESTILO PARA INPUTS DE TEXTO -->
         <Style x:Key="ModernInputStyle" TargetType="TextBox">
-            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="Background" Value="#F8FAFC"/>
             <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="#0F172A"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#94A3B8"/>
+                                <Setter TargetName="border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
+        <!-- ESTILO MODERNO PARA COMBOBOX (DESPLEGABLE) -->
         <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
-            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Padding" Value="10,0"/>
             <Setter Property="Background" Value="#F8FAFC"/>
             <Setter Property="BorderBrush" Value="#CBD5E1"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="#0F172A"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="true">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="30"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="Border" Grid.ColumnSpan="2" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6"/>
+
+                            <ContentPresenter x:Name="contentPresenter" IsHitTestVisible="False" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+
+                            <Path x:Name="Arrow" Grid.Column="1" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#64748B" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                            <ToggleButton x:Name="ToggleButton" Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" Focusable="False" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="Transparent"/>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <Popup x:Name="PART_Popup" AllowsTransparency="true" Grid.ColumnSpan="2" IsOpen="{TemplateBinding IsDropDownOpen}" Margin="1" PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}" Placement="Bottom">
+                                <Border x:Name="DropDownBorder" Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" MaxHeight="{TemplateBinding MaxDropDownHeight}" MinWidth="{Binding ActualWidth, ElementName=MainGrid}" Margin="0,4,0,0">
+                                    <ScrollViewer x:Name="DropDownScrollViewer">
+                                        <Grid RenderOptions.ClearTypeHint="Enabled">
+                                            <Canvas Height="0" Width="0" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                <Rectangle x:Name="OpaqueRect" Fill="{Binding Background, ElementName=DropDownBorder}" Height="{Binding ActualHeight, ElementName=DropDownBorder}" Width="{Binding ActualWidth, ElementName=DropDownBorder}"/>
+                                            </Canvas>
+                                            <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#94A3B8"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                                <Setter TargetName="Arrow" Property="Fill" Value="#2563EB"/>
+                            </Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO MODERNO PARA DATEPICKER -->
+        <Style x:Key="ModernDatePickerStyle" TargetType="DatePicker">
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#0F172A"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#CBD5E1"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DatePicker">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <Grid x:Name="PART_Root" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <DatePickerTextBox x:Name="PART_TextBox" Grid.Column="0" Focusable="{TemplateBinding Focusable}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" FontSize="13" Foreground="#0F172A"/>
+
+                                <Button x:Name="PART_Button" Grid.Column="1" Focusable="False" Foreground="#64748B" Background="Transparent" BorderThickness="0" Padding="4,0" Cursor="Hand">
+                                    <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center"/>
+                                </Button>
+
+                                <Popup x:Name="PART_Popup" AllowsTransparency="True" Placement="Bottom" PlacementTarget="{Binding ElementName=Border}" StaysOpen="False"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#94A3B8"/>
+                                <Setter TargetName="Border" Property="Background" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="SectionCardStyle" TargetType="Border">
@@ -44,90 +159,113 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0">
-            <!-- SECCIÓN 1: Pasajeros y Ruta -->
-            <Border Style="{StaticResource SectionCardStyle}">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#2563EB" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="DATOS DE PASAJEROS Y RUTA" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Grid.Row="0">
+                <!-- SECCIÓN 1: Pasajeros y Ruta -->
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <TextBlock Text="&#xE709;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#2563EB" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="DATOS DE PASAJEROS Y RUTA" FontSize="11" FontWeight="Bold" Foreground="#2563EB"/>
+                        </StackPanel>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.5*"/>
+                                <ColumnDefinition Width="1.5*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Seleccionar Paciente / Niño desde el Catálogo registrado -->
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Beneficiario *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <ComboBox Style="{StaticResource ModernComboBoxStyle}" 
+                                          ItemsSource="{Binding TripRegister.PatientsList}"
+                                          SelectedItem="{Binding TripRegister.SelectedPatient}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding ChildName}" FontWeight="Bold" Foreground="#0F172A"/>
+                                                <TextBlock Text=" (CURP: " Foreground="#64748B" FontSize="11"/>
+                                                <TextBlock Text="{Binding Curp}" Foreground="#2563EB" FontWeight="SemiBold" FontSize="11"/>
+                                                <TextBlock Text=")" Foreground="#64748B" FontSize="11"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <!-- Acompañante / Tutor -->
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                <TextBlock Text="Tutor *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding TripRegister.NewTripGuardian, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Origen -->
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Origen *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding TripRegister.NewOrigin, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <!-- Destino -->
+                            <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                <TextBlock Text="Destino *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding TripRegister.NewDestination, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <!-- Medio de Transporte -->
+                            <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                                <TextBlock Text="Medio de Transporte *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding TripRegister.TransportTypesList}" SelectedItem="{Binding TripRegister.NewTransportType}"/>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
+                </Border>
 
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.5*"/>
-                            <ColumnDefinition Width="1.5*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Paciente / Niño *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding TripRegister.NewTripChild, UpdateSourceTrigger=PropertyChanged}"/>
+                <!-- SECCIÓN 2: Fechas y Estatus -->
+                <Border Style="{StaticResource SectionCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="FECHAS Y ESTATUS DEL VIAJE" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                            <TextBlock Text="Acompañante / Tutor" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding TripRegister.NewTripGuardian, UpdateSourceTrigger=PropertyChanged}"/>
-                        </StackPanel>
-                    </Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                            <!-- Fecha de Salida -->
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Fecha de Salida *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <DatePicker Style="{StaticResource ModernDatePickerStyle}" SelectedDate="{Binding TripRegister.NewDepartureDate}"/>
+                            </StackPanel>
 
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Origen *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding TripRegister.NewOrigin, UpdateSourceTrigger=PropertyChanged}"/>
-                        </StackPanel>
+                            <!-- Fecha Estimada de Regreso -->
+                            <StackPanel Grid.Column="1" Margin="5,0,5,0">
+                                <TextBlock Text="Fecha Estimada de Regreso *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <DatePicker Style="{StaticResource ModernDatePickerStyle}" SelectedDate="{Binding TripRegister.NewReturnDate}"/>
+                            </StackPanel>
 
-                        <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="Destino *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding TripRegister.NewDestination, UpdateSourceTrigger=PropertyChanged}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
-                            <TextBlock Text="Medio de Transporte" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding TripRegister.TransportTypesList}" SelectedItem="{Binding TripRegister.NewTransportType}"/>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- SECCIÓN 2: Fechas y Estado -->
-            <Border Style="{StaticResource SectionCardStyle}">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                        <TextBlock Text="&#xE787;" FontFamily="Segoe MDL2 Assets" FontSize="14" Foreground="#059669" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                        <TextBlock Text="FECHAS Y ESTATUS DEL VIAJE" FontSize="11" FontWeight="Bold" Foreground="#059669"/>
+                            <!-- Estatus del Traslado -->
+                            <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                                <TextBlock Text="Estatus de la Solicitud *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                                <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding TripRegister.TripStatusList}" SelectedItem="{Binding TripRegister.NewTripStatus}"/>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Fecha / Hora de Salida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <DatePicker SelectedDate="{Binding TripRegister.NewDepartureDate}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="Fecha / Hora Estimada de Regreso" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <DatePicker SelectedDate="{Binding TripRegister.NewReturnDate}"/>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
-                            <TextBlock Text="Estatus de la Solicitud" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding TripRegister.TripStatusList}" SelectedItem="{Binding TripRegister.NewTripStatus}"/>
-                        </StackPanel>
-                    </Grid>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
 
         <!-- Botón Guardar Traslado -->
         <Button Grid.Row="1"
@@ -140,8 +278,7 @@
                 </Style>
             </Button.Resources>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="&#xE105;" FontFamily="Segoe MDL2 Assets" FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                <TextBlock Text="Registrar Solicitud de Traslado" VerticalAlignment="Center"/>
+                <TextBlock Text="Registrar Traslado" VerticalAlignment="Center"/>
             </StackPanel>
         </Button>
     </Grid>
