@@ -20,7 +20,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private UserModel? _currentUser;
         private string? _userDefaultBranch;
 
-        // --- SKU: Mínimo 8, máximo 12 caracteres, mayúsculas, sin espacios ni símbolos (excepto guión) ---
+        // --- SKU: Opcional (Mayúsculas, números y guión) ---
         private string? _newSKU;
         public string? NewSKU
         {
@@ -28,14 +28,12 @@ namespace AMANC_Inventory.Inventory.ViewModels
             set
             {
                 if (value == null) { SetProperty(ref _newSKU, value); return; }
-                // Elimina lo no permitido y convierte automáticamente a MAYÚSCULAS
                 string sanitized = Regex.Replace(value, @"[^a-zA-Z0-9-]", "").ToUpper();
-                if (sanitized.Length > 12) sanitized = sanitized.Substring(0, 12);
                 SetProperty(ref _newSKU, sanitized);
             }
         }
 
-        // --- Código de Barras: Exactamente 13 números, sin espacios ni símbolos ---
+        // --- Código de Barras: OBLIGATORIO (Permite cualquier longitud de dígitos) ---
         private string? _newBarcode;
         public string? NewBarcode
         {
@@ -44,12 +42,11 @@ namespace AMANC_Inventory.Inventory.ViewModels
             {
                 if (value == null) { SetProperty(ref _newBarcode, value); return; }
                 string sanitized = Regex.Replace(value, @"[^\d]", "");
-                if (sanitized.Length > 13) sanitized = sanitized.Substring(0, 13);
                 SetProperty(ref _newBarcode, sanitized);
             }
         }
 
-        // --- Nombre: No permite escribir números ---
+        // --- Nombre: OBLIGATORIO y automáticamente en MAYÚSCULAS ---
         private string? _newName;
         public string? NewName
         {
@@ -57,15 +54,15 @@ namespace AMANC_Inventory.Inventory.ViewModels
             set
             {
                 if (value == null) { SetProperty(ref _newName, value); return; }
-                string sanitized = Regex.Replace(value, @"[\d]", "");
-                SetProperty(ref _newName, sanitized);
+                SetProperty(ref _newName, value.ToUpper());
             }
         }
 
+        // --- Categoría: OBLIGATORIA ---
         private string? _newCategory;
         public string? NewCategory { get => _newCategory; set => SetProperty(ref _newCategory, value); }
 
-        // --- Stock Inicial: Solo números ---
+        // --- Stock Inicial: OBLIGATORIO ---
         private string? _newStock;
         public string? NewStock
         {
@@ -78,7 +75,7 @@ namespace AMANC_Inventory.Inventory.ViewModels
             }
         }
 
-        // --- Stock Mínimo: Solo números ---
+        // --- Stock Mínimo: OPCIONAL ---
         private string? _newMinStock;
         public string? NewMinStock
         {
@@ -91,10 +88,14 @@ namespace AMANC_Inventory.Inventory.ViewModels
             }
         }
 
-        private string? _newUnit;
+        // --- Unidad de Medida (Presentación y Especificación) ---
+        private string? _newUnit = "Pzas";
         public string? NewUnit { get => _newUnit; set => SetProperty(ref _newUnit, value); }
 
-        // --- Valor Estimado Unitario: Solo números con prefijo '$ ' ---
+        private string? _newUnitDetail;
+        public string? NewUnitDetail { get => _newUnitDetail; set => SetProperty(ref _newUnitDetail, value); }
+
+        // --- Valor Estimado Unitario ---
         private string? _newEstimatedValue;
         public string? NewEstimatedValue
         {
@@ -128,7 +129,8 @@ namespace AMANC_Inventory.Inventory.ViewModels
         private string? _newBranchId;
         public string? NewBranchId { get => _newBranchId; set => SetProperty(ref _newBranchId, value); }
 
-        private string? _newStatus = "Active";
+        // --- Estatus: "Disponible" o "Agotado" (Default "Disponible") ---
+        private string? _newStatus = "Disponible";
         public string? NewStatus { get => _newStatus; set => SetProperty(ref _newStatus, value); }
 
         private DateTime? _newExpirationDate;
@@ -194,21 +196,22 @@ namespace AMANC_Inventory.Inventory.ViewModels
             CategoriesList.Add("Higiene Personal");
             CategoriesList.Add("Ropa");
             CategoriesList.Add("Insumo Médico");
+            CategoriesList.Add("Limpieza");
 
             UnitsList.Clear();
-            UnitsList.Add("Pza");
+            UnitsList.Add("Pzas");
             UnitsList.Add("Caja");
-            UnitsList.Add("Kg");
-            UnitsList.Add("Litro");
+            UnitsList.Add("ml");
+            UnitsList.Add("L");
+            UnitsList.Add("g");
+            UnitsList.Add("kg");
             UnitsList.Add("Frasco");
             UnitsList.Add("Paquete");
+            UnitsList.Add("Lata");
 
             StatusList.Clear();
-            StatusList.Add("Active");
-            StatusList.Add("Inactive");
-            StatusList.Add("Out of Stock");
-            StatusList.Add("Expired");
-            StatusList.Add("Damaged");
+            StatusList.Add("Disponible");
+            StatusList.Add("Agotado");
         }
 
         public void ResetForm()
@@ -221,64 +224,69 @@ namespace AMANC_Inventory.Inventory.ViewModels
             NewMinStock = string.Empty;
             NewEstimatedValue = string.Empty;
             NewIsDonated = true;
-            NewUnit = null;
+            NewUnit = "Pzas";
+            NewUnitDetail = string.Empty;
             NewLocation = string.Empty;
             NewBranchId = _userDefaultBranch;
-            NewStatus = "Active";
+            NewStatus = "Disponible";
             NewExpirationDate = null;
         }
 
         public async Task SaveProductAsync()
         {
-            // Validar Nombre
+            // 1. Validar Código de Barras (Obligatorio)
+            if (string.IsNullOrWhiteSpace(NewBarcode))
+            {
+                MessageBox.Show("Por favor, ingrese o escanee el Código de Barras.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 2. Validar Nombre del Producto (Obligatorio)
             if (string.IsNullOrWhiteSpace(NewName))
             {
-                MessageBox.Show("Por favor, ingrese el nombre del producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, ingrese el Nombre del Producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // Validar SKU (Mínimo 8 y Máximo 12 caracteres)
-            string sku = NewSKU?.Trim().ToUpper() ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(sku) || sku.Length < 8 || sku.Length > 12)
+            // 3. Validar Categoría (Obligatoria)
+            if (string.IsNullOrWhiteSpace(NewCategory))
             {
-                MessageBox.Show("El SKU debe tener entre 8 y 12 caracteres (solo mayúsculas, números y guión '-').", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Por favor, seleccione la Categoría del producto.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            // Validar Código de Barras (Exactamente 13 dígitos si se proporciona)
-            string barcode = NewBarcode?.Trim() ?? string.Empty;
-            if (!string.IsNullOrWhiteSpace(barcode) && barcode.Length != 13)
-            {
-                MessageBox.Show("El Código de Barras debe contener exactamente 13 caracteres numéricos.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            // Validar Stock Inicial
+            // 4. Validar Stock Inicial (Obligatorio)
             if (string.IsNullOrWhiteSpace(NewStock) || !int.TryParse(NewStock, out int stockResult))
             {
                 MessageBox.Show("Por favor, ingrese una cantidad válida para el Stock Inicial.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
+            // Parsear opcionales
             int.TryParse(NewMinStock, out int minStockResult);
 
             string cleanEstimatedValue = Regex.Replace(NewEstimatedValue ?? "", @"[^\d]", "");
             decimal.TryParse(cleanEstimatedValue, out decimal estimatedValueResult);
 
+            // Construir la unidad combinada (ej. "500 ml" o "Caja")
+            string finalUnit = !string.IsNullOrWhiteSpace(NewUnitDetail)
+                ? $"{NewUnitDetail.Trim()} {NewUnit}"
+                : NewUnit ?? "Pzas";
+
             var newItem = new ProductModel
             {
-                SKU = sku,
-                Barcode = string.IsNullOrWhiteSpace(barcode) ? null : barcode,
-                BranchId = NewBranchId?.Trim() ?? _userDefaultBranch ?? string.Empty,
-                Name = NewName.Trim(),
-                Category = NewCategory ?? string.Empty,
+                SKU = NewSKU?.Trim().ToUpper() ?? string.Empty,
+                Barcode = NewBarcode.Trim(),
+                BranchId = NewBranchId?.Trim() ?? _userDefaultBranch ?? "Sede Central",
+                Name = NewName.Trim().ToUpper(),
+                Category = NewCategory,
                 Stock = stockResult,
                 MinStock = minStockResult,
-                Unit = NewUnit ?? string.Empty,
+                Unit = finalUnit,
                 EstimatedValue = estimatedValueResult,
                 IsDonated = NewIsDonated,
                 Location = NewLocation?.Trim() ?? string.Empty,
-                Status = NewStatus ?? "Active",
+                Status = NewStatus ?? "Disponible",
                 ExpirationDate = NewExpirationDate,
                 CreatedAt = DateTime.UtcNow
             };
@@ -286,13 +294,13 @@ namespace AMANC_Inventory.Inventory.ViewModels
             bool success = await _productService.SaveProductAsync(newItem);
             if (success)
             {
-                MessageBox.Show("Producto guardado correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Producto registrado correctamente en el inventario.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
                 ResetForm();
                 if (_onSaveSuccess != null) await _onSaveSuccess.Invoke();
             }
             else
             {
-                MessageBox.Show("Error al guardar el producto.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error al guardar el producto en la base de datos.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

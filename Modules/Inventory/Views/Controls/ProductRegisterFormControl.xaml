@@ -75,20 +75,23 @@
                     <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="1.2*"/>
                             <ColumnDefinition Width="1.5*"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- SKU (Opcional) -->
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="SKU (8-12 Caracteres)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" MaxLength="12" Text="{Binding ProductRegister.NewSKU, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="SKU (Opcional)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewSKU, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
+                        <!-- Código de Barras (Obligatorio) -->
                         <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="Código de Barras (13 Dígitos)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
-                            <TextBox Style="{StaticResource ModernInputStyle}" MaxLength="13" Text="{Binding ProductRegister.NewBarcode, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="Código de Barras *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewBarcode, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
+                        <!-- Nombre del Producto (Obligatorio en Mayúsculas) -->
                         <StackPanel Grid.Column="2" Margin="10,0,0,0">
                             <TextBlock Text="Nombre del Producto *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewName, UpdateSourceTrigger=PropertyChanged}"/>
@@ -102,18 +105,21 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
+                        <!-- Categoría (Obligatoria) -->
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Categoría" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBlock Text="Categoría *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding ProductRegister.CategoriesList}" SelectedItem="{Binding ProductRegister.NewCategory}"/>
                         </StackPanel>
 
+                        <!-- Sede Asignada (Default / Solo Lectura) -->
                         <StackPanel Grid.Column="1" Margin="5,0,5,0">
                             <TextBlock Text="Sede Asignada" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewBranchId}" IsReadOnly="True" Focusable="False" Background="#F1F5F9" Foreground="#64748B"/>
                         </StackPanel>
 
+                        <!-- Estatus: Disponible / Agotado -->
                         <StackPanel Grid.Column="2" Margin="10,0,0,0">
-                            <TextBlock Text="Estatus del Registro" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBlock Text="Estatus del Registro *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding ProductRegister.StatusList}" SelectedItem="{Binding ProductRegister.NewStatus}"/>
                         </StackPanel>
                     </Grid>
@@ -133,26 +139,36 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <!-- Stock Inicial (Obligatorio) -->
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
                             <TextBlock Text="Stock Inicial *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewStock, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="Stock Mínimo (Alerta)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                        <!-- Stock Mínimo (Opcional) -->
+                        <StackPanel Grid.Column="1" Margin="4,0,8,0">
+                            <TextBlock Text="Stock Mínimo (Opcional)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewMinStock, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
-                        <StackPanel Grid.Column="2" Margin="10,0,0,0">
-                            <TextBlock Text="Unidad de Medida" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                        <!-- Presentación/Unidad -->
+                        <StackPanel Grid.Column="2" Margin="4,0,8,0">
+                            <TextBlock Text="Presentación *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <ComboBox Style="{StaticResource ModernComboBoxStyle}" ItemsSource="{Binding ProductRegister.UnitsList}" SelectedItem="{Binding ProductRegister.NewUnit}"/>
+                        </StackPanel>
+
+                        <!-- Especificación / Cantidad -->
+                        <StackPanel Grid.Column="3" Margin="4,0,0,0">
+                            <TextBlock Text="Contenido *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewUnitDetail, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
                     </Grid>
 
                     <StackPanel>
-                        <TextBlock Text="Ubicación Física en Almacén" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                        <TextBlock Text="Ubicación Física en Almacén *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                         <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewLocation, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
                 </StackPanel>
@@ -174,12 +190,12 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                            <TextBlock Text="Valor Estimado Unitario ($)" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBlock Text="Valor Estimado Unitario ($) *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <TextBox Style="{StaticResource ModernInputStyle}" Text="{Binding ProductRegister.NewEstimatedValue, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="5,0,5,0">
-                            <TextBlock Text="Fecha de Caducidad" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
+                            <TextBlock Text="Fecha de Caducidad *" FontSize="11" FontWeight="SemiBold" Foreground="#475569" Margin="0,0,0,6"/>
                             <DatePicker SelectedDate="{Binding ProductRegister.NewExpirationDate}"/>
                         </StackPanel>
 
@@ -208,7 +224,7 @@
                 </Style>
             </Button.Resources>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Registrar" VerticalAlignment="Center"/>
+                <TextBlock Text="Registrar Producto" VerticalAlignment="Center"/>
             </StackPanel>
         </Button>
     </Grid>
