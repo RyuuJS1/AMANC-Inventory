@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using AMANC_Inventory.Patients.Interfaces;
 using System.Threading.Tasks;
 using AMANC_Inventory.Core.Config;
 using AMANC_Inventory.Core.Utilities;
+using AMANC_Inventory.Patients.Interfaces;
 using AMANC_Inventory.Patients.Models;
 using Firebase.Database;
 using Firebase.Database.Query;
+using Newtonsoft.Json.Linq;
 
 namespace AMANC_Inventory.Patients.Services
 {
@@ -17,7 +18,6 @@ namespace AMANC_Inventory.Patients.Services
     {
         private readonly FirebaseClient _firebaseClient;
         private const string NodeName = "Patients";
-        private const string IdPrefix = "PAC-";
 
         public PatientService()
         {
@@ -30,19 +30,49 @@ namespace AMANC_Inventory.Patients.Services
             {
                 try
                 {
-                    var items = await _firebaseClient
+                    // Obtiene el token JSON crudo para procesar Objetos {} o Arreglos [] de Firebase
+                    var token = await _firebaseClient
                         .Child(NodeName)
-                        .OnceAsync<PatientModel>();
+                        .OnceSingleAsync<JToken>();
 
-                    return items
-                        .Where(item => item.Object != null)
-                        .Select(item =>
+                    if (token == null || token.Type == JTokenType.Null)
+                        return new List<PatientModel>();
+
+                    var patientList = new List<PatientModel>();
+
+                    if (token is JArray jArray)
+                    {
+                        // Procesa la respuesta cuando Firebase devuelve un Arreglo por usar claves numéricas (1, 2, 3...)
+                        foreach (var item in jArray)
                         {
-                            var patient = item.Object;
-                            patient.Id = string.IsNullOrEmpty(patient.Id) ? item.Key : patient.Id;
-                            return patient;
-                        })
-                        .ToList();
+                            if (item != null && item.Type != JTokenType.Null)
+                            {
+                                var patient = item.ToObject<PatientModel>();
+                                if (patient != null)
+                                {
+                                    patientList.Add(patient);
+                                }
+                            }
+                        }
+                    }
+                    else if (token is JObject jObject)
+                    {
+                        // Procesa la respuesta cuando Firebase devuelve un Objeto JSON estándar
+                        foreach (var prop in jObject.Properties())
+                        {
+                            if (prop.Value != null && prop.Value.Type != JTokenType.Null)
+                            {
+                                var patient = prop.Value.ToObject<PatientModel>();
+                                if (patient != null)
+                                {
+                                    if (string.IsNullOrEmpty(patient.Id)) patient.Id = prop.Name;
+                                    patientList.Add(patient);
+                                }
+                            }
+                        }
+                    }
+
+                    return patientList;
                 }
                 catch (Exception ex)
                 {
@@ -60,13 +90,13 @@ namespace AMANC_Inventory.Patients.Services
                 {
                     if (patient == null) return false;
 
-                    // Si es un nuevo paciente o no tiene un ID asignado, se genera el consecutivo
-                    if (string.IsNullOrWhiteSpace(patient.Id) || patient.Id == "0")
+                    // Genera ID numérico consecutivo (1, 2, 3...) si es un nuevo registro
+                    if (string.IsNullOrWhiteSpace(patient.Id) || patient.Id == "0" || Guid.TryParse(patient.Id, out _))
                     {
                         patient.Id = await GetNextCustomIdAsync();
                     }
 
-                    // Guardado mediante PutAsync para usar la clave personalizada (PAC-000001)
+                    // Guardado en Realtime Database con clave numérico simple
                     await _firebaseClient
                         .Child(NodeName)
                         .Child(patient.Id)
@@ -83,39 +113,32 @@ namespace AMANC_Inventory.Patients.Services
         }
 
         /// <summary>
-        /// Genera el siguiente ID consecutivo dinámico (ej. PAC-000001).
-        /// Admite más de 999,999 registros ya que se expande automáticamente si el número crece.
+        /// Genera el siguiente ID consecutivo numérico simple (ej. 1, 2, 3...).
         /// </summary>
         private async Task<string> GetNextCustomIdAsync()
         {
             try
             {
-                var items = await _firebaseClient
-                    .Child(NodeName)
-                    .OnceAsync<PatientModel>();
+                var patients = await GetAllPatientsAsync();
 
-                if (!items.Any()) return $"{IdPrefix}000001";
+                if (!patients.Any()) return "1";
 
-                int maxId = items
-                    .Select(i =>
+                int maxId = patients
+                    .Select(p =>
                     {
-                        string key = i.Key;
-                        // Extrae únicamente los dígitos de la clave
-                        string numericPart = Regex.Match(key, @"\d+").Value;
+                        string idToParse = !string.IsNullOrWhiteSpace(p.Id) ? p.Id : "0";
+                        string numericPart = Regex.Match(idToParse, @"\d+").Value;
                         return int.TryParse(numericPart, out int num) ? num : 0;
                     })
                     .DefaultIfEmpty(0)
                     .Max();
 
-                int nextNumericId = maxId + 1;
-
-                // :D6 garantiza al menos 6 dígitos con ceros a la izquierda.
-                return $"{IdPrefix}{nextNumericId:D6}";
+                return (maxId + 1).ToString();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[Error al calcular el consecutivo del paciente]: {ex.Message}");
-                return $"{IdPrefix}000001";
+                return "1";
             }
         }
     }

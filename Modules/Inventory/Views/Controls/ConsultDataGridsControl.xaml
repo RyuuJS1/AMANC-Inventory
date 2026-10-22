@@ -166,15 +166,55 @@
 
             <!-- TABLA 4: BENEFICIARIOS -->
             <DataGrid ItemsSource="{Binding PatientConsult.FilteredPatientsList}" 
-                      Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}">
+                Visibility="{Binding IsPatientsTabSelected, Converter={StaticResource BoolToVisConverter}}"
+                RowHeight="NaN"
+                MinRowHeight="36">
                 <DataGrid.Columns>
+                    <!-- ID -->
                     <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Nombre del Niño -->
                     <DataGridTextColumn Header="Nombre del Niño" Binding="{Binding ChildName}" Width="Auto" MinWidth="180" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Edad -->
                     <DataGridTextColumn Header="Edad" Binding="{Binding Age}" Width="Auto" MinWidth="70" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- CURP -->
+                    <DataGridTextColumn Header="CURP" Binding="{Binding Curp}" Width="Auto" MinWidth="150" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Tipo de Cáncer -->
                     <DataGridTextColumn Header="Tipo de Cáncer" Binding="{Binding CancerType}" Width="Auto" MinWidth="140" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Responsables" Binding="{Binding Guardians}" Width="Auto" MinWidth="160" ElementStyle="{StaticResource CenterTextColumn}"/>
-                    <DataGridTextColumn Header="Teléfonos" Binding="{Binding Phones}" Width="Auto" MinWidth="120" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Despliegue Dinámico de Lista de Tutores y Contacto -->
+                    <DataGridTemplateColumn Header="Tutores y Contacto (Nombre | Parentesco | Teléfono | Correo)" Width="Auto" MinWidth="340">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ItemsControl ItemsSource="{Binding Guardians}" Margin="8,6">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,2">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="#0F172A" FontSize="12"/>
+                                                <TextBlock Text=" (" Foreground="#64748B" FontSize="12"/>
+                                                <TextBlock Text="{Binding Relationship}" Foreground="#2563EB" FontWeight="SemiBold" FontSize="11"/>
+                                                <TextBlock Text=") — Tel: " Foreground="#64748B" FontSize="12"/>
+                                                <TextBlock Text="{Binding Phone}" FontWeight="Bold" Foreground="#059669" FontSize="12"/>
+                                                <TextBlock Text="{Binding Email, StringFormat=' — \{0\}'}" Foreground="#64748B" FontSize="11"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Ciudad -->
                     <DataGridTextColumn Header="Ciudad" Binding="{Binding City}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Estado -->
+                    <DataGridTextColumn Header="Estado" Binding="{Binding State}" Width="Auto" MinWidth="110" ElementStyle="{StaticResource CenterTextColumn}"/>
+
+                    <!-- Estatus del Registro -->
+                    <DataGridTextColumn Header="Estatus" Binding="{Binding Status}" Width="Auto" MinWidth="100" ElementStyle="{StaticResource CenterTextColumn}"/>
                 </DataGrid.Columns>
             </DataGrid>
 
