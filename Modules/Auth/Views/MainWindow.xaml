@@ -3,99 +3,305 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:AMANC_Inventory.Modules.Auth.Views.Controls"
         Title="AMANC Inventory - Acceso" 
-        Height="620" Width="850"
-        MinHeight="500" MinWidth="600"
+        Height="660" Width="850"
+        MinHeight="560" MinWidth="650"
         WindowStartupLocation="CenterScreen"
         Background="#102240">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
+
+        <!-- ESTILO ELEGANTE PARA ETIQUETAS DE CAMPOS (TEXTBLOCK) -->
+        <Style x:Key="FormLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#CBD5E1"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <!-- BOTÓN PRINCIPAL (MÁS ALTO, DESTACADO Y CON BORDES REDONDEADOS) -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#183059"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#475569"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1E3A6E"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#64748B"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#122545"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#334155"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO DARK SUAVE CON BORDES REDONDEADOS PARA TEXTBOX -->
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#183059"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#475569"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1C3868"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#64748B"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1C3868"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#475569"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO DARK SUAVE CON BORDES REDONDEADOS PARA PASSWORDBOX -->
+        <Style TargetType="PasswordBox">
+            <Setter Property="Background" Value="#183059"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#475569"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" VerticalAlignment="Center" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1C3868"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#64748B"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1C3868"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#475569"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO DARK SUAVE CON BORDES REDONDEADOS PARA COMBOBOX -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#183059"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#475569"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid x:Name="MainGrid" SnapsToDevicePixels="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="28"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="Border" Grid.ColumnSpan="2" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6"/>
+                            <ContentPresenter Grid.Column="0" IsHitTestVisible="False" Margin="{TemplateBinding Padding}" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                            <ToggleButton Grid.ColumnSpan="2" Background="Transparent" BorderThickness="0" Focusable="False" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="Transparent"/>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+
+                            <Path Grid.Column="1" Data="M 0 0 L 4 4 L 8 0 Z" Fill="#CBD5E1" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+
+                            <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide">
+                                <Border x:Name="DropDownBorder" MinWidth="{Binding ActualWidth, ElementName=MainGrid}" MaxHeight="{TemplateBinding MaxDropDownHeight}" Background="#102240" BorderBrush="#475569" BorderThickness="1" CornerRadius="6" Margin="0,2,0,0">
+                                    <ScrollViewer x:Name="DropDownScrollViewer">
+                                        <ItemsPresenter x:Name="ItemsPresenter" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#1C3868"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#64748B"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#102240"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1C3868"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#183059"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <!-- GRID RAÍZ PRINCIPAL -->
     <Grid>
-        <!-- VIEWBOX PRINCIPAL: Escala únicamente la interfaz del formulario -->
+        <!-- VIEWBOX PRINCIPAL -->
         <Viewbox Stretch="Uniform">
-            <Grid Width="800" Height="620">
+            <Grid Width="800" Height="630">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- ENCABEZADO Y PESTAÑAS (MODULAR) -->
+                <!-- ENCABEZADO Y PESTAÑAS -->
                 <controls:AuthHeaderControl Grid.Row="0"/>
 
                 <!-- CONTENIDO DEL FORMULARIO -->
-                <Grid Grid.Row="1" Width="300" HorizontalAlignment="Center" Margin="0,10,0,30">
+                <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,15,0,25">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel Grid.Row="0">
-                        <!-- Campo Nombre Completo (Solo visible en Modo Registro) -->
-                        <StackPanel Name="PanelNombre" Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}" Margin="0,0,0,12">
-                            <TextBlock Text="Nombre Completo" FontSize="11" Foreground="White" Margin="0,0,0,4"/>
-                            <TextBox Name="TxtNombre" Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}" Background="#183059" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="6" CaretBrush="White"/>
+                    <!-- GRID DE CAMPOS -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- COLUMNA IZQUIERDA (0): DATOS PERSONALES Y ADSCRIPCIÓN (Solo Registro) -->
+                        <StackPanel Grid.Column="0" 
+                                    Width="280" 
+                                    Margin="0,0,24,0"
+                                    Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}">
+
+                            <!-- 1. Nombre Completo -->
+                            <StackPanel Name="PanelNombre" Margin="0,0,0,12">
+                                <TextBlock Text="Nombre Completo" Style="{StaticResource FormLabelStyle}"/>
+                                <TextBox Name="TxtNombre" Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+
+                            <!-- 2. Número de Teléfono -->
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Número de Teléfono" Style="{StaticResource FormLabelStyle}"/>
+                                <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" MaxLength="15"/>
+                            </StackPanel>
+
+                            <!-- 3. Sede / Sucursal -->
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Sede / Sucursal" Style="{StaticResource FormLabelStyle}"/>
+                                <ComboBox ItemsSource="{Binding Branches}" SelectedItem="{Binding Branch, Mode=TwoWay}"/>
+                            </StackPanel>
+
+                            <!-- 4. Departamento -->
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Departamento" Style="{StaticResource FormLabelStyle}"/>
+                                <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding Department, Mode=TwoWay}"/>
+                            </StackPanel>
                         </StackPanel>
 
-                        <!-- Campo Correo Electrónico (Sin Espacios y Minúsculas) -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Correo Electrónico" FontSize="11" Foreground="White" Margin="0,0,0,4"/>
-                            <TextBox Name="TxtEmail" 
-                                     Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" 
-                                     Background="#183059" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="6" CaretBrush="White"
-                                     PreviewKeyDown="TxtEmail_PreviewKeyDown"
-                                     PreviewTextInput="TxtEmail_PreviewTextInput"/>
+                        <!-- COLUMNA DERECHA (1): CORREO, CONTRASEÑA Y CONFIRMACIÓN (Login y Registro) -->
+                        <StackPanel Grid.Column="1" Width="280">
+
+                            <!-- 1. Correo Electrónico -->
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Correo Electrónico" Style="{StaticResource FormLabelStyle}"/>
+                                <TextBox Name="TxtEmail" 
+                                         Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" 
+                                         PreviewKeyDown="TxtEmail_PreviewKeyDown"
+                                         PreviewTextInput="TxtEmail_PreviewTextInput"/>
+                            </StackPanel>
+
+                            <!-- 2. Contraseña -->
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Contraseña" Style="{StaticResource FormLabelStyle}"/>
+                                <PasswordBox Name="TxtPassword" PasswordChanged="TxtPassword_PasswordChanged"/>
+
+                                <TextBlock Name="TxtNivelSeguridad" Text="{Binding NivelSeguridadTexto}" Foreground="{Binding NivelSeguridadColor}" Visibility="{Binding NivelSeguridadVisible, Converter={StaticResource BoolToVisConverter}}" FontSize="10" FontWeight="SemiBold" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
+
+                                <!-- Enlace ¿Olvidaste tu contraseña? (Solo Login) -->
+                                <Button Name="BtnForgotPassword" Content="¿Olvidaste tu contraseña?" Command="{Binding ForgotPasswordCommand}"
+                                        Visibility="{Binding EsModoLogin, Converter={StaticResource BoolToVisConverter}}"
+                                        Foreground="#94A3B8" Background="Transparent" BorderThickness="0" 
+                                        FontSize="11" HorizontalAlignment="Right" Margin="0,5,0,0" Cursor="Hand">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" TextDecorations="Underline"/>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- 3. Confirmar Contraseña (Solo Registro) -->
+                            <StackPanel Name="PanelConfirmarPassword" Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}" Margin="0,0,0,12">
+                                <TextBlock Text="Confirmar Contraseña" Style="{StaticResource FormLabelStyle}"/>
+                                <PasswordBox Name="TxtConfirmPassword" PasswordChanged="TxtConfirmPassword_PasswordChanged"/>
+                                <TextBlock Name="TxtCoincidenciaPassword" Text="{Binding CoincidenciaPasswordTexto}" Foreground="{Binding CoincidenciaPasswordColor}" Visibility="{Binding CoincidenciaPasswordVisible, Converter={StaticResource BoolToVisConverter}}" FontSize="10" FontWeight="SemiBold" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
+                            </StackPanel>
                         </StackPanel>
+                    </Grid>
 
-                        <!-- Campo Contraseña -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Contraseña" FontSize="11" Foreground="White" Margin="0,0,0,4"/>
-                            <PasswordBox Name="TxtPassword" Background="#183059" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="6" CaretBrush="White" PasswordChanged="TxtPassword_PasswordChanged"/>
-
-                            <TextBlock Name="TxtNivelSeguridad" Text="{Binding NivelSeguridadTexto}" Foreground="{Binding NivelSeguridadColor}" Visibility="{Binding NivelSeguridadVisible, Converter={StaticResource BoolToVisConverter}}" FontSize="10" FontWeight="SemiBold" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
-
-                            <!-- Enlace ¿Olvidaste tu contraseña? (Solo en Modo Login) -->
-                            <Button Name="BtnForgotPassword" Content="¿Olvidaste tu contraseña?" Command="{Binding ForgotPasswordCommand}"
-                                    Visibility="{Binding EsModoLogin, Converter={StaticResource BoolToVisConverter}}"
-                                    Foreground="#80FFFFFF" Background="Transparent" BorderThickness="0" 
-                                    FontSize="10" HorizontalAlignment="Right" Margin="0,4,0,0" Cursor="Hand">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" TextDecorations="Underline"/>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Foreground" Value="White"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                        </StackPanel>
-
-                        <!-- Campo Confirmar Contraseña (Solo en Modo Registro) -->
-                        <StackPanel Name="PanelConfirmarPassword" Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}" Margin="0,0,0,12">
-                            <TextBlock Text="Confirmar Contraseña" FontSize="11" Foreground="White" Margin="0,0,0,4"/>
-                            <PasswordBox Name="TxtConfirmPassword" Background="#183059" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="6" CaretBrush="White" PasswordChanged="TxtConfirmPassword_PasswordChanged"/>
-                            <TextBlock Name="TxtCoincidenciaPassword" Text="{Binding CoincidenciaPasswordTexto}" Foreground="{Binding CoincidenciaPasswordColor}" Visibility="{Binding CoincidenciaPasswordVisible, Converter={StaticResource BoolToVisConverter}}" FontSize="10" FontWeight="SemiBold" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- Botón Principal -->
-                    <Button Name="BtnAccionPrincipal" Grid.Row="2" Content="{Binding TextoBotonPrincipal}" Command="{Binding SubmitCommand}" Background="#183059" Foreground="White" FontSize="15" FontWeight="SemiBold" BorderBrush="White" BorderThickness="2" Padding="12,6" Cursor="Hand" HorizontalAlignment="Center" Width="180"/>
+                    <!-- BOTÓN PRINCIPAL DESTACADO -->
+                    <Button Name="BtnAccionPrincipal" Grid.Row="1" 
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Content="{Binding TextoBotonPrincipal}" 
+                            Command="{Binding SubmitCommand}" 
+                            HorizontalAlignment="Center" Width="220" Margin="0,18,0,0"/>
                 </Grid>
             </Grid>
         </Viewbox>
 
-        <!-- PANEL FLOTANTE DE CÓDIGO (MODULAR) -->
+        <!-- PANEL FLOTANTE DE CÓDIGO -->
         <controls:OtpNotificationControl />
     </Grid>
 </Window>
