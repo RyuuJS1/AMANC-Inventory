@@ -11,23 +11,76 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter" />
 
+        <!-- ESTILO PARA EL THUMB DEL SCROLLBAR (REDONDEADO Y SEMITRANSPARENTE) -->
+        <Style x:Key="ModernScrollBarThumb" TargetType="Thumb">
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Thumb">
+                        <Border x:Name="border" 
+                                CornerRadius="4" 
+                                Background="#33FFFFFF" 
+                                Width="6" 
+                                HorizontalAlignment="Right"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#66FFFFFF"/>
+                                <Setter TargetName="border" Property="Width" Value="8"/>
+                            </Trigger>
+                            <Trigger Property="IsDragging" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#99FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ESTILO GLOBAL PARA SCROLLBAR -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Opacity="0" Focusable="False"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ModernScrollBarThumb}"/>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Opacity="0" Focusable="False"/>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- ESTILO ELEGANTE PARA ETIQUETAS DE CAMPOS (TEXTBLOCK) -->
         <Style x:Key="FormLabelStyle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#CBD5E1"/>
-            <Setter Property="Margin" Value="0,0,0,5"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
 
-        <!-- BOTÓN PRINCIPAL (MÁS ALTO, DESTACADO Y CON BORDES REDONDEADOS) -->
+        <!-- BOTÓN PRINCIPAL (MÁS ESTRECHO QUE LOS CAMPOS: 180PX) -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#183059"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#475569"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Height" Value="44"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="180"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -58,7 +111,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="CaretBrush" Value="White"/>
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Template">
@@ -90,7 +143,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="CaretBrush" Value="White"/>
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Template">
@@ -121,7 +174,7 @@
             <Setter Property="BorderBrush" Value="#475569"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="Height" Value="36"/>
+            <Setter Property="Height" Value="38"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="Template">
@@ -192,112 +245,117 @@
                 </Grid.RowDefinitions>
 
                 <!-- ENCABEZADO Y PESTAÑAS -->
-                <controls:AuthHeaderControl Grid.Row="0"/>
+                <controls:AuthHeaderControl Grid.Row="0" Margin="0,20,0,5"/>
 
-                <!-- CONTENIDO DEL FORMULARIO -->
-                <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,15,0,25">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <!-- CONTENIDO DEL FORMULARIO EN UNA COLUMNA CENTRADA -->
+                <ScrollViewer Grid.Row="1" 
+                              VerticalAlignment="Top" 
+                              MaxHeight="480"
+                              Margin="0,10,0,35" 
+                              VerticalScrollBarVisibility="Auto" 
+                              HorizontalScrollBarVisibility="Disabled">
 
-                    <!-- GRID DE CAMPOS -->
-                    <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+                    <!-- CAMPOS CON ANCHO REDUCIDO A 300PX -->
+                    <StackPanel Width="300" HorizontalAlignment="Center" Margin="0,5,0,10">
 
-                        <!-- COLUMNA IZQUIERDA (0): DATOS PERSONALES Y ADSCRIPCIÓN (Solo Registro) -->
-                        <StackPanel Grid.Column="0" 
-                                    Width="280" 
-                                    Margin="0,0,24,0"
+                        <!-- 1. Nombre Completo (Solo Registro) -->
+                        <StackPanel Name="PanelNombre" Margin="0,0,0,16" 
                                     Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}">
-
-                            <!-- 1. Nombre Completo -->
-                            <StackPanel Name="PanelNombre" Margin="0,0,0,12">
-                                <TextBlock Text="Nombre Completo" Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Name="TxtNombre" Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}"/>
-                            </StackPanel>
-
-                            <!-- 2. Número de Teléfono -->
-                            <StackPanel Margin="0,0,0,12">
-                                <TextBlock Text="Número de Teléfono" Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" MaxLength="15"/>
-                            </StackPanel>
-
-                            <!-- 3. Sede / Sucursal -->
-                            <StackPanel Margin="0,0,0,12">
-                                <TextBlock Text="Sede / Sucursal" Style="{StaticResource FormLabelStyle}"/>
-                                <ComboBox ItemsSource="{Binding Branches}" SelectedItem="{Binding Branch, Mode=TwoWay}"/>
-                            </StackPanel>
-
-                            <!-- 4. Departamento -->
-                            <StackPanel Margin="0,0,0,12">
-                                <TextBlock Text="Departamento" Style="{StaticResource FormLabelStyle}"/>
-                                <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding Department, Mode=TwoWay}"/>
-                            </StackPanel>
+                            <TextBlock Text="Nombre Completo" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Name="TxtNombre" Text="{Binding Nombre, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
 
-                        <!-- COLUMNA DERECHA (1): CORREO, CONTRASEÑA Y CONFIRMACIÓN (Login y Registro) -->
-                        <StackPanel Grid.Column="1" Width="280">
-
-                            <!-- 1. Correo Electrónico -->
-                            <StackPanel Margin="0,0,0,12">
-                                <TextBlock Text="Correo Electrónico" Style="{StaticResource FormLabelStyle}"/>
-                                <TextBox Name="TxtEmail" 
-                                         Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" 
-                                         PreviewKeyDown="TxtEmail_PreviewKeyDown"
-                                         PreviewTextInput="TxtEmail_PreviewTextInput"/>
-                            </StackPanel>
-
-                            <!-- 2. Contraseña -->
-                            <StackPanel Margin="0,0,0,12">
-                                <TextBlock Text="Contraseña" Style="{StaticResource FormLabelStyle}"/>
-                                <PasswordBox Name="TxtPassword" PasswordChanged="TxtPassword_PasswordChanged"/>
-
-                                <TextBlock Name="TxtNivelSeguridad" Text="{Binding NivelSeguridadTexto}" Foreground="{Binding NivelSeguridadColor}" Visibility="{Binding NivelSeguridadVisible, Converter={StaticResource BoolToVisConverter}}" FontSize="10" FontWeight="SemiBold" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
-
-                                <!-- Enlace ¿Olvidaste tu contraseña? (Solo Login) -->
-                                <Button Name="BtnForgotPassword" Content="¿Olvidaste tu contraseña?" Command="{Binding ForgotPasswordCommand}"
-                                        Visibility="{Binding EsModoLogin, Converter={StaticResource BoolToVisConverter}}"
-                                        Foreground="#94A3B8" Background="Transparent" BorderThickness="0" 
-                                        FontSize="11" HorizontalAlignment="Right" Margin="0,5,0,0" Cursor="Hand">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" TextDecorations="Underline"/>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Foreground" Value="White"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </StackPanel>
-
-                            <!-- 3. Confirmar Contraseña (Solo Registro) -->
-                            <StackPanel Name="PanelConfirmarPassword" Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}" Margin="0,0,0,12">
-                                <TextBlock Text="Confirmar Contraseña" Style="{StaticResource FormLabelStyle}"/>
-                                <PasswordBox Name="TxtConfirmPassword" PasswordChanged="TxtConfirmPassword_PasswordChanged"/>
-                                <TextBlock Name="TxtCoincidenciaPassword" Text="{Binding CoincidenciaPasswordTexto}" Foreground="{Binding CoincidenciaPasswordColor}" Visibility="{Binding CoincidenciaPasswordVisible, Converter={StaticResource BoolToVisConverter}}" FontSize="10" FontWeight="SemiBold" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
-                            </StackPanel>
+                        <!-- 2. Correo Electrónico (Login y Registro) -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Correo Electrónico" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Name="TxtEmail" 
+                                     Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" 
+                                     PreviewKeyDown="TxtEmail_PreviewKeyDown"
+                                     PreviewTextInput="TxtEmail_PreviewTextInput"/>
                         </StackPanel>
-                    </Grid>
 
-                    <!-- BOTÓN PRINCIPAL DESTACADO -->
-                    <Button Name="BtnAccionPrincipal" Grid.Row="1" 
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Content="{Binding TextoBotonPrincipal}" 
-                            Command="{Binding SubmitCommand}" 
-                            HorizontalAlignment="Center" Width="220" Margin="0,18,0,0"/>
-                </Grid>
+                        <!-- 3. Número de Teléfono (Solo Registro) -->
+                        <StackPanel Margin="0,0,0,16" 
+                                    Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}">
+                            <TextBlock Text="Teléfono" Style="{StaticResource FormLabelStyle}"/>
+                            <TextBox Name="TxtPhone"
+                                     Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" 
+                                     GotFocus="TxtPhone_GotFocus"
+                                     TextChanged="TxtPhone_TextChanged"/>
+                        </StackPanel>
+
+                        <!-- 4. Sede / Sucursal (Solo Registro) -->
+                        <StackPanel Margin="0,0,0,16" 
+                                    Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}">
+                            <TextBlock Text="Sede / Sucursal" Style="{StaticResource FormLabelStyle}"/>
+                            <ComboBox ItemsSource="{Binding Branches}" SelectedItem="{Binding Branch, Mode=TwoWay}"/>
+                        </StackPanel>
+
+                        <!-- 5. Departamento (Solo Registro) -->
+                        <StackPanel Margin="0,0,0,16" 
+                                    Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}">
+                            <TextBlock Text="Departamento" Style="{StaticResource FormLabelStyle}"/>
+                            <ComboBox ItemsSource="{Binding Departments}" SelectedItem="{Binding Department, Mode=TwoWay}"/>
+                        </StackPanel>
+
+                        <!-- 6. Contraseña (Login y Registro) -->
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Contraseña" Style="{StaticResource FormLabelStyle}"/>
+                            <PasswordBox Name="TxtPassword" PasswordChanged="TxtPassword_PasswordChanged"/>
+
+                            <TextBlock Name="TxtNivelSeguridad" 
+                                       Text="{Binding NivelSeguridadTexto}" 
+                                       Foreground="{Binding NivelSeguridadColor}" 
+                                       Visibility="{Binding NivelSeguridadVisible, Converter={StaticResource BoolToVisConverter}}" 
+                                       FontSize="10" FontWeight="SemiBold" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
+
+                            <!-- Enlace ¿Olvidaste tu contraseña? (Solo Login) -->
+                            <Button Name="BtnForgotPassword" Content="¿Olvidaste tu contraseña?" Command="{Binding ForgotPasswordCommand}"
+                                    Visibility="{Binding EsModoLogin, Converter={StaticResource BoolToVisConverter}}"
+                                    Foreground="#94A3B8" Background="Transparent" BorderThickness="0" 
+                                    FontSize="11" HorizontalAlignment="Center" Margin="0,6,0,0" Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" TextDecorations="Underline"/>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- 7. Confirmar Contraseña (Solo Registro) -->
+                        <StackPanel Name="PanelConfirmarPassword" Margin="0,0,0,16" 
+                                    Visibility="{Binding EsModoRegistro, Converter={StaticResource BoolToVisConverter}}">
+                            <TextBlock Text="Confirmar Contraseña" Style="{StaticResource FormLabelStyle}"/>
+                            <PasswordBox Name="TxtConfirmPassword" PasswordChanged="TxtConfirmPassword_PasswordChanged"/>
+                            <TextBlock Name="TxtCoincidenciaPassword" 
+                                       Text="{Binding CoincidenciaPasswordTexto}" 
+                                       Foreground="{Binding CoincidenciaPasswordColor}" 
+                                       Visibility="{Binding CoincidenciaPasswordVisible, Converter={StaticResource BoolToVisConverter}}" 
+                                       FontSize="10" FontWeight="SemiBold" Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- BOTÓN PRINCIPAL (MÁS CORTO: 180PX) -->
+                        <Button Name="BtnAccionPrincipal" 
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Content="{Binding TextoBotonPrincipal}" 
+                                Command="{Binding SubmitCommand}" 
+                                Width="180" 
+                                HorizontalAlignment="Center"
+                                Margin="0,10,0,0"/>
+
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Viewbox>
 

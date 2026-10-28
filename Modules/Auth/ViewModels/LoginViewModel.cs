@@ -107,14 +107,14 @@ namespace AMANC_Inventory.Modules.Auth.ViewModels
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(emailNorm) || string.IsNullOrWhiteSpace(Password))
-            {
-                MessageBox.Show("Por favor, ingresa correo y contraseña.", "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
             if (EsModoLogin)
             {
+                if (string.IsNullOrWhiteSpace(emailNorm) || string.IsNullOrWhiteSpace(Password))
+                {
+                    MessageBox.Show("Por favor, ingresa tu correo y contraseña.", "Campos Incompletos", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 TextoBotonPrincipal = "Verificando...";
                 bool credencialesValidas = await _userService.ValidateCredentialsAsync(emailNorm, Password);
 
@@ -150,28 +150,55 @@ namespace AMANC_Inventory.Modules.Auth.ViewModels
             }
             else
             {
+                // =========================================================
+                // VALIDACIÓN ESTRICTA DE TODOS LOS CAMPOS PARA CREAR CUENTA
+                // =========================================================
                 if (string.IsNullOrWhiteSpace(Nombre))
                 {
-                    MessageBox.Show("Por favor, ingresa tu nombre completo.", "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Por favor, ingresa tu nombre completo.", "Campo Obligatorio", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                if (Password.Length <= 6)
+                if (string.IsNullOrWhiteSpace(Phone) || Regex.Replace(Phone, @"[^\d]", "").Length < 10)
                 {
-                    MessageBox.Show("La contraseña debe tener más de 6 dígitos.", "Advertencia", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Por favor, ingresa un número de teléfono válido (mínimo 10 dígitos).", "Campo Obligatorio", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(Branch))
+                {
+                    MessageBox.Show("Por favor, selecciona una Sede / Sucursal.", "Campo Obligatorio", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(Department))
+                {
+                    MessageBox.Show("Por favor, selecciona un Departamento.", "Campo Obligatorio", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(emailNorm) || !EsCorreoValido(emailNorm))
+                {
+                    MessageBox.Show("Por favor, ingresa un correo electrónico válido.", "Campo Obligatorio", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(Password) || Password.Length <= 6)
+                {
+                    MessageBox.Show("La contraseña debe tener más de 6 dígitos.", "Campo Obligatorio", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 if (Password != ConfirmPassword)
                 {
-                    MessageBox.Show("Las contraseñas no coinciden.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Las contraseñas no coinciden.", "Error de Validación", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
                 bool existe = await _userService.EmailExistsAsync(emailNorm);
                 if (existe)
                 {
-                    MessageBox.Show("El correo ya está registrado.", "Correo Registrado", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("El correo electrónico ya se encuentra registrado.", "Correo Registrado", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -206,20 +233,24 @@ namespace AMANC_Inventory.Modules.Auth.ViewModels
                     return;
                 }
 
+                // REGISTRO CON DATOS OPERATIVOS COMPLETOS
                 var nuevoUsuario = new UserModel
                 {
                     Name = Nombre.Trim(),
                     Email = Email.Trim().ToLower(),
+                    Phone = Phone.Trim(),
+                    Branch = Branch,
+                    Department = Department,
                     Status = "Active",
                     Role = "Volunteer",
-                    IsProfileComplete = false
+                    IsProfileComplete = true
                 };
 
                 bool registrado = await _userService.RegisterUserAsync(nuevoUsuario, Password);
 
                 if (registrado)
                 {
-                    MessageBox.Show($"¡Cuenta de {nuevoUsuario.Name} registrada con éxito!\n\nActualmente se encuentra pendiente de activación por un administrador antes de poder iniciar sesión.", "Registro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"¡Cuenta de {nuevoUsuario.Name} registrada con éxito!\n\nYa puedes iniciar sesión en el sistema.", "Registro Exitoso", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     LimpiarCamposFormulario();
                     EsModoLogin = true;

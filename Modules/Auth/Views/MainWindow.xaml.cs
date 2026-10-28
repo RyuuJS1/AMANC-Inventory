@@ -44,6 +44,30 @@ namespace AMANC_Inventory
         }
 
         // =========================================================
+        // VALIDACIÓN DE TELEFONO (SIN ESPACIOS)
+        // =========================================================
+
+        private void TxtPhone_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox tb)
+            {
+                // Al bajar o hacer clic en el campo, mueve el cursor al final del número
+                tb.CaretIndex = tb.Text.Length;
+            }
+        }
+
+        private void TxtPhone_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox tb && tb.Text.StartsWith("+"))
+            {
+                if (tb.CaretIndex == 0)
+                {
+                    tb.CaretIndex = tb.Text.Length;
+                }
+            }
+        }
+
+        // =========================================================
         // MANEJO DE CONTRASEÑAS
         // =========================================================
 
